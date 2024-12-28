@@ -206,23 +206,33 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
 
 export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
   const osm_IDs = new Set<string>(),
+    ohm_IDs = new Set<string>(),
     osm_wikidata_IDs = new Set<string>(),
+    ohm_wikidata_IDs = new Set<string>(),
     wikidata_IDs = new Set<string>();
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
     if (feature?.from_osm && feature?.from_wikidata)
       osm_wikidata_IDs.add(id);
+    else if (feature?.from_ohm && feature?.from_wikidata)
+      ohm_wikidata_IDs.add(id);
     else if (feature?.from_osm)
       osm_IDs.add(id);
+    else if (feature?.from_ohm)
+      ohm_IDs.add(id);
     else if (feature?.from_wikidata)
       wikidata_IDs.add(id);
+    else
+      console.debug("Unknown feature source", feature);
   });
 
   const stats: EtymologyStat[] = [];
   if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size });
+  if (osm_wikidata_IDs.size) stats.push({ name: "OHM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'ohm_wikidata', count: ohm_wikidata_IDs.size });
   if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
   if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
+  if (ohm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'ohm_wikidata', count: ohm_IDs.size });
 
   const out = [stats, FEATURE_SOURCE_LAYER_COLOR] as const;
   console.debug(
@@ -235,8 +245,10 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
 export function calculateEtymologySourceStats(osmTextOnlyLabel: string): StatisticsCalculator {
   return (features) => {
     const osm_IDs = new Set<string>(),
+      ohm_IDs = new Set<string>(),
       osm_text_names = new Set<string>(),
       osm_wikidata_IDs = new Set<string>(),
+      ohm_wikidata_IDs = new Set<string>(),
       wikidata_IDs = new Set<string>(),
       propagation_IDs = new Set<string>();
     features.forEach(feature => {
@@ -251,10 +263,16 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
             propagation_IDs.add(etymology.wikidata);
           } else if (feature?.from_osm && etymology.from_wikidata) {
             osm_wikidata_IDs.add(etymology.wikidata);
+          } else if (feature?.from_ohm && etymology.from_wikidata) {
+            ohm_wikidata_IDs.add(etymology.wikidata);
           } else if (etymology.from_wikidata) {
             wikidata_IDs.add(etymology.wikidata);
           } else if (etymology.from_osm) {
             osm_IDs.add(etymology.wikidata);
+          } else if (etymology.from_ohm) {
+            ohm_IDs.add(etymology.wikidata);
+          } else {
+            console.debug("Unknown etymology source", feature, etymology);
           }
         });
       } else if (feature?.text_etymology) {
@@ -269,11 +287,17 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
     if (osm_wikidata_IDs.size) stats.push({
       name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size
     });
+    if (ohm_wikidata_IDs.size) stats.push({
+      name: "OHM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'ohm_wikidata', count: ohm_wikidata_IDs.size
+    });
     if (wikidata_IDs.size) stats.push({
       name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size
     });
     if (osm_IDs.size) stats.push({
-      name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size
+      name: "OpenStreetMap", color: OSM_COLOR, id: 'osm', count: osm_IDs.size
+    });
+    if (ohm_IDs.size) stats.push({
+      name: "OpenHistoricalMap", color: OSM_COLOR, id: 'ohm', count: ohm_IDs.size
     });
     if (osm_text_names.size) stats.push({
       name: osmTextOnlyLabel, color: FALLBACK_COLOR, id: "osm_text", count: osm_text_names.size

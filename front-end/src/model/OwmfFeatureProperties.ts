@@ -135,12 +135,12 @@ export interface OwmfFeatureProperties {
     linked_entities?: Etymology[] | string;
 
     /**
-     * Whether OpenStreetMap is the original source of the geometry and names of this feature.
+     * Whether openstreetmap.org is the original source of the geometry and names of this feature.
      */
     from_osm?: boolean;
 
     /**
-     * Whether OpenHistoricalMap is the original source of the geometry and names of this feature.
+     * Whether openhistoricalmap.org is the original source of the geometry and names of this feature.
      */
     from_ohm?: boolean;
 

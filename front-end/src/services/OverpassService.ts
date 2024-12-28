@@ -170,19 +170,11 @@ export class OverpassService implements MapService {
             osm_type = full_osm_id?.split("/")?.[0],
             osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined,
             tags = getFeatureTags(feature);
-        if (site === "openstreetmap.org") {
-            feature.properties.from_osm = true;
-            feature.properties.from_ohm = false;
-            feature.id = "osm.org/" + full_osm_id;
-            feature.properties.osm_id = osm_id;
-            feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
-        } else if (site === "openhistoricalmap.org") {
-            feature.properties.from_osm = false;
-            feature.properties.from_ohm = true;
-            feature.id = "openhistoricalmap.org/" + full_osm_id;
-            feature.properties.osm_id = osm_id;
-            feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
-        }
+        feature.properties.from_osm = site === "openstreetmap.org";
+        feature.properties.from_ohm = site === "openhistoricalmap.org";
+        feature.id = `${site}/${full_osm_id}`;
+        feature.properties.osm_id = osm_id;
+        feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
         feature.properties.from_wikidata = false;
 
         if (tags.height)
@@ -230,7 +222,8 @@ export class OverpassService implements MapService {
                     ?.split(";")
                     ?.filter(value => WIKIDATA_QID_REGEX.test(value))
                     ?.map<Etymology>(value => ({
-                        from_osm: true,
+                        from_osm: site === "openstreetmap.org",
+                        from_ohm: site === "openhistoricalmap.org",
                         from_osm_id: osm_id,
                         from_osm_type: feature.properties?.osm_type,
                         from_wikidata: false,
@@ -248,7 +241,8 @@ export class OverpassService implements MapService {
                                 .split(";")
                                 .filter(value => WIKIDATA_QID_REGEX.test(value))
                                 .map<Etymology>(value => ({
-                                    from_osm: true,
+                                    from_osm: site === "openstreetmap.org",
+                                    from_ohm: site === "openhistoricalmap.org",
                                     from_osm_id: rel.rel,
                                     from_osm_type: "relation",
                                     from_wikidata: false,

@@ -4,9 +4,13 @@ export type OsmWdJoinField = 'OSM' | 'OHM' | 'P11693' | 'P10689' | 'P402';
 
 export interface Etymology {
     /**
-     * Whether OpenStreetMap is the original source of this etymology
+     * Whether openstreetmap.org is the original source of this etymology
      */
     from_osm?: boolean;
+    /**
+     * Whether openhistoricalmap.org is the original source of this etymology
+     */
+    from_ohm?: boolean;
     /**
      * Type of the source OpenStreetMap element
      */

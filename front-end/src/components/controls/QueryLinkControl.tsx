@@ -57,7 +57,7 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = ({
 
         const encodedQuery = encodeURIComponent(query),
             linkUrl = baseURL + encodedQuery;
-        console.debug("QueryLinkControl: Setting link URL", { query, linkUrl, mapEventField });
+        console.debug("QueryLinkControl: Setting link URL", { linkUrl, mapEventField });
         setUrl(linkUrl);
 
     }, [baseURL, mapEventField, site, sourceIDs]);
