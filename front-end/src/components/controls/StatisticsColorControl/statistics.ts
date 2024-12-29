@@ -25,7 +25,12 @@ const PROPAGATED_COLOR = '#ff3333',
       ["to-boolean", ["get", "from_osm"]],
       ["to-boolean", ["get", "from_wikidata"]]
     ], false], OSM_WIKIDATA_COLOR,
+    ["coalesce", ["all",
+      ["to-boolean", ["get", "from_ohm"]],
+      ["to-boolean", ["get", "from_wikidata"]]
+    ], false], OSM_WIKIDATA_COLOR,
     ["coalesce", ["to-boolean", ["get", "from_osm"]], false], OSM_COLOR,
+    ["coalesce", ["to-boolean", ["get", "from_ohm"]], false], OSM_COLOR,
     ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], WIKIDATA_COLOR,
     FALLBACK_COLOR
   ],
@@ -41,8 +46,13 @@ const PROPAGATED_COLOR = '#ff3333',
       ["to-boolean", ["get", "from_osm"]],
       ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
     ], false], OSM_WIKIDATA_COLOR,
+    ["coalesce", ["all",
+      ["to-boolean", ["get", "from_ohm"]],
+      ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
+    ], false], OSM_WIKIDATA_COLOR,
     ["coalesce", ["in", '"from_wikidata" : true', ["get", "linked_entities"]], false], WIKIDATA_COLOR,
     ["coalesce", ["in", '"from_osm" : true', ["get", "linked_entities"]], false], OSM_COLOR,
+    ["coalesce", ["in", '"from_ohm" : true', ["get", "linked_entities"]], false], OSM_COLOR,
 
     // Checks for cases where the map library JSON-encodes the linked_entities array without spaces
     ["coalesce", ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], false], PROPAGATED_COLOR,
@@ -50,8 +60,13 @@ const PROPAGATED_COLOR = '#ff3333',
       ["to-boolean", ["get", "from_osm"]],
       ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
     ], false], OSM_WIKIDATA_COLOR,
+    ["coalesce", ["all",
+      ["to-boolean", ["get", "from_ohm"]],
+      ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
+    ], false], OSM_WIKIDATA_COLOR,
     ["coalesce", ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], false], WIKIDATA_COLOR,
     ["coalesce", ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], false], OSM_COLOR,
+    ["coalesce", ["in", '"from_ohm":true', ["to-string", ["get", "linked_entities"]]], false], OSM_COLOR,
 
     FALLBACK_COLOR
   ];

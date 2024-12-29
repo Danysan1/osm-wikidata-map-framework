@@ -93,7 +93,7 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
 
       <p>
         <Button
-          className="contribute_button"
+          className={styles.contribute_button}
           href={`/${i18n.language}/contributing${process.env.owmf_static_export === "true" ? ".html" : ""}`}
           iconText="📖"
           iconAlt="Contribute symbol"

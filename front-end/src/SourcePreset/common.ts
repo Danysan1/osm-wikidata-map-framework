@@ -9,7 +9,6 @@ export function getActiveSourcePresetIDs(): string[] {
 
     try {
         const presets = parseStringArrayConfig(process.env.owmf_source_presets);
-        console.debug("getActiveSourcePresetIDs: parsed presets:", presets);
         if (presets.length) return presets;
         else return [DEFAULT_SOURCE_PRESET_ID];
     } catch (e) {

@@ -4,10 +4,15 @@ import { useTranslation } from "react-i18next";
 
 export const DateSelector: FC = () => {
   const { year, setYear } = useUrlFragmentContext(),
-    {t} = useTranslation(),
+    { t } = useTranslation(),
     changeDate: ChangeEventHandler<HTMLInputElement> = useCallback(
       (e) => setYear(parseInt(e.target.value)),
       [setYear]
     );
-  return <label>{t("choose_year")} <input type="number" value={year} onChange={changeDate}></input></label>;
+  return (
+    <label>
+      {t("choose_year", "Choose the year:")}
+      <input type="number" name="year" value={year} onChange={changeDate}></input>
+    </label>
+  );
 };

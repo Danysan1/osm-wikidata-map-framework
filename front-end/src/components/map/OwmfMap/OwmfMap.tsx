@@ -49,7 +49,6 @@ import { DetailsLayers } from "../DetailsLayers";
 import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
 import { PMTilesSource } from "../PMTilesSource";
 
-
 const PMTILES_PREFIX = "pmtiles",
   FALLBACK_COLOR = "#3bb2d0",
   POINT_LAYER = "layer_point",
@@ -65,9 +64,8 @@ const PMTILES_PREFIX = "pmtiles",
 
 export const OwmfMap = () => {
   const { t } = useTranslation(),
-    {
-      lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID
-    } = useUrlFragmentContext(),
+    { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } =
+      useUrlFragmentContext(),
     [mapLon, setMapLon] = useState(lon),
     [mapLat, setMapLat] = useState(lat),
     [mapZoom, setMapZoom] = useState(zoom),
@@ -84,10 +82,19 @@ export const OwmfMap = () => {
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
     [pmtilesReady, setPMTilesReady] = useState(false),
-    pmtilesActive = pmtilesReady && !!process.env.owmf_pmtiles_base_url && process.env.owmf_pmtiles_preset === sourcePresetID && backEndID.startsWith(PMTILES_PREFIX),
-    clustersActive = !pmtilesActive && !!backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel,
+    pmtilesActive =
+      pmtilesReady &&
+      !!process.env.owmf_pmtiles_base_url &&
+      process.env.owmf_pmtiles_preset === sourcePresetID &&
+      backEndID.startsWith(PMTILES_PREFIX),
+    clustersActive =
+      !pmtilesActive &&
+      !!backEndService &&
+      zoom >= minZoomLevel &&
+      zoom < thresholdZoomLevel,
     detailsActive = !pmtilesActive && !!backEndService && zoom >= thresholdZoomLevel,
-    pmtilesKeyID = backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
+    pmtilesKeyID =
+      backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
     dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []),
     geoJsonSourceIDs = useMemo(() => [ELEMENTS_SOURCE, DETAILS_SOURCE], []),
     allSourceIDs = useMemo(() => [PMTILES_SOURCE, ELEMENTS_SOURCE, DETAILS_SOURCE], []);
@@ -139,38 +146,37 @@ export const OwmfMap = () => {
   }, []);
 
   useEffect(() => {
-    if (!pmtilesActive && !clustersActive && !detailsActive)
-      showLoadingSpinner(false);
+    if (!pmtilesActive && !clustersActive && !detailsActive) showLoadingSpinner(false);
   }, [clustersActive, detailsActive, pmtilesActive, showLoadingSpinner]);
 
   useEffect(() => {
     if (sourcePreset?.id === sourcePresetID) {
-      console.log(
-        "Skipping redundant source preset fetch",
-        { new: sourcePresetID, old: sourcePreset?.id }
-      );
+      console.log("Skipping redundant source preset fetch", {
+        new: sourcePresetID,
+        old: sourcePreset?.id,
+      });
       return;
     }
 
-    console.debug(
-      "Fetching source preset",
-      { new: sourcePresetID, old: sourcePreset?.id }
-    );
+    console.debug("Fetching source preset", {
+      new: sourcePresetID,
+      old: sourcePreset?.id,
+    });
     fetchSourcePreset(sourcePresetID)
       .then((newPreset) => {
         setSourcePreset((oldPreset) => {
           if (oldPreset?.id === newPreset.id) {
-            console.log(
-              "Skipping redundant source preset update",
-              { old: oldPreset?.id, new: newPreset.id }
-            );
+            console.log("Skipping redundant source preset update", {
+              old: oldPreset?.id,
+              new: newPreset.id,
+            });
             return oldPreset;
           }
 
-          console.debug(
-            "Updating source preset",
-            { old: oldPreset?.id, new: newPreset.id }
-          );
+          console.debug("Updating source preset", {
+            old: oldPreset?.id,
+            new: newPreset.id,
+          });
           setBackEndService(new CombinedCachedMapService(newPreset));
           return newPreset;
         });
@@ -186,50 +192,71 @@ export const OwmfMap = () => {
   /**
    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
    */
-  const mapErrorHandler = useCallback((err: ErrorEvent & { sourceId?: string }) => {
-    let errorMessage;
-    if (err.sourceId && allSourceIDs.includes(err.sourceId)) {
-      showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
-      errorMessage = "An error occurred while fetching " + err.sourceId;
-    } else {
-      showSnackbar(t("snackbar.map_error"));
-      errorMessage = "Map error: " + err.sourceId
-    }
-    console.warn(errorMessage, "error", { error: err });
-  }, [allSourceIDs, showSnackbar, t]);
+  const mapErrorHandler = useCallback(
+    (err: ErrorEvent & { sourceId?: string }) => {
+      let errorMessage;
+      if (err.sourceId && allSourceIDs.includes(err.sourceId)) {
+        showSnackbar(
+          t("snackbar.fetch_error", "An error occurred while fetching the data")
+        );
+        errorMessage = "An error occurred while fetching " + err.sourceId;
+      } else {
+        showSnackbar(t("snackbar.map_error"));
+        errorMessage = "Map error: " + err.sourceId;
+      }
+      console.warn(errorMessage, "error", { error: err });
+    },
+    [allSourceIDs, showSnackbar, t]
+  );
 
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 
   /**
    * Event listener that fires when one of the map's sources loads or changes.
-   * 
+   *
    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
    * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
    */
-  const mapSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
-    if (!e.isSourceLoaded || e.dataType !== "source")
-      return;
+  const mapSourceDataHandler = useCallback(
+    (e: MapSourceDataEvent) => {
+      if (!e.isSourceLoaded || e.dataType !== "source") return;
 
-    const detailsSourceEvent = e.sourceId === DETAILS_SOURCE,
-      elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
+      const detailsSourceEvent = e.sourceId === DETAILS_SOURCE,
+        elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
 
-    if (detailsSourceEvent || elementsSourceEvent) {
-      console.debug(
-        "mapSourceDataHandler: data loaded",
-        { detailsSourceEvent, elementsSourceEvent, e, source: e.sourceId }
-      );
+      if (detailsSourceEvent || elementsSourceEvent) {
+        console.debug("mapSourceDataHandler: data loaded", {
+          detailsSourceEvent,
+          elementsSourceEvent,
+          e,
+          source: e.sourceId,
+        });
 
-      const noFeatures = detailsSourceEvent &&
-        e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
-        e.target.querySourceFeatures(DETAILS_SOURCE).length === 0;
+        const noFeatures =
+          detailsSourceEvent &&
+          e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
+          e.target.querySourceFeatures(DETAILS_SOURCE).length === 0;
 
-      if (noFeatures)
-        showSnackbar(t("snackbar.no_data_in_this_area", "No data in this area"), "wheat", 3000);
-      else if (detailsSourceEvent)
-        showSnackbar(t("snackbar.data_loaded_instructions", "Data loaded, click on any highlighted element to show its details"), "lightgreen", 10000);
-      // showLoadingSpinner(false); // Better handled by its own useEffect
-    }
-  }, [showSnackbar, t]);
+        if (noFeatures)
+          showSnackbar(
+            t("snackbar.no_data_in_this_area", "No data in this area"),
+            "wheat",
+            3000
+          );
+        else if (detailsSourceEvent)
+          showSnackbar(
+            t(
+              "snackbar.data_loaded_instructions",
+              "Data loaded, click on any highlighted element to show its details"
+            ),
+            "lightgreen",
+            10000
+          );
+        // showLoadingSpinner(false); // Better handled by its own useEffect
+      }
+    },
+    [showSnackbar, t]
+  );
 
   return (
     <Map
@@ -248,15 +275,17 @@ export const OwmfMap = () => {
     >
       <InfoControl position="top-left" />
       <SourcePresetControl position="top-left" />
-      {sourcePreset && <BackEndControl preset={sourcePreset} position="top-left" />}
-      {sourcePreset?.mapcomplete_theme && (
+      {sourcePreset?.id === sourcePresetID && (
+        <BackEndControl preset={sourcePreset} position="top-left" />
+      )}
+      {sourcePreset?.id === sourcePresetID && sourcePreset?.mapcomplete_theme && (
         <MapCompleteControl
           minZoomLevel={minZoomLevel}
           mapComplete_theme={sourcePreset?.mapcomplete_theme}
           position="top-left"
         />
       )}
-      {sourcePreset && (
+      {sourcePreset?.id === sourcePresetID && (
         <StatisticsColorControl
           preset={sourcePreset}
           layerIDs={dataLayerIDs}
