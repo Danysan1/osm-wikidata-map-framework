@@ -46,47 +46,34 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
 
     onlyCentroids?: boolean;
 
-    /**
-     * ISO string for the time the query was run
-     */
+    /** ISO string for the time the query was run */
     timestamp?: string;
 
-    /**
-     * Total number of entities linked to the features
-     */
+    /** Total number of entities linked to the features */
     total_entity_count?: number;
 
-    /**
-     * SPARQL query used to fetch the features from Wikidata Query Service
-     */
+    /** SPARQL query used to fetch the features from Wikidata Query Service */
     wdqs_query?: string;
 
-    /**
-     * SPARQL query used to fetch the features from Wikidata through QLever
-     */
+    /** SPARQL query used to fetch the features from Wikidata through QLever */
     qlever_wd_query?: string;
 
-    /**
-     * SPARQL query used to fetch the features from OpenStreetMap through QLever
-     */
+    /** SPARQL query used to fetch the features from OpenStreetMap through QLever */
     qlever_osm_query?: string;
 
-    /**
-     * OverpassQL query used to fetch the features
-     */
+    /** OverpassQL query used to fetch the features */
     overpass_query?: string;
 
     site?: OsmInstance;
 
-    /**
-     * Whether the response has been truncated due to the maximum number of features being reached
-     */
+    /** Whether the response has been truncated due to the maximum number of features being reached */
     truncated?: boolean;
 
-    /**
-     * Language fetched
-     */
+    /** Language code that was used to fetch the features */
     language?: string;
+
+    /** Year that was used to filter the features (relevant only if fetching from sources with start and end dates like OpenHistoricalMap) */
+    year?: number;
 }
 
 export function osmKeyToKeyID(key: string) {

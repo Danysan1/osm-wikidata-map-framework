@@ -199,6 +199,17 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         className="back-end-ctrl"
     >
         {backEndID.startsWith("pmtiles") && <LastDbUpdate />}
+        {backEndID.startsWith("pmtiles") && (
+          <Button
+            className="dataset_button"
+            href={process.env.owmf_pmtiles_base_url + "dataset.csv"}
+            iconText="💾"
+            iconAlt="Dataset symbol"
+            showText
+            text={t("info_box.download_dataset")}
+            title={t("info_box.download_dataset")}
+          />
+        )}
         {backEndID.includes("ohm") && <DateSelector />}
         {!backEndID.startsWith("pmtiles") && <Button
             onClick={clearCache}

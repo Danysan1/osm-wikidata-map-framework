@@ -101,18 +101,6 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
           text={t("info_box.contribute")}
           title={t("info_box.contribute")}
         />
-        &nbsp;
-        {process.env.owmf_pmtiles_base_url && (
-          <Button
-            className="dataset_button"
-            href={process.env.owmf_pmtiles_base_url + "dataset.csv"}
-            iconText="💾"
-            iconAlt="Dataset symbol"
-            showText
-            text={t("info_box.download_dataset")}
-            title={t("info_box.download_dataset")}
-          />
-        )}
       </p>
 
       <footer>

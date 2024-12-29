@@ -49,11 +49,11 @@ export class CombinedCachedMapService implements MapService {
         return this.services?.some(service => service.canHandleBackEnd(backEndID));
     }
 
-    public fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
+    public fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        return service.fetchMapElements(backEndID, onlyCentroids, bbox, language);
+        return service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
     }
 }

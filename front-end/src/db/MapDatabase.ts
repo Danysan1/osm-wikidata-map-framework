@@ -10,9 +10,9 @@ export class MapDatabase extends Dexie {
     public constructor() {
         super("MapDatabase");
 
-        this.version(6).stores({
+        this.version(7).stores({
             //maps: "++id, [sourcePresetID+backEndID+onlyCentroids+language]" // Does not work: https://stackoverflow.com/a/56661425
-            maps: "++id, [sourcePresetID+backEndID+language]"
+            maps: "++id, [sourcePresetID+backEndID+language+year]"
         });
     }
 
@@ -29,12 +29,12 @@ export class MapDatabase extends Dexie {
         });
     }
 
-    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<MapRow | undefined> {
+    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
                 return await this.maps
-                    .where({ sourcePresetID, backEndID, language })
+                    .where({ sourcePresetID, backEndID, language, year })
                     .and(map => { // Find elements whose bbox includes the given bbox and that are not truncated
                         if (!map.bbox || map.onlyCentroids !== onlyCentroids)
                             return false;

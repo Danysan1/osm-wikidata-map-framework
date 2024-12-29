@@ -77,13 +77,13 @@ export class QLeverMapService implements MapService {
         return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
             console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language, year);
         if (cachedResponse)
             return cachedResponse;
 
@@ -92,6 +92,7 @@ export class QLeverMapService implements MapService {
             sparqlQuery = this.fillPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox)
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
+            // TODO Filter by date
             ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
         if (!ret.results?.bindings)
@@ -106,6 +107,7 @@ export class QLeverMapService implements MapService {
             backEndID: backEndID,
             onlyCentroids: onlyCentroids,
             language: language,
+            year: year,
             truncated: ret.results.bindings.length === this.maxElements,
         };
         out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);

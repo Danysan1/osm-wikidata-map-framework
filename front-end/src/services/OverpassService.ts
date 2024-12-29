@@ -48,7 +48,7 @@ export class OverpassService implements MapService {
         return /^overpass_(osm|ohm)_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         language = ''; // Not used in Overpass query
 
         const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
@@ -57,29 +57,29 @@ export class OverpassService implements MapService {
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox, language);
+        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox, language, year);
         if (cachedResponse)
             return cachedResponse;
 
         console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
-        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox);
+        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, year);
         if (!onlyCentroids) {
             out.features = out.features.filter(
                 (feature: OwmfFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
                     || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
             );
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
-            out.language = language;
         }
+        out.language = language;
 
         console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
 
-    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox): Promise<OwmfResponse> {
+    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if (area < 0.00000001 || area > 1.5)
+        if (area < 0.0000001 || area > 1.5)
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
         let site: OsmInstance,
@@ -128,7 +128,7 @@ export class OverpassService implements MapService {
         }
 
         console.time("overpass_query");
-        const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
+        const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
             endpoint = site === "openhistoricalmap.org" ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
             res = await overpassJson(query, { endpoint });
@@ -153,6 +153,7 @@ export class OverpassService implements MapService {
         out.sourcePresetID = this.preset.id;
         out.backEndID = backEndID;
         out.onlyCentroids = onlyCentroids;
+        out.year = year;
         out.truncated = res.elements?.length === this.maxElements;
         console.timeEnd("overpass_transform");
 
@@ -264,11 +265,12 @@ export class OverpassService implements MapService {
     }
 
     private buildOverpassQuery(
-        wd_keys: string[], bbox: BBox, osm_text_key: string | undefined, use_wikidata: boolean, onlyCentroids: boolean
+        wd_keys: string[], bbox: BBox, osm_text_key: string | undefined, use_wikidata: boolean, onlyCentroids: boolean, year: number
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
-            notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
+            notTooBig = `[!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
+            dateFilters = year === new Date().getFullYear() ? ['[!"end_date"]'] : ['[!"start_date"]','[!"end_date"]'],
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
@@ -282,31 +284,34 @@ export class OverpassService implements MapService {
 // Text key: ${osm_text_key ?? "NONE"}
 // ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
 // Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
+// Year: ${year}
 `;
 
-        filter_wd_keys.forEach(
-            key => query += `nwr${notTooBig}["${key}"]; // filter & secondary wikidata key\n`
-        );
-        if (text_etymology_key_is_filter)
-            query += `nwr${notTooBig}["${osm_text_key}"]; // filter & text etymology key\n`;
-        if (use_wikidata && !filter_tags && !osm_text_key)
-            query += `nwr${notTooBig}["wikidata"];\n`;
+        dateFilters.forEach((dateFilter) => {
+            filter_wd_keys.forEach(
+                key => query += `nwr${notTooBig}${dateFilter}["${key}"]; // filter & secondary wikidata key\n`
+            );
+            if (text_etymology_key_is_filter)
+                query += `nwr${notTooBig}${dateFilter}["${osm_text_key}"]; // filter & text etymology key\n`;
+            if (use_wikidata && !filter_tags && !osm_text_key)
+                query += `nwr${notTooBig}${dateFilter}["wikidata"];\n`;
 
-        filter_tags?.forEach(filter_tag => {
-            const filter_split = filter_tag.split("="),
-                filter_key = filter_split[0],
-                filter_value = filter_split[1],
-                filter_clause = filter_value ? `"${filter_key}"="${filter_value}"` : `"${filter_key}"`;
+            filter_tags?.forEach(filter_tag => {
+                const filter_split = filter_tag.split("="),
+                    filter_key = filter_split[0],
+                    filter_value = filter_split[1],
+                    filter_clause = filter_value ? `"${filter_key}"="${filter_value}"` : `"${filter_key}"`;
 
-            if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
-                non_filter_wd_keys.forEach(
-                    key => query += `nwr${notTooBig}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
-                );
-                if (osm_text_key && !text_etymology_key_is_filter)
-                    query += `nwr${notTooBig}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
-                if (use_wikidata)
-                    query += `nwr${notTooBig}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
-            }
+                if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
+                    non_filter_wd_keys.forEach(
+                        key => query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
+                    );
+                    if (osm_text_key && !text_etymology_key_is_filter)
+                        query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
+                    if (use_wikidata)
+                        query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
+                }
+            });
         });
 
         const outClause = onlyCentroids ? `out ids center ${this.maxElements};` : `out body ${this.maxElements}; >; out skel qt;`;

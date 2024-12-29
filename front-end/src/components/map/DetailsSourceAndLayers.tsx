@@ -18,33 +18,65 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
   const [detailsData, setDetailsData] = useState<OwmfResponse | null>(null),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
-    { lat, lon, zoom } = useUrlFragmentContext(),
+    { lat, lon, zoom, year } = useUrlFragmentContext(),
     { current: map } = useMap(),
     { t, i18n } = useTranslation();
 
   useEffect(() => {
-    if (props.minZoom && zoom < props.minZoom) return;
+    if (props.minZoom && zoom < props.minZoom) {
+      console.debug("Zoom level too low, NOT fetching map details", {
+        zoom,
+        minZoom: props.minZoom,
+      });
+      return;
+    }
 
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
-      console.debug(
-        "DetailsSourceAndLayers fetching data", { bbox, backEnd: props.backEndID }
-      );
-      showLoadingSpinner(true);
-      props.backEndService
-        .fetchMapElements(props.backEndID, false, bbox, i18n.language)
-        .then((data) => setDetailsData(data))
-        .catch((e) => {
-          console.error("Failed fetching map details", e);
-          showSnackbar(t("snackbar.map_error"));
-        })
-        .finally(() => showLoadingSpinner(false));
-    } else {
-      console.debug("DetailsSourceAndLayers NOT fetching map details", { bbox, backEnd: props.backEndID });
-      setDetailsData(null);
+    if (!bbox || !props.backEndService?.canHandleBackEnd(props.backEndID)) {
+      console.debug("Unsupported back-end ID or missing bbox, NOT fetching map details", {
+        bbox,
+        backEndID: props.backEndID,
+      });
+      return;
     }
-  }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, lat, lon, zoom, showLoadingSpinner, showSnackbar, t]);
+
+    const bboxArea = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
+    if (bboxArea < 0.0000001 || bboxArea > 1.5) {
+      console.debug("BBox area too big, NOT fetching map details", {
+        bbox,
+        backEndID: props.backEndID,
+      });
+      return;
+    }
+
+    console.debug("DetailsSourceAndLayers fetching data", {
+      bbox,
+      backEndID: props.backEndID,
+    });
+    showLoadingSpinner(true);
+    props.backEndService
+      .fetchMapElements(props.backEndID, false, bbox, i18n.language, year)
+      .then((data) => setDetailsData(data))
+      .catch((e) => {
+        console.error("Failed fetching map details", e);
+        showSnackbar(t("snackbar.map_error"));
+      })
+      .finally(() => showLoadingSpinner(false));
+  }, [
+    i18n.language,
+    lat,
+    lon,
+    map,
+    props.backEndID,
+    props.backEndService,
+    props.minZoom,
+    showLoadingSpinner,
+    showSnackbar,
+    t,
+    year,
+    zoom
+  ]);
 
   return (
     detailsData && (

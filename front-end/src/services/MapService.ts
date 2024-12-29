@@ -1,5 +1,5 @@
-import type { OwmfResponse } from "../model/OwmfResponse";
 import type { BBox } from "geojson";
+import type { OwmfResponse } from "../model/OwmfResponse";
 
 /**
  * Service to fetch map elements from a back-end.
@@ -12,11 +12,9 @@ export interface MapService {
     canHandleBackEnd(backEndID: string): boolean;
 
     /**
+     * Execute the query to the cache or original source and return the map elements
      * 
-     * @param backEndID 
      * @param onlyCentroids Whether to fetch only centroids or full elements with details
-     * @param bbox 
-     * @param language 
      */
-    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string): Promise<OwmfResponse>;
+    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse>;
 }

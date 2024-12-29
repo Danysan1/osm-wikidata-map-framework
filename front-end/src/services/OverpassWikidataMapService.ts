@@ -29,8 +29,8 @@ export class OverpassWikidataMapService implements MapService {
         return this.overpassService.canHandleBackEnd(overpassBackEndID) && this.wikidataService.canHandleBackEnd(wikidataBackEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string) {
-        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language);
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number) {
+        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language, year);
         if (cachedResponse)
             return cachedResponse;
 
@@ -42,7 +42,7 @@ export class OverpassWikidataMapService implements MapService {
         let out: OwmfResponse;
         if (onlyCentroids && /^overpass_(osm|ohm)_wd$/.test(overpassBackEndID)) {
             // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
-            out = await this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language);
+            out = await this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language, year);
         } else {
             // Fetch and merge the data from Overpass and Wikidata
             let actualOverpassBackEndID: string;
@@ -56,8 +56,8 @@ export class OverpassWikidataMapService implements MapService {
 
             console.time("overpass_wikidata_fetch");
             const [overpassData, wikidataData] = await Promise.all([
-                this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
-                this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
+                this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language, year),
+                this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language, year)
             ]);
             console.timeEnd("overpass_wikidata_fetch");
 
@@ -72,6 +72,7 @@ export class OverpassWikidataMapService implements MapService {
             out.sourcePresetID = this.preset.id;
             out.backEndID = backEndID;
             out.language = language;
+            out.year = year;
 
             if (!onlyCentroids) {
                 out.features = out.features.filter((feature) => {

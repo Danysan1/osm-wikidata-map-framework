@@ -28,10 +28,10 @@ export class WikidataMapService extends WikidataService implements MapService {
         return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         void onlyCentroids; // Wikidata has only centroids
 
-        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language, year);
         if (cachedResponse)
             return cachedResponse;
 
@@ -60,6 +60,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${southLat}', bbox[1].toString())
                 .replaceAll('${eastLon}', bbox[2].toString())
                 .replaceAll('${northLat}', bbox[3].toString());
+        // TODO Filter by year
 
         console.time("wikidata_fetch");
         const ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
@@ -79,6 +80,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             backEndID: backEndID,
             onlyCentroids: true,
             language: language,
+            year: year,
             truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
         };
         out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
