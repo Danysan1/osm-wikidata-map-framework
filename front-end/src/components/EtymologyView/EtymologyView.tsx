@@ -217,7 +217,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
       </div>
 
       <span className="etymology_src_wrapper">
-        {t("etymology_details.source")}&nbsp;
+        {t("etymology_details.source")}<wbr />&nbsp;
         {osmFeatureUrl && (
           <a className="etymology_src_osm_feature" href={osmFeatureUrl}>
             OpenStreetMap&nbsp;

@@ -1,7 +1,7 @@
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 PREFIX ogc: <http://www.opengis.net/rdf#>
-PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX osm2rdfkey: <https://osm2rdf.cs.uni-freiburg.de/rdf/key#>
 PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
 PREFIX osmrel: <https://www.openstreetmap.org/relation/>
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -30,6 +30,7 @@ SELECT
     (SAMPLE(?_height) AS ?height)
     (SAMPLE(?_levels) AS ?levels)
     (SAMPLE(?_building) AS ?building)
+    (p:${directProperty} AS ?from_prop) # TODO Use SAMPLE(?_from_p) when VALUES is supported by QLever
     (true AS ?from_osm) # TODO check if bound - https://github.com/ad-freiburg/qlever/wiki/Current-deviations-from-the-SPARQL-1.1-standard#sparql-11-features-that-are-not-yet-implemented-but-have-an-easy-workaround 
     (true AS ?from_wikidata)
     #(SAMPLE(?_statementEntity) AS ?statementEntity)
@@ -78,8 +79,8 @@ WHERE {
         # OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
     }
 
-    ?osm osm:wikidata ?item; geo:hasGeometry/geo:asWKT ?osm_location.
-    # TODO: ?osm osm:wikidata/owl:sameAs? ?item
+    ?osm osm2rdfkey:wikidata ?item; geo:hasGeometry/geo:asWKT ?osm_location.
+    # TODO: ?osm osm2rdfkey:wikidata/owl:sameAs? ?item
     # TODO: make the link optional and filter ?item is bound (BOUND() is not yet implemented in QLever)
     OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
     OPTIONAL { ?osm osmkey:name ?osm_default_name. }
