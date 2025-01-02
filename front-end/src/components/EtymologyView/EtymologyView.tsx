@@ -1,3 +1,4 @@
+import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { Etymology } from "@/src/model/Etymology";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
@@ -7,7 +8,6 @@ import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./EtymologyView.module.css";
-import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 
 const MAX_IMAGES = 3;
 
@@ -242,7 +242,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
             &gt;&nbsp;
             <a
               title={t("etymology_details.propagation")}
-              href={`${process.env.owmf_home_url}/${i18n.language}/contributing/${sourcePresetID}${process.env.owmf_static_export === "true" ? ".html" : ""}#propagation`}
+              href={`/${i18n.language}/contributing/${sourcePresetID}${process.env.owmf_static_export === "true" && process.env.NODE_ENV === "production" ? ".html" : ""}#propagation`}
             >
               {t("etymology_details.propagation")}
             </a>

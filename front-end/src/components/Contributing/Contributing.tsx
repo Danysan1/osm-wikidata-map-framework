@@ -1,11 +1,16 @@
 "use client";
 
 import { loadClientI18n } from "@/src/i18n/client";
+import osmTagDiagram from "@/src/img/data/osm_name_etymology.png";
+import directDiagram from "@/src/img/data/osm_wikidata_direct.png";
+import reverseDiagram from "@/src/img/data/osm_wikidata_reverse.png";
+import propagationDiagram from "@/src/img/data/propagation.png";
 import { SourcePreset } from "@/src/model/SourcePreset";
+import Image from "next/image";
 import Link from "next/link";
 import { FC, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import styles from "./Contributing.module.css"
+import styles from "./Contributing.module.css";
 
 loadClientI18n().catch((e) => { throw e; });
 
@@ -16,12 +21,13 @@ interface ContributingProps {
 
 export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
     const { t } = useTranslation(),
-        anyLinkedEntity = !!sourcePreset?.osm_wikidata_keys || !!sourcePreset?.osm_wikidata_properties || !!sourcePreset?.wikidata_indirect_property || !!sourcePreset?.osm_text_key;
+        anyLinkedEntity = !!sourcePreset?.osm_wikidata_keys || !!sourcePreset?.osm_wikidata_properties || !!sourcePreset?.wikidata_indirect_property || !!sourcePreset?.osm_text_key,
+        anyPropagation = anyLinkedEntity && process.env.owmf_pmtiles_preset === sourcePreset.id && !!process.env.owmf_propagate_data;
 
     return <div>
         <Link href="/">&lt; Back to map</Link>
 
-        <h1>{t("info_box.contribute")}</h1>
+        <h1>{t("info_box.contribute", "Contribute to the map")}</h1>
 
         <section id="report_entity">
             <h2>How to report a problem in an entity</h2>
@@ -37,25 +43,26 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
 
         {anyLinkedEntity && <section id="report_linked_entity">
             <h2>How to report a problem in an entity linked to a feature</h2>
-            <p>If a wrong entity is associated to the map feature you can use the &quot;{t("etymology_details.source")}&quot; row to find the source of the error:</p>
+            <p>If a wrong entity is associated to the map feature you can use the linked entity&apos;s source row to find the source of the error:</p>
             <ol>
-                {process.env.owmf_propagate_data && <li>
+                {anyPropagation && <li>
                     If the source row includes the &quot;{t("etymology_details.propagation")}&quot; step, skip to the <a href="#propagation">next section below</a>.
                 </li>}
                 {!!sourcePreset.osm_text_key && <li>
-                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and does not include any &quot;Wikidata&quot; link</strong> then the text-only linked entity is taken from the <a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_text_key}`}><code>{sourcePreset.osm_text_key}</code></a> tag on the OSM element for this feature.
+                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and does not include any &quot;Wikidata&quot; link</strong>, then the text-only linked entity is taken from the <a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_text_key}`}><code>{sourcePreset.osm_text_key}</code></a> tag on the OSM element for this feature.
                     &nbsp;<strong>Open the OSM item for this feature</strong> by clicking the &quot;OpenStreetMap&quot; link in the source row.
                     On the left of the OSM element&apos;s page the value for the tag <a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_text_key}`}><code>{sourcePreset.osm_text_key}</code></a> will be the wrong entity you noticed. 
-                    If you are an OSM mapper fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
+                    If you are an OSM mapper you can fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
                 </li>}
                 {!!sourcePreset.osm_wikidata_keys && <li>
-                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and does include only one &quot;Wikidata&quot; link</strong>
-                    On the left of the OSM element&apos;s page check if one of the following tags is present:
+                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and does include only one &quot;Wikidata&quot; link</strong>, then the OSM element for this map feature is directly linking to the Wikidata entity.
+                    &nbsp;<strong>Open the OSM item for this feature</strong> by clicking the &quot;OpenStreetMap&quot; link in the source row.
+                    On the left of the OSM element&apos;s page one of the following tags should be present:
                     <ul>{sourcePreset.osm_wikidata_keys.map(key => <li key={key}>
                         <a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}><code>{key}</code></a>
                     </li>)}</ul>
-                    If it is, it means that OSM is directly linking to that entity.
-                    Click on the dialog button on the right to add a note to the map and describe the problem or, if you are a mapper, edit the element to fix it.
+                    The value for that tag should be the ID of the wrong Wikidata linked entity that you noticed.
+                    If you are an OSM mapper you can fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
                 </li>}
                 {(!!sourcePreset.osm_wikidata_properties || !!sourcePreset?.wikidata_indirect_property) && <li>
                     <strong>If the source row starts with &quot;OpenStreetMap&quot; and includes multiple &quot;Wikidata&quot; links</strong> it means that the OSM element for this feature links to the Wikidata item for this feature through the <a href="https://wiki.openstreetmap.org/wiki/Key:wikidata"><code>wikidata</code></a> tag.
@@ -63,14 +70,14 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                     If the content of the opened page DOES NOT represent the map feature (e.g. it represents the linked entity or something else) then the OSM element&apos;s <a href="https://wiki.openstreetmap.org/wiki/Key:wikidata"><code>wikidata</code></a> tag points to the wrong item.
                     Go back to the source row and open the OSM element by clicking on the first &quot;OpenStreetMap&quot; link.
                     On the left of the OSM element&apos;s page a <code>wikidata</code> tag will be present and its value will be wrong.
-                    If you are an OSM mapper fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
+                    If you are an OSM mapper you can fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
                 </li>}
                 {!!sourcePreset.wikidata_indirect_property && <li>
                     <strong>If the source row includes multiple &quot;Wikidata&quot; links</strong> it may mean that the wrong linked entity references the Wikidata item for this feature.
                     &nbsp;<strong>Open the Wikidata item for the linked entity</strong> by clicking the last &quot;Wikidata&quot; link in the source row, it may contain a
                     &nbsp;<a href={`https://www.wikidata.org/wiki/Property:${sourcePreset.wikidata_indirect_property}`}><code>{sourcePreset.wikidata_indirect_property}</code></a>&nbsp;
                     relation to the wrong linked entity.
-                    If you are Wikidata editor fix it yourself by removing the wrong relation, otherwise report the problem on the item&apos;s Discussion page:
+                    If you are Wikidata editor you can fix it yourself by removing the wrong relation, otherwise report the problem on the item&apos;s Discussion page:
                     <ol>
                         <li>At the top of the opened page click on &quot;Discussion&quot;</li>
                         <li>At the top of the opened page click on &quot;Add topic&quot;</li>
@@ -89,7 +96,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                     </Fragment>)}
                     &nbsp;
                     relation to the wrong linked entity.
-                    If you are Wikidata editor fix it yourself, otherwise report the problem on the item&apos;s Discussion page:
+                    If you are Wikidata editor you can fix it yourself, otherwise report the problem on the item&apos;s Discussion page:
                     <ol>
                         <li>At the top of the opened page click on &quot;Discussion&quot;</li>
                         <li>At the top of the opened page click on &quot;Add topic&quot;</li>
@@ -100,13 +107,27 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
             </ol>
         </section>}
 
-        {anyLinkedEntity && !!process.env.owmf_propagate_data && <section id="propagation">
+        {anyPropagation && <section id="propagation">
             <h3>Propagated linked entities</h3>
-            <p>Database/PMTiles sources of this website include some linked entities that added through &quot;propagation&quot; that you won&apos;t find on the original sources (OSM and Wikidata)</p>
+            <p>Database/PMTiles sources of this website include some linked entities that you won&apos;t find on the original sources (OSM and Wikidata).
+                These are added through a data enhancement technique called &quot;propagation&quot; which follows these steps:
+            </p>
             <ol>
-                <li>First off, it does a case insensitive search of names used by multiple roads far from each other which have all exactly and only the same etymology</li>
-                <li>Then it copies that etymology to all other roads with the same name.</li>
+                <li>All linked entities from original sources are gathered</li>
+                <li>A case insensitive list of names used by multiple roads far from each other which have all exactly and only the same linked entity is compiled</li>
+                <li>Then, for each name, linked entities are copied to all other roads with the same (case insensitive) name.</li>
             </ol>
+            <p>For example, if a site shows what elements are named after and among all elements <strong>that have this information</strong> ALL roads that are named &quot;Via Roma&quot; are linked to the entity <a href="https://www.wikidata.org/wiki/Q220"><code>Q220</code></a> (Rome), then also all other roads named &quot;Via Roma&quot; and don&apos;t yet have this link are linked to the same entity:</p>
+            <Image
+                alt={"Propagation example diagram"}
+                src={propagationDiagram}
+                width={500}
+                height={333}/>
+            <p>If you find an element that is linked to the wrong entity and you want to fix it or report the problem, check the linked entity&apos;s source row.
+                If it includes the &quot;{t("etymology_details.propagation")}&quot; step, check whether the bad link is caused by a wrong propagation.
+                You can check the source of the copied link by clicking the first and last link in the source row, you will be taken respectively to the OSM page for the map feature and to the Wikidata page for the linked entity.
+                If the linked entity was correct for the original OSM element but is wrong after being copied on the current feature, then this is the fault of the propagation and you should open an issue on OSM-Wikidata Map Feature&apos;s <a href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues">GitLab</a> or <a href="https://github.com/Danysan1/osm-wikidata-map-framework/issues">GitHub</a> projects.
+                Otherwise the wrong link comes from the original source and you should fix/report it by following <a href="#report_linked_entity">the steps above</a>.</p>
         </section>}
 
         {anyLinkedEntity && <section id="contribute_linked_entity">
@@ -139,49 +160,60 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {sourcePreset.osm_wikidata_keys?.map(key => <tr key={key}>
+                    {sourcePreset.osm_wikidata_keys?.map((key, index) => <tr key={key}>
                         <td>OpenStreetMap</td>
                         <td><code>{key}=*</code></td>
                         <td><a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}>OSM Wiki</a></td>
-                        <td>Links the OSM element for the map feature directly to a Wikidata linked entity</td>
+                        {index === 0 && <td rowSpan={sourcePreset.osm_wikidata_keys?.length}>
+                            Links the OSM element for the map feature directly to a Wikidata entity:<br />
+                            <Image
+                                alt={"OSM to Wikidata diagram"}
+                                src={osmTagDiagram}
+                                width={400}
+                                height={200}/>
+                        </td>}
                     </tr>)}
                     {sourcePreset.osm_text_key && <tr>
                         <td>OpenStreetMap</td>
                         <td><code>{sourcePreset.osm_text_key}=*</code></td>
                         <td><a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_text_key}`}>OSM Wiki</a></td>
-                        <td>The value for this tag is the title of a text-only linked entity</td>
+                        <td>The value for this tag is used as title of a text-only linked entity</td>
                     </tr>}
                     {sourcePreset.osm_description_key && <tr>
                         <td>OpenStreetMap</td>
                         <td><code>{sourcePreset.osm_description_key}=*</code></td>
                         <td><a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_description_key}`}>OSM Wiki</a></td>
-                        <td>The value for this tag is the description of a text-only linked entity</td>
+                        <td>The value for this tag is used as description of a text-only linked entity</td>
                     </tr>}
                     {(!!sourcePreset.osm_wikidata_properties || !!sourcePreset.wikidata_indirect_property) && <>
                         <tr>
                             <td>Wikidata</td>
-                            <td><code>P402</code></td>
+                            <td><code>P402</code> (OpenStreetMap relation ID )</td>
                             <td><a href="https://www.wikidata.org/wiki/Property:P402">Wikidata</a></td>
-                            <td>Links the Wikidata element for the map feature to the OSM item for the feature itself. The Wikidata item is then searched for any of the properties below.</td>
+                            <td rowSpan={2 + (sourcePreset.osm_wikidata_properties ? sourcePreset.osm_wikidata_properties.length : 1)}>
+                                The link is inferred by combining a OSM-Wikidata same-entity tag/property with an intra-Wikidata link property:<br />
+                                <Image
+                                    alt={"OSM+Wikidata diagram"}
+                                    src={sourcePreset.osm_wikidata_properties ? directDiagram : reverseDiagram}
+                                    width={400}
+                                    height={sourcePreset.osm_wikidata_properties ? 250 : 420}/>
+                            </td>
                         </tr>
                         <tr>
                             <td>OpenStreetMap</td>
                             <td><code>wikidata=*</code></td>
                             <td><a href="https://wiki.openstreetmap.org/wiki/Key:wikidata">OSM Wiki</a></td>
-                            <td>Links the OSM element for the map feature to the Wikidata item for the feature itself (NOT the linked entity!). The Wikidata item is then searched for any of the properties below.</td>
                         </tr>
                     </>}
                     {sourcePreset.osm_wikidata_properties?.map(prop => <tr key={prop}>
                         <td>Wikidata</td>
                         <td><code>{prop}</code></td>
                         <td><a href={`https://www.wikidata.org/wiki/Property:${prop}`}>Wikidata</a></td>
-                        <td>Links the Wikidata item for the map feature directly to a Wikidata linked entity</td>
                     </tr>)}
                     {sourcePreset.wikidata_indirect_property && <tr>
                         <td>Wikidata</td>
                         <td><code>{sourcePreset.wikidata_indirect_property}</code></td>
                         <td><a href={`https://www.wikidata.org/wiki/Property:${sourcePreset.wikidata_indirect_property}`}>Wikidata</a></td>
-                        <td>Links a Wikidata linked entity directly to the Wikidata item for the map feature</td>
                     </tr>}
                 </tbody>
             </table>
