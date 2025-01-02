@@ -75,7 +75,7 @@
         "etymology_source": "Dropdown item for linked entity source statistics"
     },
     "feature_details": {
-        "source": "Source:",
+        "source": "Initial text of the feature source row",
         "loading_first_n_items": "Warning message shown when a feature contains more linked entities than the max configured limit, should contain the variables {{partial}} (number of shown linked entities) and {{total}} (total linked entities)",
         "location": "Alt text of the '🎯' button to move the map to the location of the feature/etymology",
         "picture_via_commons": "Attribution to Wikimedia Commons under the images",
@@ -83,6 +83,7 @@
         "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"
     },
     "etymology_details": {
+        "source": "Initial text of the linked entity source row",
         "propagation": "propagation",
         "propagation_title": "Alt text of the link to the description of the propagation mechanism"
     },
@@ -96,6 +97,7 @@
     "change_language": "Alt text for the language selection control",
     "choose_basemap": "Alt text for the '🌍' button to show/hide the style choice dropdown",
     "choose_projection": "Alt text for the '🌐' button to show/hide the projection choice dropdown",
+    "choose_year": "Choose the year:",
     "overpass_turbo_query": "Alt text for the button that links to the source OverpassQL query on Overpass Turbo",
     "wdqs_query": "Alt text for the button that links to the source SPARQL query on Wikidata Query Service",
     "qlever_query": "Alt text for the button that links to the source SPARQL query on QLever",

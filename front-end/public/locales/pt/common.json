@@ -76,14 +76,15 @@
         "etymology_source": "Pela origem da entidade ligada"
     },
     "feature_details": {
-        "source": "Origem:",
-        "loading_first_n_items": "A carregar apenas os primeiros {{partial}} itens de um total de {{total}}...",
+        "source": "Origem do elemento:",
+        "loading_first_n_items": "A carregar apenas os primeiros {{partial}} entidades de um total de {{total}}...",
         "location": "Localização",
         "picture_via_commons": "Imagem do Wikimedia Commons",
         "loading": "A carregar as entidades...",
         "report_problem": "Comunicar um problema neste elemento"
     },
     "etymology_details": {
+        "source": "Origem da entidade:",
         "propagation": "propagação",
         "propagation_title": "Descrição do mecanismo de propagação"
     },

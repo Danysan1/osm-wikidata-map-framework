@@ -76,14 +76,15 @@
         "etymology_source": "Nach Quelle der verknüpften Entitäten"
     },
     "feature_details": {
-        "source": "Quelle:",
-        "loading_first_n_items": "Nur die ersten {{partial}} Elemente von {{total}} werden geladen...",
+        "source": "Elementquelle:",
+        "loading_first_n_items": "Nur die ersten {{partial}} Entitäten von {{total}} werden geladen...",
         "location": "Standort",
         "picture_via_commons": "Bild von Wikimedia Commons",
         "loading": "Entitäten werden geladen...",
         "report_problem": "Ein Problem mit diesem Element melden"
     },
     "etymology_details": {
+        "source": "Entitätsquelle:",
         "propagation": "vermehrung",
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
     },

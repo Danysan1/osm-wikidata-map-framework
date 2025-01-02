@@ -7,6 +7,7 @@ import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./EtymologyView.module.css";
+import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 
 const MAX_IMAGES = 3;
 
@@ -16,28 +17,29 @@ interface EtymologyViewProps {
 
 export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
   const { t, i18n } = useTranslation(),
+    { sourcePresetID } = useUrlFragmentContext(),
     [wikipediaExtract, setWikipediaExtract] = useState<string>(),
     fromOsm =
       etymology.osm_wd_join_field === "OSM" ||
       !!etymology.from_osm ||
       !!etymology.propagated,
-    osmUrlA =
+    osmFeatureUrl =
       fromOsm && etymology.from_osm_type && etymology.from_osm_id
         ? `https://www.openstreetmap.org/${etymology.from_osm_type}/${etymology.from_osm_id}`
         : null,
     fromWdUrl = etymology.from_wikidata_entity
       ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}`
       : null,
-    wdUrlA =
-      etymology.osm_wd_join_field && etymology.osm_wd_join_field !== "OSM" && fromWdUrl
+    wdFeatureUrl =
+      etymology.osm_wd_join_field &&
+      etymology.osm_wd_join_field !== "OSM" &&
+      fromWdUrl
         ? `${fromWdUrl}#${etymology.osm_wd_join_field ?? ""}`
         : null,
-    wdUrlB = fromWdUrl ? `${fromWdUrl}#${etymology.from_wikidata_prop ?? ""}` : null,
-    showArrow = (!!osmUrlA || !!wdUrlA) && !!wdUrlB,
+    showArrow = (!!osmFeatureUrl || !!wdFeatureUrl) && !!fromWdUrl,
     wdUrlPartOf = etymology.from_parts_of_wikidata_cod
       ? `https://www.wikidata.org/wiki/${etymology.from_parts_of_wikidata_cod}#P527`
-      : null,
-    wdUrlC = `https://www.wikidata.org/wiki/${etymology.wikidata}`;
+      : null;
 
   /**
    * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
@@ -163,7 +165,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
     );
   }, [etymology]);
 
-  if (!etymology.name && !etymology.description && !etymology.wikidata) return null;
+  if (!etymology.name && !etymology.description && !etymology.wikidata)
+    return null;
 
   return (
     <div className={styles.etymology}>
@@ -179,45 +182,58 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
             {wikipediaExtract && (
               <p className="wikipedia_extract">📖 {wikipediaExtract}</p>
             )}
-            {startEndDate && <p className="start_end_date">📅 {startEndDate}</p>}
+            {startEndDate && (
+              <p className="start_end_date">📅 {startEndDate}</p>
+            )}
             {etymology.event_place && (
               <p className="event_place">📍 {etymology.event_place}</p>
             )}
             {etymology.citizenship && (
               <p className="citizenship">🌍 {etymology.citizenship}</p>
             )}
-            {etymology.gender && <p className="gender">⚧️ {etymology.gender}</p>}
+            {etymology.gender && (
+              <p className="gender">⚧️ {etymology.gender}</p>
+            )}
             {etymology.occupations && (
               <p className="occupations">🛠️ {etymology.occupations}</p>
             )}
-            {etymology.prizes && <p className="prizes">🏆 {etymology.prizes}</p>}
+            {etymology.prizes && (
+              <p className="prizes">🏆 {etymology.prizes}</p>
+            )}
           </div>
         </div>
 
         {!!etymology.pictures?.length && (
           <div className="etymology_pictures column">
             {etymology.pictures.slice(0, MAX_IMAGES).map((img, i) => (
-              <CommonsImage key={i} name={img} className={styles.etymology_image} />
+              <CommonsImage
+                key={i}
+                name={img}
+                className={styles.etymology_image}
+              />
             ))}
           </div>
         )}
       </div>
 
       <span className="etymology_src_wrapper">
-        {t("feature_details.source")}&nbsp;
-        {osmUrlA && (
-          <a className="etymology_src_a" href={osmUrlA}>
+        {t("etymology_details.source")}&nbsp;
+        {osmFeatureUrl && (
+          <a className="etymology_src_osm_feature" href={osmFeatureUrl}>
             OpenStreetMap&nbsp;
           </a>
         )}
-        {wdUrlA && (
-          <a className="etymology_src_a" href={wdUrlA}>
+        {wdFeatureUrl && (
+          <a className="etymology_src_wd_feature" href={wdFeatureUrl}>
             Wikidata&nbsp;
           </a>
         )}
         {showArrow && <span className="src_osm_plus_wd">&gt;&nbsp;</span>}
-        {wdUrlB && (
-          <a className="etymology_src_wd" href={wdUrlB}>
+        {fromWdUrl && (
+          <a
+            className="etymology_src_from_wd"
+            href={`${fromWdUrl}#${etymology.from_wikidata_prop ?? ""}`}
+          >
             Wikidata&nbsp;
           </a>
         )}
@@ -226,7 +242,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
             &gt;&nbsp;
             <a
               title={t("etymology_details.propagation")}
-              href={process.env.owmf_propagation_docs_url}
+              href={`${process.env.owmf_home_url}/${i18n.language}/contributing/${sourcePresetID}${process.env.owmf_static_export === "true" ? ".html" : ""}#propagation`}
             >
               {t("etymology_details.propagation")}
             </a>
@@ -243,7 +259,10 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
           </span>
         )}
         &gt;&nbsp;
-        <a className="etymology_src_entity" href={wdUrlC}>
+        <a
+          className="etymology_src_entity"
+          href={`https://www.wikidata.org/wiki/${etymology.wikidata}`}
+        >
           Wikidata
         </a>
       </span>

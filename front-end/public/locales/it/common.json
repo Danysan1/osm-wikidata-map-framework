@@ -76,14 +76,15 @@
         "etymology_source": "Per fonte delle entità collegate"
     },
     "feature_details": {
-        "source": "Fonte:",
-        "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",
+        "source": "Fonte dell'elemento:",
+        "loading_first_n_items": "Caricamento solo delle prime {{partial}} entità su {{total}}...",
         "location": "Posizione",
         "picture_via_commons": "Immagine da Wikimedia Commons",
         "loading": "Caricamento entità...",
         "report_problem": "Segnala un problema in questo elemento"
     },
     "etymology_details": {
+        "source": "Fonte dell'entità:",
         "propagation": "propagazione",
         "propagation_title": "Descrizione del meccanismo di propagazione"
     },

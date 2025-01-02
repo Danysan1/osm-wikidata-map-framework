@@ -76,14 +76,15 @@
         "etymology_source": "Por fuente de entidades conectadas"
     },
     "feature_details": {
-        "source": "Fuente:",
-        "loading_first_n_items": "Cargando solo los primeros {{partial}} elementos de {{total}}...",
+        "source": "Fuente del elemento:",
+        "loading_first_n_items": "Cargando solo los primeros {{partial}} entidades de {{total}}...",
         "location": "Posición",
         "picture_via_commons": "Imagen de Wikimedia Commons",
         "loading": "Cargando entidades...",
         "report_problem": "Reportar un problema en este artículo"
     },
     "etymology_details": {
+        "source": "Fuente de la entidad:",
         "propagation": "propagación",
         "propagation_title": "Descripción del mecanismo de propagación"
     },
