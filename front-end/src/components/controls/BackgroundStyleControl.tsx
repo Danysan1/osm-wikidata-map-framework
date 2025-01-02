@@ -62,7 +62,15 @@ function getBackgroundStyles() {
       stadiaStyle("stamen_terrain", "Stamen Terrain", "stamen_terrain"),
       stadiaStyle("stamen_toner", "Stamen Toner", "stamen_toner"),
       stadiaStyle("stamen_toner_lite", "Stamen Toner Lite", "stamen_toner_lite"),
-      stadiaStyle("stamen_watercolor", "Stamen Watercolor", "stamen_watercolor")
+      stadiaStyle("stamen_watercolor", "Stamen Watercolor", "stamen_watercolor"),
+      {
+        id: "americana",
+        vendorText: "OpenStreetMap US",
+        styleText: "OSM Americana",
+        styleUrl: "https://americanamap.org/style.json",
+        keyPlaceholder: "https://tile.ourmap.us/data/v3.json",
+        key: "https://tiles.stadiamaps.com/data/openmaptiles.json",
+      }
     );
   }
 
@@ -78,15 +86,6 @@ function getBackgroundStyles() {
       jawgStyle("jawg_dark", "Dark", "jawg-dark", jawg_token)
     );
   }
-
-  backgroundStyles.push({
-    id: "americana",
-    vendorText: "OpenStreetMap US",
-    styleText: "OSM Americana",
-    styleUrl: "https://americanamap.org/style.json",
-    keyPlaceholder: "https://tile.ourmap.us/data/v3.json",
-    key: "https://tiles.stadiamaps.com/data/openmaptiles.json",
-  });
 
   if (maptiler_key) {
     backgroundStyles.push(

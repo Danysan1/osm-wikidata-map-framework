@@ -242,9 +242,18 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
 
         <section id="contribute_map">
             <h2>How to contribute to the background map</h2>
-            <p>The background maps are provided by external providers which are based on OpenStreetMap such as <a href="https://www.maptiler.com/">Maptiler</a>, <a href="https://stadiamaps.com/">Stadia Maps</a>, <a href="https://www.jawg.io/en/">Jawg</a> and <a href="https://www.mapbox.com/">Mapbox</a>.</p>
-            <p>You can improve OpenStreetMap data on <a href="https://www.openstreetmap.org/">openstreetmap.org</a>. You can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>.</p>
-            <p>Keep in mind that these external providers doesn&apos;t update the map immediately so if you edit something on OpenStreetMap it may take some time to appear in the map.</p>
+            <p>The background maps are provided by third-party providers:</p>
+            <ul>
+                {!!process.env.owmf_maptiler_key && <li><a href="https://www.maptiler.com/">Maptiler</a></li>}
+                {!!process.env.owmf_enable_versatiles && <li><a href="https://versatiles.org/">VersaTiles</a></li>}
+                {!!process.env.owmf_enable_stadia_maps && <li><a href="https://stadiamaps.com/">Stadia Maps</a></li>}
+                {!!process.env.owmf_jawg_token && <li><a href="https://www.jawg.io/en/">Jawg</a></li>}
+                {!!process.env.owmf_mapbox_token && <li><a href="https://www.mapbox.com/">Mapbox</a></li>}
+                {!!process.env.owmf_enable_open_historical_map && <li><a href="https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse">OpenHistoricalMap</a></li>}
+            </ul>
+            <p>Most of them render data from OpenStreetMap, which can be improved on <a href="https://www.openstreetmap.org/">openstreetmap.org</a>.
+                You can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>.
+                Keep in mind that these external providers don&apos;t update the map immediately so if you edit something on OpenStreetMap it may take a lot of time to appear in the map.</p>
         </section>
 
         <section id="contribute_owmf">
