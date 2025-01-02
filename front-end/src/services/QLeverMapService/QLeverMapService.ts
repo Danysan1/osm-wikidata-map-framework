@@ -5,7 +5,7 @@ import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import { Configuration } from "../../generated/sparql/runtime";
-import type { Etymology } from "../../model/Etymology";
+import type { Etymology, OsmType } from "../../model/Etymology";
 import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
@@ -292,9 +292,31 @@ export class QLeverMapService implements MapService {
                 console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
                 const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
-                    feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
-                    etymology: Etymology | null = etymology_wd_id ? {
+                    feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value);
+                
+                let osm_id: number | undefined,
+                    osm_type: OsmType | undefined;
+                if (row.osm_rel?.value) {
+                    osm_type = "relation";
+                    osm_id = parseInt(row.osm_rel.value);
+                } else if (row.osm_way?.value) {
+                    osm_type = "way";
+                    osm_id = parseInt(row.osm_way.value);
+                } else if (row.osm_node?.value) {
+                    osm_type = "node";
+                    osm_id = parseInt(row.osm_node.value);
+                } else if (row.osm?.value) {
+                    const splits = /^https:\/\/www.openstreetmap.org\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
+                    if (splits?.length === 3) {
+                        osm_type = splits[1] as OsmType;
+                        osm_id = parseInt(splits[2]);
+                    }
+                }
+                
+                const etymology: Etymology | null = etymology_wd_id ? {
                         from_osm: feature_from_osm,
+                        from_osm_type: osm_type,
+                        from_osm_id: osm_id,
                         from_wikidata: feature_from_wikidata,
                         from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
@@ -304,25 +326,6 @@ export class QLeverMapService implements MapService {
                     } : null;
 
                 if (!existingFeature) { // Add the new feature for this item 
-                    let osm_id: number | undefined,
-                        osm_type: "node" | "way" | "relation" | undefined;
-                    if (row.osm_rel?.value) {
-                        osm_type = "relation";
-                        osm_id = parseInt(row.osm_rel.value);
-                    } else if (row.osm_way?.value) {
-                        osm_type = "way";
-                        osm_id = parseInt(row.osm_way.value);
-                    } else if (row.osm_node?.value) {
-                        osm_type = "node";
-                        osm_id = parseInt(row.osm_node.value);
-                    } else if (row.osm?.value) {
-                        const splits = /^https:\/\/www.openstreetmap.org\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
-                        if (splits?.length === 3) {
-                            osm_type = splits[1] as "node" | "way" | "relation";
-                            osm_id = parseInt(splits[2]);
-                        }
-                    }
-
                     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                     const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
                         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
