@@ -235,39 +235,40 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
 }
 
 export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
-  const osm_IDs = new Set<string>(),
-    ohm_IDs = new Set<string>(),
-    osm_wikidata_IDs = new Set<string>(),
-    ohm_wikidata_IDs = new Set<string>(),
-    wikidata_IDs = new Set<string>();
+  const osmInstances = [OsmInstance.OpenStreetMap, OsmInstance.OpenHistoricalMap], //Object.keys(OsmInstance).filter(key => isNaN(Number(key))),
+    IDs_by_source: Record<string, Set<string>> = {
+      "Wikidata": new Set<string>()
+    };
+  osmInstances.forEach(instance => {
+    IDs_by_source[instance] = new Set<string>();
+    IDs_by_source[instance + " + Wikidata"] = new Set<string>();
+  });
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
-    if ((!!feature?.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap) && feature?.from_wikidata)
-      osm_wikidata_IDs.add(id);
-    else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap && feature?.from_wikidata)
-      ohm_wikidata_IDs.add(id);
-    else if (!!feature.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap)
-      osm_IDs.add(id);
-    else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap)
-      ohm_IDs.add(id);
-    else if (feature?.from_wikidata)
-      wikidata_IDs.add(id);
-    else
-      console.debug("Unknown feature source", feature);
+    osmInstances.forEach(instance => {
+      if ((!!feature?.from_osm || feature?.from_osm_instance === instance) && feature?.from_wikidata)
+        IDs_by_source[instance + " + Wikidata"].add(id);
+      else if (!!feature.from_osm || feature?.from_osm_instance === instance)
+        IDs_by_source[instance].add(id);
+      else if (feature?.from_wikidata)
+        IDs_by_source.Wikidata.add(id);
+    });
   });
 
-  const stats: EtymologyStat[] = [];
-  if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size });
-  if (osm_wikidata_IDs.size) stats.push({ name: "OHM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'ohm_wikidata', count: ohm_wikidata_IDs.size });
-  if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
-  if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
-  if (ohm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'ohm_wikidata', count: ohm_IDs.size });
+  const stats: EtymologyStat[] = Object.keys(IDs_by_source).filter(source => IDs_by_source[source].size > 0).map(source => {
+    let color: string;
+    if (source === "Wikidata") color = WIKIDATA_COLOR;
+    else if (source.endsWith("Wikidata")) color = OSM_WIKIDATA_COLOR;
+    else color = OSM_COLOR;
+
+    return { name: source, color, id: source, count: IDs_by_source[source].size };
+  });
 
   const out = [stats, FEATURE_SOURCE_LAYER_COLOR] as const;
   console.debug(
     "calculateFeatureSourceStats",
-    { features: features, out, osm_wikidata_IDs, wikidata_IDs, osm_IDs }
+    { features: features, out, IDs_by_source, osmInstances }
   );
   return Promise.resolve(out);
 }

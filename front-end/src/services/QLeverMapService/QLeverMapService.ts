@@ -2,7 +2,7 @@ import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
 import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
-import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
+import { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import { Configuration } from "../../generated/sparql/runtime";
 import { Etymology, OsmInstance, OsmType } from "../../model/Etymology";
@@ -74,7 +74,7 @@ export class QLeverMapService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(backEndID);
+        return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)|(ohm_[_a-z]+)$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
@@ -87,8 +87,18 @@ export class QLeverMapService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        const backend = this.getSparqlBackEnd(backEndID),
-            sparqlQueryTemplate = await this.getSparqlQueryTemplate(backEndID),
+        let backend: SparqlBackend, site: OsmInstance | undefined;
+        if (backEndID.startsWith("qlever_osm")) {
+            backend = SparqlBackend.OsmPlanet;
+            site = OsmInstance.OpenStreetMap
+        } else if (backEndID.startsWith("qlever_ohm")) {
+            backend = SparqlBackend.OhmPlanet;
+            site = OsmInstance.OpenHistoricalMap;
+        } else {
+            backend = "wikidata";
+        }
+
+        const sparqlQueryTemplate = await this.getSparqlQueryTemplate(backEndID),
             sparqlQuery = this.fillPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox)
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
@@ -101,12 +111,13 @@ export class QLeverMapService implements MapService {
         const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
-            features: ret.results.bindings.reduce(this.featureReducer, []),
+            features: ret.results.bindings.reduce(this.buildFeatureReducer(site), []),
             timestamp: new Date().toISOString(),
             sourcePresetID: this.preset.id,
             backEndID: backEndID,
             onlyCentroids: onlyCentroids,
             language: language,
+            site: site,
             year: year,
             truncated: ret.results.bindings.length === this.maxElements,
         };
@@ -121,21 +132,17 @@ export class QLeverMapService implements MapService {
         return out;
     }
 
-    private getSparqlBackEnd(backEnd: string): SparqlBackend {
-        return backEnd.startsWith("qlever_osm_") ? "osm-planet" : "wikidata";
-    }
-
     private async getSparqlQueryTemplate(backEndID: string) {
         let queryURL: string;
-        if (backEndID === "qlever_osm_wd")
+        if (backEndID.endsWith("m_wd")) // qlever_osm_wd
             queryURL = osm_wd_query;
-        else if (backEndID === "qlever_osm_wd_base")
+        else if (backEndID.endsWith("m_wd_base")) // qlever_osm_wd_base
             queryURL = osm_wd_base_query;
-        else if (backEndID === "qlever_osm_wikidata_direct")
+        else if (backEndID.endsWith("m_wikidata_direct")) // qlever_osm_wikidata_direct
             queryURL = osm_wd_direct_query;
-        else if (backEndID === "qlever_osm_wikidata_reverse")
+        else if (backEndID.endsWith("m_wikidata_reverse")) // qlever_osm_wikidata_reverse
             queryURL = osm_wd_reverse_query;
-        else if (/^qlever_osm_[^w]/.test(backEndID))
+        else if (/^qlever_o[sh]m_[^w]/.test(backEndID)) // qlever_osm_architect
             queryURL = osm_all_query;
         else if (backEndID === "qlever_wd_base")
             queryURL = wd_base_query;
@@ -155,7 +162,7 @@ export class QLeverMapService implements MapService {
 
     private fillPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {
         // TODO Use onlyCentroids
-        if (backEndID.includes("osm")) {
+        if (backEndID.includes("osm") || backEndID.includes("ohm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
                 osm_text_key = all_osm_wikidata_keys_selected ? this.osmTextKey : undefined,
@@ -209,6 +216,10 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression);
         }
 
+        if(backEndID.includes("ohm")) {
+            sparqlQuery = sparqlQuery.replaceAll("openstreetmap.org/relation", "openhistoricalmap.org/relation");
+        }
+
         if (backEndID.includes("indirect") || backEndID.includes("reverse") || backEndID.includes("qualifier")) {
             const indirectProperty = this.preset.wikidata_indirect_property;
             if (!indirectProperty)
@@ -258,62 +269,63 @@ export class QLeverMapService implements MapService {
             ).toFixed(4));
     }
 
-    private featureReducer(this: void, acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] {
-        if (!row.location?.value) {
-            console.warn("Invalid response from Wikidata (no location)", row);
-            return acc;
-        }
+    private buildFeatureReducer(site?: OsmInstance) {
+        return (acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] => {
+            if (!row.location?.value) {
+                console.warn("Invalid response from Wikidata (no location)", row);
+                return acc;
+            }
 
-        const wkt_geometry = row.location.value,
-            geometry = parseWKT(wkt_geometry) as Point | null;
-        if (!geometry) {
-            console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
-            return acc;
-        }
+            const wkt_geometry = row.location.value,
+                geometry = parseWKT(wkt_geometry) as Point | null;
+            if (!geometry) {
+                console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
+                return acc;
+            }
 
-        const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            etymology_wd_ids: string[] | undefined = typeof row.etymology?.value === "string" ? row.etymology.value.split(";").map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")) : undefined;
+            const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                etymology_wd_ids: string[] | undefined = typeof row.etymology?.value === "string" ? row.etymology.value.split(";").map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")) : undefined;
 
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        (etymology_wd_ids || [undefined]).forEach(etymology_wd_id => { // [undefined] is used when there are no linked entities (like in https://osmwd.dsantini.it )
-            const existingFeature = acc.find(feature => {
-                if (feature.id !== feature_wd_id)
-                    return false; // Not the same feature
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            (etymology_wd_ids || [undefined]).forEach(etymology_wd_id => { // [undefined] is used when there are no linked entities (like in https://osmwd.dsantini.it )
+                const existingFeature = acc.find(feature => {
+                    if (feature.id !== feature_wd_id)
+                        return false; // Not the same feature
 
-                //console.info("Checking feature for merging", { wd_id: feature.id, feature_wd_id, geom: feature.geometry, geometry });
-                if (feature_wd_id)
-                    return true; // Both features have the same Wikidata ID
+                    //console.info("Checking feature for merging", { wd_id: feature.id, feature_wd_id, geom: feature.geometry, geometry });
+                    if (feature_wd_id)
+                        return true; // Both features have the same Wikidata ID
 
-                // Both features have no Wikidata ID, check if they have the same coordinates
-                return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
-            });
+                    // Both features have no Wikidata ID, check if they have the same coordinates
+                    return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
+                });
 
-            if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-                console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
-            } else {
-                const from_osm_instance: OsmInstance|undefined = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value) ? OsmInstance.OpenStreetMap : undefined,
-                    feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value);
-                
-                let osm_id: number | undefined,
-                    osm_type: OsmType | undefined;
-                if (row.osm_rel?.value) {
-                    osm_type = "relation";
-                    osm_id = parseInt(row.osm_rel.value);
-                } else if (row.osm_way?.value) {
-                    osm_type = "way";
-                    osm_id = parseInt(row.osm_way.value);
-                } else if (row.osm_node?.value) {
-                    osm_type = "node";
-                    osm_id = parseInt(row.osm_node.value);
-                } else if (row.osm?.value) {
-                    const splits = /^https:\/\/www.openstreetmap.org\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
-                    if (splits?.length === 3) {
-                        osm_type = splits[1] as OsmType;
-                        osm_id = parseInt(splits[2]);
+                if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+                    console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
+                } else {
+                    const feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value);
+                    let from_osm_instance: OsmInstance | undefined = row.from_osm?.value === 'true' ? site : undefined,
+                        osm_id: number | undefined,
+                        osm_type: OsmType | undefined;
+                    if (row.osm_rel?.value) {
+                        osm_type = "relation";
+                        osm_id = parseInt(row.osm_rel.value);
+                    } else if (row.osm_way?.value) {
+                        osm_type = "way";
+                        osm_id = parseInt(row.osm_way.value);
+                    } else if (row.osm_node?.value) {
+                        osm_type = "node";
+                        osm_id = parseInt(row.osm_node.value);
+                    } else if (row.osm?.value) {
+                        const splits = /(\w+\.org)\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
+                        if (splits?.length === 4) {
+                            from_osm_instance = splits[1] as OsmInstance;
+                            osm_type = splits[2] as OsmType;
+                            osm_id = parseInt(splits[3]);
+                        }
                     }
-                }
-                
-                const etymology: Etymology | null = etymology_wd_id ? {
+
+                    const etymology: Etymology | null = etymology_wd_id ? {
                         from_osm_instance,
                         from_osm_type: osm_type,
                         from_osm_id: osm_id,
@@ -325,63 +337,66 @@ export class QLeverMapService implements MapService {
                         wikidata: etymology_wd_id,
                     } : null;
 
-                if (!existingFeature) { // Add the new feature for this item 
-                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                    const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
+                    if (!existingFeature) { // Add the new feature for this item 
                         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                        picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
-                    console.debug("featureReducer", { row, from_osm_instance, osm_id, osm_type, commons, picture });
+                        const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
+                            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                            picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
+                        console.debug("featureReducer", { row, from_osm_instance, osm_id, osm_type, commons, picture });
 
-                    let render_height;
-                    if (row.height?.value)
-                        render_height = parseInt(row.height?.value);
-                    else if (row.levels?.value)
-                        render_height = parseInt(row.levels?.value) * 4;
-                    else if (row.building?.value)
-                        render_height = 6;
+                        let render_height;
+                        if (row.height?.value)
+                            render_height = parseInt(row.height?.value);
+                        else if (row.levels?.value)
+                            render_height = parseInt(row.levels?.value) * 4;
+                        else if (row.building?.value)
+                            render_height = 6;
 
-                    const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                        from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
-                    let id;
-                    if (from_osm_instance && feature_from_wikidata)
-                        id = `${from_osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
-                    else if (from_osm_instance)
-                        id = `${from_osm_instance}/${osm_type}/${osm_id}`;
-                    else
-                        id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
+                        const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
+                            from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
+                        let id;
+                        if (from_osm_instance && feature_from_wikidata)
+                            id = `${from_osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
+                        else if (from_osm_instance)
+                            id = `${from_osm_instance}/${osm_type}/${osm_id}`;
+                        else
+                            id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
 
-                    acc.push({
-                        type: "Feature",
-                        id,
-                        geometry,
-                        properties: {
-                            commons: commons,
-                            linked_entities: etymology ? [etymology] : undefined,
-                            linked_entity_count: (etymology ? 1 : 0) + (row.etymology_text?.value ? 1 : 0),
-                            text_etymology: row.etymology_text?.value,
-                            text_etymology_descr: row.etymology_description?.value,
-                            from_osm_instance,
-                            from_wikidata: feature_from_wikidata,
-                            from_wikidata_entity,
-                            from_wikidata_prop,
-                            render_height: render_height,
-                            tags: {
-                                description: row.itemDescription?.value,
-                                name: row.itemLabel?.value,
-                                website: row.website?.value,
-                            },
-                            osm_id,
-                            osm_type,
-                            picture: picture,
-                            wikidata: feature_wd_id,
-                            wikipedia: row.wikipedia?.value,
-                        }
-                    });
-                } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                    getFeatureLinkedEntities(existingFeature)?.push(etymology);
+                        acc.push({
+                            type: "Feature",
+                            id,
+                            geometry,
+                            properties: {
+                                commons: commons,
+                                linked_entities: etymology ? [etymology] : undefined,
+                                linked_entity_count: (etymology ? 1 : 0) + (row.etymology_text?.value ? 1 : 0),
+                                text_etymology: row.etymology_text?.value,
+                                text_etymology_descr: row.etymology_description?.value,
+                                from_osm_instance,
+                                from_wikidata: feature_from_wikidata,
+                                from_wikidata_entity,
+                                from_wikidata_prop,
+                                render_height: render_height,
+                                tags: {
+                                    description: row.itemDescription?.value,
+                                    name: row.itemLabel?.value,
+                                    website: row.website?.value,
+                                },
+                                ohm_id: site === OsmInstance.OpenHistoricalMap ? osm_id : undefined,
+                                ohm_type: site === OsmInstance.OpenHistoricalMap ? osm_type : undefined,
+                                osm_id: site === OsmInstance.OpenStreetMap ? osm_id : undefined,
+                                osm_type: site === OsmInstance.OpenStreetMap ? osm_type : undefined,
+                                picture: picture,
+                                wikidata: feature_wd_id,
+                                wikipedia: row.wikipedia?.value,
+                            }
+                        });
+                    } else if (etymology) { // Add the new etymology to the existing feature for this feature
+                        getFeatureLinkedEntities(existingFeature)?.push(etymology);
+                    }
                 }
-            }
-        });
-        return acc;
+            });
+            return acc;
+        }
     }
 }

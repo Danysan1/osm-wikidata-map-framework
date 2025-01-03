@@ -47,7 +47,7 @@
         "db_all": "Alle kilder fra DB",
         "db_osm_wikidata_reverse": "Wikidata-objekter, der henvises til med OSM wikidata=* og {{indirectWdProperty}}",
         "propagated": "Udbredt",
-        "all_osm_keys": "Alle OSM-nøgler",
+        "all_keys": "Alle nøgler",
         "wd_reverse": "Wikidata-objekter, der henvises til med {{indirectWdProperty}}",
         "wd_qualifier": "P625-kvalifikatorer på {{indirectWdProperty}}",
         "wd_indirect": "P625-kvalifikatorer på {{indirectWdProperty}} og Wikidata-objekter, der henvises til med {{indirectWdProperty}}"

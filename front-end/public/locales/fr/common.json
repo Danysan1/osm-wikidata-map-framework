@@ -47,7 +47,7 @@
         "db_all": "Toutes les sources de la base de données",
         "db_osm_wikidata_reverse": "Entités Wikidata référencées avec OSM wikidata=* et {{indirectWdProperty}}",
         "propagated": "Propagé",
-        "all_osm_keys": "Toutes les clés OSM",
+        "all_keys": "Toutes les clés",
         "wd_reverse": "Entités Wikidata référencées avec {{indirectWdProperty}}",
         "wd_qualifier": "Qualificatifs P625 sur {{indirectWdProperty}}",
         "wd_indirect": "Qualificatifs P625 sur {{indirectWdProperty}} et entités Wikidata référencées avec {{indirectWdProperty}}"

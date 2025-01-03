@@ -20,7 +20,8 @@
 export const SparqlBackend = {
     Sparql: 'sparql',
     Wikidata: 'wikidata',
-    OsmPlanet: 'osm-planet'
+    OsmPlanet: 'osm-planet',
+    OhmPlanet: 'ohm-planet'
 } as const;
 export type SparqlBackend = typeof SparqlBackend[keyof typeof SparqlBackend];
 

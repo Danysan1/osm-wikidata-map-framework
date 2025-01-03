@@ -103,6 +103,7 @@ components:
         - sparql
         - wikidata
         - osm-planet
+        - ohm-planet
 
     SparqlResponse:
       type: object
