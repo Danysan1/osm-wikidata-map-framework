@@ -21,17 +21,30 @@ const PROPAGATED_COLOR = '#ff3333',
   NO_PICTURE_COLOR = '#ff3333',
   FEATURE_SOURCE_LAYER_COLOR: ExpressionSpecification = [
     "case",
-    ["coalesce", ["all",
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
       ["to-boolean", ["get", "from_osm"]],
+      ["has", "from_wikidata"],
       ["to-boolean", ["get", "from_wikidata"]]
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["all",
-      ["to-boolean", ["get", "from_ohm"]],
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
+      [">", ["length", ["get", "from_osm_instance"]], 0],
+      ["has", "from_wikidata"],
       ["to-boolean", ["get", "from_wikidata"]]
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["to-boolean", ["get", "from_osm"]], false], OSM_COLOR,
-    ["coalesce", ["to-boolean", ["get", "from_ohm"]], false], OSM_COLOR,
-    ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], WIKIDATA_COLOR,
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
+      ["to-boolean", ["get", "from_osm"]]
+    ], OSM_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
+      [">", ["length", ["get", "from_osm_instance"]], 0]
+    ], OSM_COLOR,
+    ["all",
+      ["has", "from_wikidata"],
+      ["to-boolean", ["get", "from_wikidata"]]
+    ], WIKIDATA_COLOR,
     FALLBACK_COLOR
   ],
   ETYMOLOGY_SOURCE_LAYER_COLOR: ExpressionSpecification = [
@@ -41,32 +54,34 @@ const PROPAGATED_COLOR = '#ff3333',
     ["==", ["get", "linked_entities"], "[]"], FALLBACK_COLOR,
 
     // Checks for vector tiles and PMTiles (where the linked_entities array is JSON-encoded with spaces)
-    ["coalesce", ["in", '"propagated" : true', ["get", "linked_entities"]], false], PROPAGATED_COLOR,
-    ["coalesce", ["all",
+    ["in", '"propagated" : true', ["get", "linked_entities"]], PROPAGATED_COLOR,
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
       ["to-boolean", ["get", "from_osm"]],
       ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["all",
-      ["to-boolean", ["get", "from_ohm"]],
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
       ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_wikidata" : true', ["get", "linked_entities"]], false], WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_osm" : true', ["get", "linked_entities"]], false], OSM_COLOR,
-    ["coalesce", ["in", '"from_ohm" : true', ["get", "linked_entities"]], false], OSM_COLOR,
+    ], OSM_WIKIDATA_COLOR,
+    ["in", '"from_wikidata" : true', ["get", "linked_entities"]], WIKIDATA_COLOR,
+    ["in", '"from_osm" : true', ["get", "linked_entities"]], OSM_COLOR, // TODO remove (deprecated)
+    ["in", '"from_osm_instance" : "', ["get", "linked_entities"]], OSM_COLOR,
 
     // Checks for cases where the map library JSON-encodes the linked_entities array without spaces
-    ["coalesce", ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], false], PROPAGATED_COLOR,
-    ["coalesce", ["all",
+    ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], PROPAGATED_COLOR,
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
       ["to-boolean", ["get", "from_osm"]],
       ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["all",
-      ["to-boolean", ["get", "from_ohm"]],
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
       ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], false], WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], false], OSM_COLOR,
-    ["coalesce", ["in", '"from_ohm":true', ["to-string", ["get", "linked_entities"]]], false], OSM_COLOR,
+    ], OSM_WIKIDATA_COLOR,
+    ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], WIKIDATA_COLOR,
+    ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], OSM_COLOR, // TODO remove (deprecated)
+    ["in", '"from_osm_instance":"', ["to-string", ["get", "linked_entities"]]], OSM_COLOR,
 
     FALLBACK_COLOR
   ];
@@ -228,13 +243,13 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
-    if (feature?.from_osm && feature?.from_wikidata)
+    if ((feature?.from_osm ?? feature?.from_osm_instance === "osm.org") && feature?.from_wikidata)
       osm_wikidata_IDs.add(id);
-    else if (feature?.from_ohm && feature?.from_wikidata)
+    else if (feature?.from_osm_instance === "openhistoricalmap.org" && feature?.from_wikidata)
       ohm_wikidata_IDs.add(id);
-    else if (feature?.from_osm)
+    else if (feature.from_osm ?? feature?.from_osm_instance === "osm.org")
       osm_IDs.add(id);
-    else if (feature?.from_ohm)
+    else if (feature?.from_osm_instance === "openhistoricalmap.org")
       ohm_IDs.add(id);
     else if (feature?.from_wikidata)
       wikidata_IDs.add(id);
@@ -276,15 +291,15 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
             console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
           } else if (etymology.propagated) {
             propagation_IDs.add(etymology.wikidata);
-          } else if (feature?.from_osm && etymology.from_wikidata) {
+          } else if ((feature?.from_osm ?? feature?.from_osm_instance === "osm.org") && etymology.from_wikidata) {
             osm_wikidata_IDs.add(etymology.wikidata);
-          } else if (feature?.from_ohm && etymology.from_wikidata) {
+          } else if (feature?.from_osm_instance === "openhistoricalmap.org" && etymology.from_wikidata) {
             ohm_wikidata_IDs.add(etymology.wikidata);
           } else if (etymology.from_wikidata) {
             wikidata_IDs.add(etymology.wikidata);
-          } else if (etymology.from_osm) {
+          } else if (etymology.from_osm ?? etymology.from_osm_instance === "osm.org") {
             osm_IDs.add(etymology.wikidata);
-          } else if (etymology.from_ohm) {
+          } else if (etymology.from_osm_instance === "openhistoricalmap.org") {
             ohm_IDs.add(etymology.wikidata);
           } else {
             console.debug("Unknown etymology source", feature, etymology);

@@ -5,7 +5,7 @@ import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import { Configuration } from "../../generated/sparql/runtime";
-import type { Etymology, OsmType } from "../../model/Etymology";
+import type { Etymology, OsmInstance, OsmType } from "../../model/Etymology";
 import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
@@ -291,7 +291,7 @@ export class QLeverMapService implements MapService {
             if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
                 console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
-                const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
+                const from_osm_instance: OsmInstance|undefined = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value) ? "osm.org" : undefined,
                     feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value);
                 
                 let osm_id: number | undefined,
@@ -314,7 +314,7 @@ export class QLeverMapService implements MapService {
                 }
                 
                 const etymology: Etymology | null = etymology_wd_id ? {
-                        from_osm: feature_from_osm,
+                        from_osm_instance,
                         from_osm_type: osm_type,
                         from_osm_id: osm_id,
                         from_wikidata: feature_from_wikidata,
@@ -330,7 +330,7 @@ export class QLeverMapService implements MapService {
                     const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
                         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                         picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
-                    console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
+                    console.debug("featureReducer", { row, from_osm_instance, osm_id, osm_type, commons, picture });
 
                     let render_height;
                     if (row.height?.value)
@@ -343,10 +343,10 @@ export class QLeverMapService implements MapService {
                     const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                         from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
                     let id;
-                    if (feature_from_osm && feature_from_wikidata)
-                        id = "osm.org/" + osm_type + "/" + osm_id + "_wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
-                    else if (feature_from_osm)
-                        id = "osm.org/" + osm_type + "/" + osm_id;
+                    if (from_osm_instance && feature_from_wikidata)
+                        id = `${from_osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
+                    else if (from_osm_instance)
+                        id = `${from_osm_instance}/${osm_type}/${osm_id}`;
                     else
                         id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
 
@@ -360,7 +360,7 @@ export class QLeverMapService implements MapService {
                             linked_entity_count: (etymology ? 1 : 0) + (row.etymology_text?.value ? 1 : 0),
                             text_etymology: row.etymology_text?.value,
                             text_etymology_descr: row.etymology_description?.value,
-                            from_osm: feature_from_osm,
+                            from_osm_instance,
                             from_wikidata: feature_from_wikidata,
                             from_wikidata_entity,
                             from_wikidata_prop,

@@ -21,7 +21,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
     [wikipediaExtract, setWikipediaExtract] = useState<string>(),
     fromOsm =
       etymology.osm_wd_join_field === "OSM" ||
-      !!etymology.from_osm ||
+      etymology.from_osm_instance === "osm.org" ||
       !!etymology.propagated,
     osmFeatureUrl =
       fromOsm && etymology.from_osm_type && etymology.from_osm_id

@@ -14,6 +14,7 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
+    (SAMPLE(?_ohm_rel) AS ?ohm_rel)
     (SAMPLE(?_alias) AS ?alias)
     (SAMPLE(?_statementEntity) AS ?statementEntity)
     ?etymology
@@ -52,6 +53,7 @@ WHERE {
     OPTIONAL { ?item wdt:P11693 ?_osm_node. }
     OPTIONAL { ?item wdt:P10689 ?_osm_way. }
     OPTIONAL { ?item wdt:P402 ?_osm_rel. }
+    OPTIONAL { ?item wdt:P8424 ?_ohm_rel. }
     OPTIONAL { ?_alias owl:sameAs ?item. }
     OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
 }

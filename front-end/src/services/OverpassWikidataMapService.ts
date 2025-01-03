@@ -104,11 +104,11 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => {
-                    if (osmFeature.properties?.from_osm) {
+                    if (osmFeature.properties?.from_osm_instance === "osm.org") {
                         ety.osm_wd_join_field = "OSM";
                         ety.from_osm_id = osmFeature.properties?.osm_id;
                         ety.from_osm_type = osmFeature.properties?.osm_type;
-                    } else if (osmFeature.properties?.from_ohm) {
+                    } else if (osmFeature.properties?.from_osm_instance === "openhistoricalmap.org") {
                         ety.osm_wd_join_field = "OHM";
                         ety.from_osm_id = osmFeature.properties?.ohm_id;
                         ety.from_osm_type = osmFeature.properties?.ohm_type;

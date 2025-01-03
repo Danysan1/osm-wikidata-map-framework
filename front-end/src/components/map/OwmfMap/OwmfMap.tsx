@@ -321,7 +321,7 @@ export const OwmfMap = () => {
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="overpass_query"
-        site="openstreetmap.org"
+        site="osm.org"
         baseURL="https://overpass-turbo.eu/?Q="
         minZoomLevel={minZoomLevel}
         position="top-right"

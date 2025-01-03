@@ -1,10 +1,9 @@
 import { Feature, FeatureCollection, Geometry } from "geojson";
-import { Etymology } from "./Etymology";
+import { Etymology, OsmInstance } from "./Etymology";
 import { FeatureTags, getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
 
 export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
 export type OwmfFeature = Feature<Geometry, OwmfResponseFeatureProperties>;
-export type OsmInstance = "openstreetmap.org" | "openhistoricalmap.org";
 
 export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFeatureProperties> {
     sourcePresetID?: string;

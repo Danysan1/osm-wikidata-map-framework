@@ -20,11 +20,9 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
-    osm_full_id =
-      props?.osm_type && props.osm_id ? props.osm_type + "/" + props.osm_id : null,
     fromOsmUrl =
-      props?.from_osm && osm_full_id
-        ? `https://www.openstreetmap.org/${osm_full_id}`
+      props?.from_osm_instance && props?.osm_type && props?.osm_id
+        ? `https://www.${props.from_osm_instance}/${props.osm_type}/${props.osm_id}`
         : undefined,
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     fromWdEntity = props?.from_wikidata_entity || props?.wikidata,
@@ -164,6 +162,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
           wdLinkedEntities={props.linked_entities ?? []}
           text_etymology={props.text_etymology}
           text_etymology_descr={props.text_etymology_descr}
+          from_osm_instance={props.from_osm_instance}
           from_osm_id={props.osm_id}
           from_osm_type={props.osm_type}
         />

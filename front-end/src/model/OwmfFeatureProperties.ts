@@ -1,4 +1,4 @@
-import type { Etymology, OsmType } from "./Etymology";
+import type { Etymology, OsmInstance, OsmType } from "./Etymology";
 
 interface OsmToGeoJsonRelation {
     rel: number;
@@ -136,13 +136,13 @@ export interface OwmfFeatureProperties {
 
     /**
      * Whether openstreetmap.org is the original source of the geometry and names of this feature.
+     * @deprecated
      */
     from_osm?: boolean;
-
     /**
-     * Whether openhistoricalmap.org is the original source of the geometry and names of this feature.
+     * Whether OpenStreetMap instance is the original source of the geometry and names of this feature.
      */
-    from_ohm?: boolean;
+    from_osm_instance?: OsmInstance;
 
     /**
      * Whether Wikidata is the original source of the geometry and/or names of this feature.

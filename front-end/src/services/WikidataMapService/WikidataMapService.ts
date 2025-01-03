@@ -2,7 +2,7 @@ import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
-import type { Etymology } from "../../model/Etymology";
+import type { Etymology, OsmType } from "../../model/Etymology";
 import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
@@ -167,7 +167,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
-                from_osm: false,
+                from_osm_instance: undefined,
                 from_wikidata: true,
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
@@ -178,7 +178,9 @@ export class WikidataMapService extends WikidataService implements MapService {
 
             if (!existingFeature) { // Add the new feature for this item 
                 let osm_id: number | undefined,
-                    osm_type: "node" | "way" | "relation" | undefined;
+                    osm_type: OsmType | undefined,
+                    ohm_id: number | undefined,
+                    ohm_type: OsmType | undefined;
                 if (row.osm_rel?.value) {
                     osm_type = "relation";
                     osm_id = parseInt(row.osm_rel.value);
@@ -188,6 +190,10 @@ export class WikidataMapService extends WikidataService implements MapService {
                 } else if (row.osm_node?.value) {
                     osm_type = "node";
                     osm_id = parseInt(row.osm_node.value);
+                }
+                if (row.ohm_rel?.value) {
+                    ohm_type = "relation";
+                    ohm_id = parseInt(row.ohm_rel.value);
                 }
 
                 let render_height;
@@ -208,8 +214,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                         commons: row.commons?.value,
                         linked_entities: etymology ? [etymology] : undefined,
                         linked_entity_count: etymology ? 1 : 0,
-                        from_ohm: false,
-                        from_osm: false,
+                        from_osm_instance: undefined,
                         from_wikidata: true,
                         from_wikidata_entity,
                         from_wikidata_prop,
@@ -220,6 +225,8 @@ export class WikidataMapService extends WikidataService implements MapService {
                         },
                         osm_id,
                         osm_type,
+                        ohm_id,
+                        ohm_type,
                         picture: row.picture?.value,
                         render_height: render_height,
                         wikidata: feature_wd_id,
