@@ -266,8 +266,16 @@ export class OverpassService implements MapService {
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
-            notTooBig = `[!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
-            dateFilters = year === new Date().getFullYear() ? ['[!"end_date"]'] : ['[!"start_date"]','[!"end_date"]'],
+            notTooBig = `[!"sqkm"][!"boundary"]["type"!="boundary"]${maxMembersFilter}`,
+            dateFilters = year === new Date().getFullYear() ? [
+                // Filter for openstreetmap.org or openhistoricalmap.org in the current year
+                '[!"end_date"]["route"!="historic"]'
+            ] : [
+                // Filter for openhistoricalmap.org in another year
+                // See https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass#Theatres_in_a_given_year
+                '[!"start_date"][!"end_date"]',
+                `["start_date"](if:t["start_date"] < "${year}" && (!is_tag("end_date") || t["end_date"] >= "${year}"))`
+            ],
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,

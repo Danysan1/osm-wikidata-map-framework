@@ -18,7 +18,9 @@ export interface SourcePreset {
     mapcomplete_theme?: string;
 
     /**
-     * OSM tags to use for filtering the results; for optimal performance if you initialize the DB from OSM PBF dump sort the tags from the most frequent to the least frequent
+     * OSM tags to use for filtering the results
+     * 
+     * @example ["artist:wikidata","artist_name=*","tourism","historic=*","amenity=fountain"]
      */
     osm_filter_tags?: string[];
 
@@ -52,11 +54,15 @@ export interface SourcePreset {
 
     /**
      * Whitelist of OSM relation roles to consider when propagating linked entities from relations to their members
+     * 
+     * @example ["street"]
      */
     relation_role_whitelist?: string[];
 
     /**
      * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities
+     * 
+     * @example ["Q473972","Q179049","Q46169"]
      */
     wikidata_filter_classes?: string[];
 
