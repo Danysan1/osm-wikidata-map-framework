@@ -124,7 +124,7 @@ export class QLeverMapService implements MapService {
         out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
         if (backend === "wikidata")
             out.qlever_wd_query = sparqlQuery;
-        else if (backend === "osm-planet")
+        else
             out.qlever_osm_query = sparqlQuery;
 
         console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);

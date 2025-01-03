@@ -1,3 +1,4 @@
+import { OsmInstance } from "@/src/model/Etymology";
 import { useTranslation } from "react-i18next";
 import { ControlPosition } from "react-map-gl/maplibre";
 import { QueryLinkControl } from "../QueryLinkControl";
@@ -14,7 +15,7 @@ export const QLeverQueryLinkControls: React.FC<QLeverQueryLinkControlProps> = (p
     return process.env.owmf_qlever_enable === "true" && (<>
         <QueryLinkControl
             icon={qleverLogo}
-            title={t("qlever_query", "Source SPARQL query on QLever UI")}
+            title={t("qlever_query", "Source SPARQL query on QLever UI for Wikidata")}
             sourceIDs={props.sourceIDs}
             mapEventField="qlever_wd_query"
             baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query="
@@ -23,10 +24,21 @@ export const QLeverQueryLinkControls: React.FC<QLeverQueryLinkControlProps> = (p
         />
         <QueryLinkControl
             icon={qleverLogo}
-            title={t("qlever_query", "Source SPARQL query on QLever UI")}
+            title={t("qlever_query", "Source SPARQL query on QLever UI for OSM Planet")}
             sourceIDs={props.sourceIDs}
+            site={OsmInstance.OpenStreetMap}
             mapEventField="qlever_osm_query"
             baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query="
+            minZoomLevel={props.minZoomLevel}
+            position={props.position}
+        />
+        <QueryLinkControl
+            icon={qleverLogo}
+            title={t("qlever_query", "Source SPARQL query on QLever UI for OHM Planet")}
+            sourceIDs={props.sourceIDs}
+            site={OsmInstance.OpenHistoricalMap}
+            mapEventField="qlever_osm_query"
+            baseURL="https://qlever.cs.uni-freiburg.de/ohm-planet/?query="
             minZoomLevel={props.minZoomLevel}
             position={props.position}
         />
