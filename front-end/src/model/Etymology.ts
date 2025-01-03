@@ -1,5 +1,8 @@
 export type OsmType = 'node' | 'way' | 'relation';
-export type OsmInstance = "osm.org" | "openhistoricalmap.org";
+export enum OsmInstance {
+    OpenStreetMap = "openstreetmap.org",
+    OpenHistoricalMap = "openhistoricalmap.org"
+}
 export type OsmWdJoinField = 'OSM' | 'OHM' | 'P11693' | 'P10689' | 'P402';
 
 export interface Etymology {

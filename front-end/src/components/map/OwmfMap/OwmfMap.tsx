@@ -8,6 +8,7 @@ import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
+import { OsmInstance } from "@/src/model/Etymology";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
@@ -321,7 +322,7 @@ export const OwmfMap = () => {
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="overpass_query"
-        site="osm.org"
+        site={OsmInstance.OpenStreetMap}
         baseURL="https://overpass-turbo.eu/?Q="
         minZoomLevel={minZoomLevel}
         position="top-right"
@@ -331,7 +332,7 @@ export const OwmfMap = () => {
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="overpass_query"
-        site="openhistoricalmap.org"
+        site={OsmInstance.OpenHistoricalMap}
         baseURL="https://openhistoricalmap.github.io/overpass-turbo/?Q="
         minZoomLevel={minZoomLevel}
         position="top-right"

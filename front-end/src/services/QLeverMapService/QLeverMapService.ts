@@ -5,7 +5,7 @@ import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import { Configuration } from "../../generated/sparql/runtime";
-import type { Etymology, OsmInstance, OsmType } from "../../model/Etymology";
+import { Etymology, OsmInstance, OsmType } from "../../model/Etymology";
 import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
@@ -291,7 +291,7 @@ export class QLeverMapService implements MapService {
             if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
                 console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
-                const from_osm_instance: OsmInstance|undefined = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value) ? "osm.org" : undefined,
+                const from_osm_instance: OsmInstance|undefined = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value) ? OsmInstance.OpenStreetMap : undefined,
                     feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value);
                 
                 let osm_id: number | undefined,

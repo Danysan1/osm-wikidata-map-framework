@@ -1,6 +1,6 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
-import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
+import { OsmInstance, type Etymology, type OsmType, type OsmWdJoinField } from "../model/Etymology";
 import { getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -104,11 +104,11 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => {
-                    if (osmFeature.properties?.from_osm_instance === "osm.org") {
+                    if (osmFeature.properties?.from_osm_instance === OsmInstance.OpenStreetMap) {
                         ety.osm_wd_join_field = "OSM";
                         ety.from_osm_id = osmFeature.properties?.osm_id;
                         ety.from_osm_type = osmFeature.properties?.osm_type;
-                    } else if (osmFeature.properties?.from_osm_instance === "openhistoricalmap.org") {
+                    } else if (osmFeature.properties?.from_osm_instance === OsmInstance.OpenHistoricalMap) {
                         ety.osm_wd_join_field = "OHM";
                         ety.from_osm_id = osmFeature.properties?.ohm_id;
                         ety.from_osm_type = osmFeature.properties?.ohm_type;

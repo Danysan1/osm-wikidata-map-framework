@@ -1,5 +1,5 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
-import { Etymology } from "@/src/model/Etymology";
+import { Etymology, OsmInstance } from "@/src/model/Etymology";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
 import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
@@ -243,13 +243,13 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
-    if ((feature?.from_osm ?? feature?.from_osm_instance === "osm.org") && feature?.from_wikidata)
+    if ((!!feature?.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap) && feature?.from_wikidata)
       osm_wikidata_IDs.add(id);
-    else if (feature?.from_osm_instance === "openhistoricalmap.org" && feature?.from_wikidata)
+    else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap && feature?.from_wikidata)
       ohm_wikidata_IDs.add(id);
-    else if (feature.from_osm ?? feature?.from_osm_instance === "osm.org")
+    else if (!!feature.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap)
       osm_IDs.add(id);
-    else if (feature?.from_osm_instance === "openhistoricalmap.org")
+    else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap)
       ohm_IDs.add(id);
     else if (feature?.from_wikidata)
       wikidata_IDs.add(id);
@@ -291,15 +291,15 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
             console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
           } else if (etymology.propagated) {
             propagation_IDs.add(etymology.wikidata);
-          } else if ((feature?.from_osm ?? feature?.from_osm_instance === "osm.org") && etymology.from_wikidata) {
+          } else if ((!!feature?.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap) && etymology.from_wikidata) {
             osm_wikidata_IDs.add(etymology.wikidata);
-          } else if (feature?.from_osm_instance === "openhistoricalmap.org" && etymology.from_wikidata) {
+          } else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap && etymology.from_wikidata) {
             ohm_wikidata_IDs.add(etymology.wikidata);
           } else if (etymology.from_wikidata) {
             wikidata_IDs.add(etymology.wikidata);
-          } else if (etymology.from_osm ?? etymology.from_osm_instance === "osm.org") {
+          } else if (!!etymology.from_osm || etymology.from_osm_instance === OsmInstance.OpenStreetMap) {
             osm_IDs.add(etymology.wikidata);
-          } else if (etymology.from_osm_instance === "openhistoricalmap.org") {
+          } else if (etymology.from_osm_instance === OsmInstance.OpenHistoricalMap) {
             ohm_IDs.add(etymology.wikidata);
           } else {
             console.debug("Unknown etymology source", feature, etymology);

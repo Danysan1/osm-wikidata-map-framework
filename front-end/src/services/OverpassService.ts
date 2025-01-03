@@ -1,7 +1,7 @@
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { MapDatabase } from "../db/MapDatabase";
-import type { Etymology, OsmInstance, OsmType } from "../model/Etymology";
+import { Etymology, OsmInstance, OsmType } from "../model/Etymology";
 import { getFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -89,12 +89,12 @@ export class OverpassService implements MapService {
 
         if (backEndID.includes("overpass_osm_wd")) {
             // Search only elements with wikidata=*
-            site = "osm.org";
+            site = OsmInstance.OpenStreetMap;
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
         } else if (backEndID.includes("overpass_ohm_wd")) {
-            site = "openhistoricalmap.org"
+            site = OsmInstance.OpenHistoricalMap
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
@@ -108,7 +108,7 @@ export class OverpassService implements MapService {
             if (!keyCode)
                 throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
 
-            site = keyCode.startsWith("ohm_") ? "openhistoricalmap.org" : "osm.org";
+            site = keyCode.startsWith("ohm_") ? OsmInstance.OpenHistoricalMap : OsmInstance.OpenStreetMap;
             if (keyCode.endsWith("_all_wd")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
                 osm_keys = this.preset.osm_wikidata_keys;
@@ -130,7 +130,7 @@ export class OverpassService implements MapService {
         console.time("overpass_query");
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
-            endpoint = site === "openhistoricalmap.org" ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
+            endpoint = site === OsmInstance.OpenHistoricalMap ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
             res = await overpassJson(query, { endpoint });
         console.timeEnd("overpass_query");
         if (!res.elements)
@@ -168,14 +168,20 @@ export class OverpassService implements MapService {
         const full_osm_props_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
             full_osm_base_id = typeof feature.id === "string" && feature.id.includes("/") ? feature.id : undefined,
             full_osm_id = full_osm_base_id ?? full_osm_props_id,
-            osm_type = full_osm_id?.split("/")?.[0],
-            osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined,
+            osmSplit = full_osm_id?.split("/"),
+            osm_type = osmSplit?.length ? osmSplit[0] as OsmType : undefined,
+            osm_id = osmSplit?.length ? parseInt(osmSplit[1]) : undefined,
             tags = getFeatureTags(feature);
-        feature.properties.from_osm_instance = site;
         feature.id = `${site}/${full_osm_id}`;
-        feature.properties.osm_id = osm_id;
-        feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
         feature.properties.from_wikidata = false;
+        feature.properties.from_osm_instance = site;
+        if (site === OsmInstance.OpenStreetMap) {
+            feature.properties.osm_id = osm_id;
+            feature.properties.osm_type = osm_type;
+        } else {
+            feature.properties.ohm_id = osm_id;
+            feature.properties.ohm_type = osm_type;
+        }
 
         if (tags.height)
             feature.properties.render_height = parseInt(tags.height);
@@ -224,7 +230,7 @@ export class OverpassService implements MapService {
                     ?.map<Etymology>(value => ({
                         from_osm_instance: site,
                         from_osm_id: osm_id,
-                        from_osm_type: feature.properties?.osm_type,
+                        from_osm_type: osm_type,
                         from_wikidata: false,
                         propagated: false,
                         wikidata: value

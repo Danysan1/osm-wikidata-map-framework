@@ -1,5 +1,5 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { Etymology } from "@/src/model/Etymology";
+import { Etymology, OsmInstance } from "@/src/model/Etymology";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
@@ -21,19 +21,19 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
     [wikipediaExtract, setWikipediaExtract] = useState<string>(),
     fromOsm =
       etymology.osm_wd_join_field === "OSM" ||
-      etymology.from_osm_instance === "osm.org" ||
+      !!etymology.from_osm ||
+      !!etymology.from_osm_instance ||
       !!etymology.propagated,
+    fromOsmInstance = etymology.from_osm_instance ?? OsmInstance.OpenStreetMap,
     osmFeatureUrl =
       fromOsm && etymology.from_osm_type && etymology.from_osm_id
-        ? `https://www.openstreetmap.org/${etymology.from_osm_type}/${etymology.from_osm_id}`
+        ? `https://www.${fromOsmInstance}/${etymology.from_osm_type}/${etymology.from_osm_id}`
         : null,
     fromWdUrl = etymology.from_wikidata_entity
       ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}`
       : null,
     wdFeatureUrl =
-      etymology.osm_wd_join_field &&
-      etymology.osm_wd_join_field !== "OSM" &&
-      fromWdUrl
+      etymology.osm_wd_join_field && etymology.osm_wd_join_field !== "OSM" && fromWdUrl
         ? `${fromWdUrl}#${etymology.osm_wd_join_field ?? ""}`
         : null,
     showArrow = (!!osmFeatureUrl || !!wdFeatureUrl) && !!fromWdUrl,
@@ -165,8 +165,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
     );
   }, [etymology]);
 
-  if (!etymology.name && !etymology.description && !etymology.wikidata)
-    return null;
+  if (!etymology.name && !etymology.description && !etymology.wikidata) return null;
 
   return (
     <div className={styles.etymology}>
@@ -182,67 +181,73 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
             {wikipediaExtract && (
               <p className="wikipedia_extract">📖 {wikipediaExtract}</p>
             )}
-            {startEndDate && (
-              <p className="start_end_date">📅 {startEndDate}</p>
-            )}
+            {startEndDate && <p className="start_end_date">📅 {startEndDate}</p>}
             {etymology.event_place && (
               <p className="event_place">📍 {etymology.event_place}</p>
             )}
             {etymology.citizenship && (
               <p className="citizenship">🌍 {etymology.citizenship}</p>
             )}
-            {etymology.gender && (
-              <p className="gender">⚧️ {etymology.gender}</p>
-            )}
+            {etymology.gender && <p className="gender">⚧️ {etymology.gender}</p>}
             {etymology.occupations && (
               <p className="occupations">🛠️ {etymology.occupations}</p>
             )}
-            {etymology.prizes && (
-              <p className="prizes">🏆 {etymology.prizes}</p>
-            )}
+            {etymology.prizes && <p className="prizes">🏆 {etymology.prizes}</p>}
           </div>
         </div>
 
         {!!etymology.pictures?.length && (
           <div className="etymology_pictures column">
             {etymology.pictures.slice(0, MAX_IMAGES).map((img, i) => (
-              <CommonsImage
-                key={i}
-                name={img}
-                className={styles.etymology_image}
-              />
+              <CommonsImage key={i} name={img} className={styles.etymology_image} />
             ))}
           </div>
         )}
       </div>
 
       <span className="etymology_src_wrapper">
-        {t("etymology_details.source")}<wbr />&nbsp;
+        {t("etymology_details.source")}
+        <wbr />
+        &nbsp;
         {osmFeatureUrl && (
-          <a className="etymology_src_osm_feature" href={osmFeatureUrl}>
-            OpenStreetMap&nbsp;
-          </a>
+          <span className="etymology_src_osm_feature_wrapper">
+            <a className="etymology_src_osm_feature" href={osmFeatureUrl}>
+              {fromOsmInstance}
+            </a>
+            &nbsp;
+          </span>
         )}
         {wdFeatureUrl && (
-          <a className="etymology_src_wd_feature" href={wdFeatureUrl}>
-            Wikidata&nbsp;
-          </a>
+          <span className="etymology_src_wd_feature_wrapper">
+            <a className="etymology_src_wd_feature" href={wdFeatureUrl}>
+              Wikidata
+            </a>
+            &nbsp;
+          </span>
         )}
         {showArrow && <span className="src_osm_plus_wd">&gt;&nbsp;</span>}
         {fromWdUrl && (
-          <a
-            className="etymology_src_from_wd"
-            href={`${fromWdUrl}#${etymology.from_wikidata_prop ?? ""}`}
-          >
-            Wikidata&nbsp;
-          </a>
+          <span className="etymology_src_from_wd_wrapper">
+            <a
+              className="etymology_src_from_wd"
+              href={`${fromWdUrl}#${etymology.from_wikidata_prop ?? ""}`}
+            >
+              Wikidata
+            </a>
+            &nbsp;
+          </span>
         )}
         {etymology.propagated && (
           <span className="etymology_propagated_wrapper">
             &gt;&nbsp;
             <a
               title={t("etymology_details.propagation")}
-              href={`/${i18n.language}/contributing/${sourcePresetID}${process.env.owmf_static_export === "true" && process.env.NODE_ENV === "production" ? ".html" : ""}#propagation`}
+              href={`/${i18n.language}/contributing/${sourcePresetID}${
+                process.env.owmf_static_export === "true" &&
+                process.env.NODE_ENV === "production"
+                  ? ".html"
+                  : ""
+              }#propagation`}
             >
               {t("etymology_details.propagation")}
             </a>

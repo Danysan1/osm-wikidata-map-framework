@@ -1,4 +1,5 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { OsmInstance } from "@/src/model/Etymology";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
@@ -20,9 +21,12 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
+    fromOsmInstance = props?.from_osm_instance ?? OsmInstance.OpenStreetMap,
+    fromOsmType = fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_type : props?.osm_type,
+    fromOsmId = fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_id : props?.osm_id,
     fromOsmUrl =
-      props?.from_osm_instance && props?.osm_type && props?.osm_id
-        ? `https://www.${props.from_osm_instance}/${props.osm_type}/${props.osm_id}`
+      (!!props?.from_osm || props?.from_osm_instance) && fromOsmType && fromOsmId
+        ? `https://www.${fromOsmInstance}/${fromOsmType}/${fromOsmId}`
         : undefined,
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     fromWdEntity = props?.from_wikidata_entity || props?.wikidata,
@@ -128,15 +132,6 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [props]);
 
-  console.debug("FeatureView", {
-    feature,
-    mainName,
-    altNames,
-    description,
-    commons,
-    fromOsmUrl,
-    fromWikidataUrl,
-  });
   return (
     <div className={styles.detail_container}>
       <h3 className={styles.element_name}>📍 {mainName}</h3>
@@ -182,13 +177,13 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         {t("feature_details.source")}&nbsp;
         {fromOsmUrl && (
           <a className="feature_src_osm" href={fromOsmUrl}>
-            OpenStreetMap
+            {fromOsmInstance}
           </a>
         )}
-        {fromOsmUrl && fromWikidataUrl && <span className="src_osm_and_wd">&nbsp;&</span>}
+        {fromOsmUrl && fromWikidataUrl && <span className="src_osm_and_wd">&nbsp;&&nbsp;</span>}
         {fromWikidataUrl && (
           <a className="feature_src_wd" href={fromWikidataUrl}>
-            &nbsp;Wikidata
+            Wikidata
           </a>
         )}
       </div>
