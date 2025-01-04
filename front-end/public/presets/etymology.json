@@ -17,5 +17,5 @@
         "P825",
         "P547"
     ],
-    "relation_role_whitelist": ["street"]
+    "relation_propagation_role": "street"
 }

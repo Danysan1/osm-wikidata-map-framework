@@ -47,7 +47,7 @@
         "db_all": "All sources from DB",
         "db_osm_wikidata_reverse": "Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}",
         "propagated": "Propagated",
-        "all_osm_keys": "All OSM keys",
+        "all_keys": "All keys",
         "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
         "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
         "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
@@ -76,14 +76,15 @@
         "etymology_source": "By linked entity source"
     },
     "feature_details": {
-        "source": "Source:",
-        "loading_first_n_items": "Loading only first {{partial}} items out of {{total}}...",
+        "source": "Feature source:",
+        "loading_first_n_items": "Loading only first {{partial}} entities out of {{total}}...",
         "location": "Location",
         "picture_via_commons": "Picture from Wikimedia Commons",
         "loading": "Loading entities...",
         "report_problem": "Report a problem in this element"
     },
     "etymology_details": {
+        "source": "Entity source:",
         "propagation": "propagation",
         "propagation_title": "Description of the propagation mechanism"
     },
@@ -97,6 +98,7 @@
     "change_language": "Change language",
     "choose_basemap": "Choose background style",
     "choose_projection": "Choose map projection",
+    "choose_year": "Choose the year:",
     "overpass_turbo_query": "Source OverpassQL query on Overpass Turbo",
     "wdqs_query": "Source SPARQL query on Wikidata Query Service",
     "qlever_query": "Source SPARQL query on QLever UI",

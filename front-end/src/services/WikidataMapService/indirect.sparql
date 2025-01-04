@@ -14,6 +14,7 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
+    (SAMPLE(?_ohm_rel) AS ?ohm_rel)
     (SAMPLE(?_alias) AS ?alias)
     (SAMPLE(?_statementEntity) AS ?statementEntity)
     ?etymology
@@ -43,7 +44,7 @@ WITH {
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_website ?_wikipedia ?_wikispore ?_picture ?_height ?_levels ?_osm_node ?_osm_way ?_osm_rel ?_alias
+    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_website ?_wikipedia ?_wikispore ?_picture ?_height ?_levels ?_osm_node ?_osm_way ?_osm_rel ?_ohm_rel ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         ?stmt ps:${indirectProperty} ?item.
@@ -78,6 +79,7 @@ WITH {
         OPTIONAL { ?item wdt:P11693 ?_osm_node. }
         OPTIONAL { ?item wdt:P10689 ?_osm_way. }
         OPTIONAL { ?item wdt:P402 ?_osm_rel. }
+        OPTIONAL { ?item wdt:P8424 ?_ohm_rel. }
         OPTIONAL { ?_alias owl:sameAs ?item. }
     }
 } AS %reverse

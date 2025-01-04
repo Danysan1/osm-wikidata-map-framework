@@ -48,7 +48,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     { colorSchemeID, setColorSchemeID } = useUrlFragmentContext(),
     [chartData, setChartData] = useState<ChartData<"pie">>(),
     handlers: Record<ColorSchemeID, () => void> = useMemo(() => {
-      if (process.env.NODE_ENV === 'development') console.debug(
+      console.debug(
         "StatisticsColorControl: creating handlers",
         { lang: i18n.language, layerIDs, map, setLayerColor, t }
       );
@@ -67,7 +67,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
               backgroundColor: usedStats.map(row => row.color || FALLBACK_COLOR),
             }]
           };
-        if (process.env.NODE_ENV === 'development') console.debug(
+        console.debug(
           "setChartStats: updating chart", { stats, usedStats, data }
         );
         setChartData(data);
@@ -88,7 +88,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
       const calculateLocalChartData = async (calculateChartData: StatisticsCalculator) => {
         const features = queryFeaturesOnScreen()?.map(f => f.properties!) ?? [];
         const [stats, color] = await calculateChartData(features, i18n.language);
-        if (process.env.NODE_ENV === 'development') console.debug(
+        console.debug(
           "calculateLocalChartData: updating chart", { features, stats, color }
         );
         if (color) setLayerColor(color);
@@ -106,7 +106,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
             ?.filter(etymology => etymology.wikidata)
             ?.map(etymology => etymology.wikidata!) ?? [];
         } catch (error) {
-          if (process.env.NODE_ENV === 'development') console.error(
+          console.error(
             "downloadChartDataFromWikidata: Error querying rendered features",
             { colorSchemeID, layers: layerIDs, error }
           );

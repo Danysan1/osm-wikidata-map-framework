@@ -118,9 +118,6 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
     if (minZoom) commonProps.minzoom = minZoom;
     if (source_layer) commonProps["source-layer"] = source_layer;
 
-    console.log(
-        "DetailsLayers render", { pointFilter, lineStringFilter, polygonFilter }
-    );
     return <>
         <Layer id={pointTapAreaLayerID}
             {...commonProps}

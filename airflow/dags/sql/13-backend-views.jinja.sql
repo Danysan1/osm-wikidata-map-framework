@@ -4,8 +4,8 @@ SELECT
     el.el_id as id,
     el.el_osm_type AS osm_type,
     el.el_osm_id AS osm_id,
-    CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
-    CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
+    CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 'openstreetmap.org' END AS from_osm_instance,
+    el.el_osm_id IS NULL AS from_wikidata,
     STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     1 AS boundary,
     el.el_tags AS tags,
@@ -22,7 +22,7 @@ SELECT
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
     CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
-        'from_osm', et_from_osm,
+        'from_osm_instance', CASE WHEN et_from_osm THEN 'openstreetmap.org' ELSE NULL END,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
         'osm_wd_join_field', CASE WHEN et_from_osm_wikidata_wd_id IS NULL THEN NULL ELSE 'OSM' END,
@@ -47,8 +47,8 @@ SELECT
     el.el_id as id,
     el.el_osm_type AS osm_type,
     el.el_osm_id AS osm_id,
-    CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
-    CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
+    CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 'openstreetmap.org' END AS from_osm_instance,
+    el.el_osm_id IS NULL AS from_wikidata,
     STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     el.el_tags AS tags,
     el.el_tags->>'{{var.value.osm_text_key}}' AS text_etymology,
@@ -63,7 +63,7 @@ SELECT
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
     CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
-        'from_osm', et_from_osm,
+        'from_osm_instance', CASE WHEN et_from_osm THEN 'openstreetmap.org' ELSE NULL END,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
         'osm_wd_join_field', CASE WHEN et_from_osm_wikidata_wd_id IS NULL THEN NULL ELSE 'OSM' END,

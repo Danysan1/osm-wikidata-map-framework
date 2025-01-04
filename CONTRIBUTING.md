@@ -11,7 +11,7 @@ The translations for the title and description of the specific instance of OWMF 
 For example, the title and description of Open Etymology Map are located in the [`.env.example` file in its repository](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example).
 
 All other translations are located in the [`front-end/public/locales/{LANGUAGE_CODE}/common.json`](front-end/public/locales/) files of this repository.
-**You can translate this framework in new languages or fix errors in existing translations [on Transifex](https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/)**.
+**You can translate this framework in new languages or fix errors in existing translations [on Transifex](https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/). If you want to translate a specific site in a new language, you will need to translate BOTH the framework and that site's specific Transifex project** (ex. for etymology.dsantini.it translate also [this project](https://app.transifex.com/osm-wikidata-maps/open-etymology-map/dashboard/)).
 
 ## Architecture info for contributors
 

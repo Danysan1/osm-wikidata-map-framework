@@ -47,7 +47,7 @@
         "db_all": "Todas as origens da base de dados",
         "db_osm_wikidata_reverse": "Entidades Wikidata referenciadas com OSM wikidata=* e {{indirectWdProperty}}",
         "propagated": "Propagado",
-        "all_osm_keys": "Todas as chaves OSM",
+        "all_keys": "Todas as chaves",
         "wd_reverse": "Entidades do Wikidata referenciadas com {{indirectWdProperty}}",
         "wd_qualifier": "Qualificadores P625 em {{indirectWdProperty}}",
         "wd_indirect": "Qualificadores P625 em {{indirectWdProperty}} e entidades Wikidata referenciadas com {{indirectWdProperty}}"
@@ -76,14 +76,15 @@
         "etymology_source": "Pela origem da entidade ligada"
     },
     "feature_details": {
-        "source": "Origem:",
-        "loading_first_n_items": "A carregar apenas os primeiros {{partial}} itens de um total de {{total}}...",
+        "source": "Origem do elemento:",
+        "loading_first_n_items": "A carregar apenas os primeiros {{partial}} entidades de um total de {{total}}...",
         "location": "Localização",
         "picture_via_commons": "Imagem do Wikimedia Commons",
         "loading": "A carregar as entidades...",
         "report_problem": "Comunicar um problema neste elemento"
     },
     "etymology_details": {
+        "source": "Origem da entidade:",
         "propagation": "propagação",
         "propagation_title": "Descrição do mecanismo de propagação"
     },

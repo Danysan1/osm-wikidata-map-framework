@@ -47,7 +47,7 @@
         "db_all": "Alle Quellen der DB",
         "db_osm_wikidata_reverse": "Wikidata-Entitäten, die mit OSM wikidata=* referenziert werden und {{indirectWdProperty}}",
         "propagated": "propagiert",
-        "all_osm_keys": "Alle OSM-Schlüssel",
+        "all_keys": "Alle Schlüssel",
         "wd_reverse": "Wikidata-Entitäten, auf die mit {{indirectWdProperty}}",
         "wd_qualifier": "P625-Qualifikatoren am {{indirectWdProperty}}",
         "wd_indirect": "P625-Qualifikatoren am {{indirectWdProperty}} und Wikidata-Entitäten, auf die mit {{indirectWdProperty}}"
@@ -76,14 +76,15 @@
         "etymology_source": "Nach Quelle der verknüpften Entitäten"
     },
     "feature_details": {
-        "source": "Quelle:",
-        "loading_first_n_items": "Nur die ersten {{partial}} Elemente von {{total}} werden geladen...",
+        "source": "Elementquelle:",
+        "loading_first_n_items": "Nur die ersten {{partial}} Entitäten von {{total}} werden geladen...",
         "location": "Standort",
         "picture_via_commons": "Bild von Wikimedia Commons",
         "loading": "Entitäten werden geladen...",
         "report_problem": "Ein Problem mit diesem Element melden"
     },
     "etymology_details": {
+        "source": "Entitätsquelle:",
         "propagation": "vermehrung",
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
     },

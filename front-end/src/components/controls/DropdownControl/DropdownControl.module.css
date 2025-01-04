@@ -37,6 +37,11 @@
   /*text-align: right;*/
 }
 
+tr.extra_children > td > * {
+  display: block;
+  margin: 0.5em;
+}
+
 @media (max-width: 768px) {
   .show_on_desktop {
     display: none;

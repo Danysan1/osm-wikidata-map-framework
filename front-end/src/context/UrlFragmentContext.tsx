@@ -23,11 +23,12 @@ const LONGITUDE_POSITION = 0,
   BACK_END_POSITION = 4,
   BACKGROUND_STYLE_POSITION = 5,
   PRESET_POSITION = 6,
+  YEAR_POSITION = 7,
   DEFAULT_LATITUDE = 0,
   DEFAULT_LONGITUDE = 0,
   DEFAULT_ZOOM = 1,
   DEFAULT_COLOR_SCHEME = ColorSchemeID.blue,
-  DEFAULT_BACKEND_ID = "overpass_all",
+  DEFAULT_BACKEND_ID = "overpass_osm_all",
   DEFAULT_BACKGROUND_STYLE_ID = "stadia_alidade";
 
 interface UrlFragmentState {
@@ -45,6 +46,8 @@ interface UrlFragmentState {
   setBackgroundStyleID: (backgroundStyleID: string) => void;
   sourcePresetID: string;
   setSourcePresetID: (sourcePresetID: string) => void;
+  year: number;
+  setYear: (date: number) => void;
 }
 
 const UrlFragmentContext = createContext<UrlFragmentState>({
@@ -74,6 +77,10 @@ const UrlFragmentContext = createContext<UrlFragmentState>({
   },
   sourcePresetID: DEFAULT_SOURCE_PRESET_ID,
   setSourcePresetID: () => {
+    /* placeholder */
+  },
+  year: new Date().getFullYear(),
+  setYear: () => {
     /* placeholder */
   },
 });
@@ -125,6 +132,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
     [sourcePresetID, setSourcePresetID] = useState<string>(
       () => getActiveSourcePresetIDs()[0]
     ),
+    [year, setYear] = useState<number>(() => new Date().getFullYear()),
     setLat: Dispatch<SetStateAction<number>> = useCallback(
       (lat) => {
         if (typeof lat === "number" && (isNaN(lat) || lat < -90 || lat > 90))
@@ -182,6 +190,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       console.warn("Invalid or empty source preset in URL fragment", newSourcePreset);
       newSourcePreset = undefined;
     }
+    const newYear = split[YEAR_POSITION];
 
     if (newLat) setLat(newLat);
     if (newLon) setLon(newLon);
@@ -189,6 +198,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
     if (newColorScheme) setColorSchemeID(newColorScheme);
     if (newBackEnd) setBackEndID(newBackEnd);
     if (newSourcePreset) setSourcePresetID(newSourcePreset);
+    if (newYear && !isNaN(parseInt(newYear))) setYear(parseInt(newYear));
 
     if (backgroundStyleFromFragment) setBackgroundStyleID(backgroundStyleFromFragment);
     else if (backgroundStyleFromQueryString)
@@ -202,6 +212,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       newBackEnd,
       backgroundStyleFromFragment,
       newSourcePreset,
+      newYear
     });
   }, [setLat, setZoom]);
 
@@ -221,7 +232,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       strLat = lat.toFixed(5),
       strZoom = zoom.toFixed(1);
 
-    const fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID}`;
+    const fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID},${year}`;
     if (window.location.hash !== fragment) {
       console.debug("Updating fragment", {
         old: window.location.hash,
@@ -233,6 +244,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         backEndID,
         backgroundStyleID,
         sourcePresetID,
+        year
       });
       window.location.hash = fragment;
     } else {
@@ -247,16 +259,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         sourcePresetID,
       });
     }
-  }, [
-    backEndID,
-    backgroundStyleID,
-    colorSchemeID,
-    initialized,
-    lat,
-    lon,
-    sourcePresetID,
-    zoom,
-  ]);
+  }, [backEndID, backgroundStyleID, colorSchemeID, initialized, lat, lon, sourcePresetID, year, zoom]);
 
   return (
     <UrlFragmentContext.Provider
@@ -275,6 +278,8 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         setBackgroundStyleID,
         sourcePresetID,
         setSourcePresetID,
+        year,
+        setYear,
       }}
     >
       {children}

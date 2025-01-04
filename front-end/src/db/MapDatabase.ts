@@ -10,9 +10,9 @@ export class MapDatabase extends Dexie {
     public constructor() {
         super("MapDatabase");
 
-        this.version(6).stores({
+        this.version(7).stores({
             //maps: "++id, [sourcePresetID+backEndID+onlyCentroids+language]" // Does not work: https://stackoverflow.com/a/56661425
-            maps: "++id, [sourcePresetID+backEndID+language]"
+            maps: "++id, [sourcePresetID+backEndID+language+year]"
         });
     }
 
@@ -21,20 +21,20 @@ export class MapDatabase extends Dexie {
             if (maxHours) {
                 const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
                     count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { maxHours, count, threshold });
+                console.debug("Evicted old maps from indexedDB", { maxHours, count, threshold });
             } else {
                 await this.maps.clear();
-                if (process.env.NODE_ENV === 'development') console.debug("Cleared all maps from indexedDB");
+                console.debug("Cleared all maps from indexedDB");
             }
         });
     }
 
-    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<MapRow | undefined> {
+    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
                 return await this.maps
-                    .where({ sourcePresetID, backEndID, language })
+                    .where({ sourcePresetID, backEndID, language, year })
                     .and(map => { // Find elements whose bbox includes the given bbox and that are not truncated
                         if (!map.bbox || map.onlyCentroids !== onlyCentroids)
                             return false;

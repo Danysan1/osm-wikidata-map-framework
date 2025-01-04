@@ -22,7 +22,7 @@ SELECT
     (SAMPLE(?_osm_rel) AS ?osm_rel)
     (SAMPLE(?_statementEntity) AS ?statementEntity)
     (?item AS ?from_entity)
-    (SAMPLE(?_from_p) AS ?from_prop)
+    (p:${directProperty} AS ?from_prop) # TODO Use SAMPLE(?_from_p) when VALUES is supported by QLever
     (false AS ?from_osm)
     (true AS ?from_wikidata)
     (SAMPLE(?_location) AS ?location)

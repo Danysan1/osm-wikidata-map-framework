@@ -1,7 +1,7 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
-import { Etymology } from "@/src/model/Etymology";
-import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
+import { Etymology, OsmInstance } from "@/src/model/Etymology";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
+import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
@@ -21,12 +21,30 @@ const PROPAGATED_COLOR = '#ff3333',
   NO_PICTURE_COLOR = '#ff3333',
   FEATURE_SOURCE_LAYER_COLOR: ExpressionSpecification = [
     "case",
-    ["coalesce", ["all",
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
       ["to-boolean", ["get", "from_osm"]],
+      ["has", "from_wikidata"],
       ["to-boolean", ["get", "from_wikidata"]]
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["to-boolean", ["get", "from_osm"]], false], OSM_COLOR,
-    ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], WIKIDATA_COLOR,
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
+      [">", ["length", ["get", "from_osm_instance"]], 0],
+      ["has", "from_wikidata"],
+      ["to-boolean", ["get", "from_wikidata"]]
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
+      ["to-boolean", ["get", "from_osm"]]
+    ], OSM_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
+      [">", ["length", ["get", "from_osm_instance"]], 0]
+    ], OSM_COLOR,
+    ["all",
+      ["has", "from_wikidata"],
+      ["to-boolean", ["get", "from_wikidata"]]
+    ], WIKIDATA_COLOR,
     FALLBACK_COLOR
   ],
   ETYMOLOGY_SOURCE_LAYER_COLOR: ExpressionSpecification = [
@@ -36,22 +54,34 @@ const PROPAGATED_COLOR = '#ff3333',
     ["==", ["get", "linked_entities"], "[]"], FALLBACK_COLOR,
 
     // Checks for vector tiles and PMTiles (where the linked_entities array is JSON-encoded with spaces)
-    ["coalesce", ["in", '"propagated" : true', ["get", "linked_entities"]], false], PROPAGATED_COLOR,
-    ["coalesce", ["all",
+    ["in", '"propagated" : true', ["get", "linked_entities"]], PROPAGATED_COLOR,
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
       ["to-boolean", ["get", "from_osm"]],
       ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_wikidata" : true', ["get", "linked_entities"]], false], WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_osm" : true', ["get", "linked_entities"]], false], OSM_COLOR,
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
+      ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
+    ], OSM_WIKIDATA_COLOR,
+    ["in", '"from_wikidata" : true', ["get", "linked_entities"]], WIKIDATA_COLOR,
+    ["in", '"from_osm" : true', ["get", "linked_entities"]], OSM_COLOR, // TODO remove (deprecated)
+    ["in", '"from_osm_instance" : "', ["get", "linked_entities"]], OSM_COLOR,
 
     // Checks for cases where the map library JSON-encodes the linked_entities array without spaces
-    ["coalesce", ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], false], PROPAGATED_COLOR,
-    ["coalesce", ["all",
+    ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], PROPAGATED_COLOR,
+    ["all",
+      ["has", "from_osm"], // TODO remove (deprecated)
       ["to-boolean", ["get", "from_osm"]],
       ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
-    ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], false], WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], false], OSM_COLOR,
+    ], OSM_WIKIDATA_COLOR,
+    ["all",
+      ["has", "from_osm_instance"],
+      ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
+    ], OSM_WIKIDATA_COLOR,
+    ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], WIKIDATA_COLOR,
+    ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], OSM_COLOR, // TODO remove (deprecated)
+    ["in", '"from_osm_instance":"', ["to-string", ["get", "linked_entities"]]], OSM_COLOR,
 
     FALLBACK_COLOR
   ];
@@ -63,32 +93,22 @@ export async function downloadChartDataForWikidataIDs(
   idSet: Set<string>, colorSchemeID: ColorSchemeID, language: string
 ): Promise<EtymologyStat[] | null> {
   if (idSet.size === 0) {
-    if (process.env.NODE_ENV === 'development') console.warn(
-      "downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs"
-    );
+    console.warn("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
     return [];
   }
 
   const uniqueIDs = Array.from(idSet);
-  if (process.env.NODE_ENV === 'development') console.debug(
-    "downloadChartDataForWikidataIDs: Fetching and updating stats", { colorSchemeID, idSet }
-  );
+  console.debug("downloadChartDataForWikidataIDs: Fetching and updating stats", { colorSchemeID, idSet });
 
   try {
     const statsService = new WikidataStatsService(language);
     const stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
     if (!stats.length) {
-      if (process.env.NODE_ENV === 'development') console.debug(
-        "downloadChartDataForWikidataIDs: empty stats received",
-        { colorSchemeID, uniqueIDs }
-      );
+      console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
       return null;
     } else {
-      if (process.env.NODE_ENV === 'development') console.debug(
-        "downloadChartDataForWikidataIDs: stats fetched",
-        { colorSchemeID, uniqueIDs, stats }
-      );
+      console.debug("downloadChartDataForWikidataIDs: stats fetched", { colorSchemeID, uniqueIDs, stats });
       return stats;
     }
   } catch (e) {
@@ -112,7 +132,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
       else
         without_picture_IDs.add(id);
     });
-    if (process.env.NODE_ENV === 'development') console.debug(
+    console.debug(
       "loadPictureAvailabilityChartData: downloading unknown picture chart data",
       { features, language, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
     );
@@ -148,7 +168,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
             statsData.push(["==", subject, ["get", "wikidata"]], color);
           });
         } else {
-          if (process.env.NODE_ENV === 'development') console.debug(
+          console.debug(
             "loadPictureAvailabilityChartData: skipping row with no color or subjects",
             row
           );
@@ -166,7 +186,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
     }
 
     const out = [stats, data] as const;
-    if (process.env.NODE_ENV === 'development') console.debug(
+    console.debug(
       "loadPictureAvailabilityChartData",
       { features, out, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
     );
@@ -180,7 +200,7 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
     if (props.wikidata)
       wikidataIDs.add(props.wikidata);
   });
-  if (process.env.NODE_ENV === 'development') console.debug(
+  console.debug(
     "loadWikilinkChartData: downloading chart data", { features, language, wikidataIDs }
   );
   const stats = await downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count, language);
@@ -195,7 +215,7 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
           statsData.push(["==", subject, ["get", "wikidata"]], color);
         });
       } else {
-        if (process.env.NODE_ENV === 'development') console.debug(
+        console.debug(
           "loadWikilinkChartData: skipping row with no color or subjects", row
         );
       }
@@ -210,36 +230,45 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
   }
 
   const out = [stats, data] as const;
-  if (process.env.NODE_ENV === 'development') console.debug(
-    "loadWikilinkChartData", { features, out, wikidataIDs }
-  );
+  console.debug("loadWikilinkChartData", { features, out, wikidataIDs });
   return out;
 }
 
 export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
-  const osm_IDs = new Set<string>(),
-    osm_wikidata_IDs = new Set<string>(),
-    wikidata_IDs = new Set<string>();
+  const osmInstances = [OsmInstance.OpenStreetMap, OsmInstance.OpenHistoricalMap], //Object.keys(OsmInstance).filter(key => isNaN(Number(key))),
+    IDs_by_source: Record<string, Set<string>> = {
+      "Wikidata": new Set<string>()
+    };
+  osmInstances.forEach(instance => {
+    IDs_by_source[instance] = new Set<string>();
+    IDs_by_source[instance + " + Wikidata"] = new Set<string>();
+  });
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
-    if (feature?.from_osm && feature?.from_wikidata)
-      osm_wikidata_IDs.add(id);
-    else if (feature?.from_osm)
-      osm_IDs.add(id);
-    else if (feature?.from_wikidata)
-      wikidata_IDs.add(id);
+    osmInstances.forEach(instance => {
+      if ((!!feature?.from_osm || feature?.from_osm_instance === instance) && feature?.from_wikidata)
+        IDs_by_source[instance + " + Wikidata"].add(id);
+      else if (!!feature.from_osm || feature?.from_osm_instance === instance)
+        IDs_by_source[instance].add(id);
+      else if (feature?.from_wikidata)
+        IDs_by_source.Wikidata.add(id);
+    });
   });
 
-  const stats: EtymologyStat[] = [];
-  if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size });
-  if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
-  if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
+  const stats: EtymologyStat[] = Object.keys(IDs_by_source).filter(source => IDs_by_source[source].size > 0).map(source => {
+    let color: string;
+    if (source === "Wikidata") color = WIKIDATA_COLOR;
+    else if (source.endsWith("Wikidata")) color = OSM_WIKIDATA_COLOR;
+    else color = OSM_COLOR;
+
+    return { name: source, color, id: source, count: IDs_by_source[source].size };
+  });
 
   const out = [stats, FEATURE_SOURCE_LAYER_COLOR] as const;
-  if (process.env.NODE_ENV === 'development') console.debug(
+  console.debug(
     "calculateFeatureSourceStats",
-    { features: features, out, osm_wikidata_IDs, wikidata_IDs, osm_IDs }
+    { features: features, out, IDs_by_source, osmInstances }
   );
   return Promise.resolve(out);
 }
@@ -247,8 +276,10 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
 export function calculateEtymologySourceStats(osmTextOnlyLabel: string): StatisticsCalculator {
   return (features) => {
     const osm_IDs = new Set<string>(),
+      ohm_IDs = new Set<string>(),
       osm_text_names = new Set<string>(),
       osm_wikidata_IDs = new Set<string>(),
+      ohm_wikidata_IDs = new Set<string>(),
       wikidata_IDs = new Set<string>(),
       propagation_IDs = new Set<string>();
     features.forEach(feature => {
@@ -258,15 +289,21 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       if (entities?.some(ety => ety.wikidata)) {
         entities.forEach(etymology => {
           if (!etymology.wikidata) {
-            if (process.env.NODE_ENV === 'development') console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
+            console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
           } else if (etymology.propagated) {
             propagation_IDs.add(etymology.wikidata);
-          } else if (feature?.from_osm && etymology.from_wikidata) {
+          } else if ((!!feature?.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap) && etymology.from_wikidata) {
             osm_wikidata_IDs.add(etymology.wikidata);
+          } else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap && etymology.from_wikidata) {
+            ohm_wikidata_IDs.add(etymology.wikidata);
           } else if (etymology.from_wikidata) {
             wikidata_IDs.add(etymology.wikidata);
-          } else if (etymology.from_osm) {
+          } else if (!!etymology.from_osm || etymology.from_osm_instance === OsmInstance.OpenStreetMap) {
             osm_IDs.add(etymology.wikidata);
+          } else if (etymology.from_osm_instance === OsmInstance.OpenHistoricalMap) {
+            ohm_IDs.add(etymology.wikidata);
+          } else {
+            console.debug("Unknown etymology source", feature, etymology);
           }
         });
       } else if (feature?.text_etymology) {
@@ -281,18 +318,24 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
     if (osm_wikidata_IDs.size) stats.push({
       name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size
     });
+    if (ohm_wikidata_IDs.size) stats.push({
+      name: "OHM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'ohm_wikidata', count: ohm_wikidata_IDs.size
+    });
     if (wikidata_IDs.size) stats.push({
       name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size
     });
     if (osm_IDs.size) stats.push({
-      name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size
+      name: "OpenStreetMap", color: OSM_COLOR, id: 'osm', count: osm_IDs.size
+    });
+    if (ohm_IDs.size) stats.push({
+      name: "OpenHistoricalMap", color: OSM_COLOR, id: 'ohm', count: ohm_IDs.size
     });
     if (osm_text_names.size) stats.push({
       name: osmTextOnlyLabel, color: FALLBACK_COLOR, id: "osm_text", count: osm_text_names.size
     });
 
     const out = [stats, ETYMOLOGY_SOURCE_LAYER_COLOR] as const;
-    if (process.env.NODE_ENV === 'development') console.debug(
+    console.debug(
       "calculateEtymologySourceStats",
       { features, out, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names, osmTextOnlyLabel }
     );
@@ -312,7 +355,7 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
         statsData.push(["in", subject + '"', ["to-string", ["get", "linked_entities"]]], color);
       });
     } else if (row.count > 1) {
-      if (process.env.NODE_ENV === 'development') console.debug(
+      console.debug(
         "getLayerColorFromStats: skipping row with no color or subjects", row
       );
     }
@@ -327,7 +370,7 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
     FALLBACK_COLOR
   ];
 
-  if (process.env.NODE_ENV === 'development') console.debug(
+  console.debug(
     "getLayerColorFromStats: setting layer color", { stats, data }
   );
   return data;

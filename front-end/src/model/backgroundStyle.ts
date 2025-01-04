@@ -1,16 +1,24 @@
 export interface BackgroundStyle {
     /** Univocally identifies the style */
     id: string;
+
     /** Name of the vendor to display in the UI */
     vendorText: string,
+    
     /** Name of the style to display in the UI */
     styleText: string;
+    
     /** URL of the style JSON */
     styleUrl: string;
+    
     /** Placeholder text for the API key */
     keyPlaceholder?: string;
+    
     /** API key to use for this style, necessary only if keyPlaceholder is specified */
     key?: string
+
+    /** Whether the data can be filtered by the start_decdate and end_decdate fields */
+    canFilterByDate?: boolean;
 }
 
 /**
@@ -75,5 +83,18 @@ export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: s
         vendorText: "Jawg Maps",
         styleText: text,
         styleUrl: `https://api.jawg.io/styles/${jawgId}.json?extrude=${extrude}&access-token=${jawgToken}`
+    };
+}
+
+/**
+ * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse#Vector_tiles_and_stylesheets
+ */
+export function openHistoricalMapStyle(id: string, text: string, ohmId: string): BackgroundStyle {
+    return {
+        canFilterByDate: true,
+        id: id,
+        vendorText: "OpenHistoricalMap",
+        styleText: text,
+        styleUrl: `https://www.openhistoricalmap.org/map-styles/${ohmId}.json`
     };
 }

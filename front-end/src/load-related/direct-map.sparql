@@ -13,7 +13,7 @@ SELECT DISTINCT
     ?commons
     ?location
     ?etymology
-    ?from_prop
+    (?_from_p AS ?from_prop)
     ?alias
 WHERE {
     VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }

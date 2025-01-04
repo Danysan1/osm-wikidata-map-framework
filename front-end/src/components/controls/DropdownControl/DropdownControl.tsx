@@ -1,15 +1,15 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import {
-    ChangeEvent,
-    ChangeEventHandler,
-    FC,
-    PropsWithChildren,
-    cloneElement,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState
+  ChangeEvent,
+  ChangeEventHandler,
+  FC,
+  PropsWithChildren,
+  cloneElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
 } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
@@ -144,15 +144,9 @@ export const DropdownControl: FC<DropdownControlProps> = ({
 
   useEffect(() => {
     if (!dropdownItems.length) {
-      if (process.env.NODE_ENV === 'development') console.warn(
-        "DropdownControl: no dropdownItems provided",
-        { dropdownItems }
-      );
+      console.warn("DropdownControl: no dropdownItems provided", { dropdownItems });
     } else if (checkMissingSelectedValue && !dropdownItems.some(item => item.id === selectedValue)) {
-      if (process.env.NODE_ENV === 'development') console.warn(
-        "DropdownControl: selectedValue not found in dropdownItems, selecting first item",
-        { selectedValue, dropdownItems }
-      );
+      console.warn("DropdownControl: selectedValue not found in dropdownItems, selecting first item", { selectedValue, dropdownItems });
       dropdownItems[0].onSelect();
     }
   }, [checkMissingSelectedValue, dropdownItems, selectedValue]);
@@ -163,10 +157,12 @@ export const DropdownControl: FC<DropdownControlProps> = ({
         <div className={className}>
           <table className={styles.ctrl_table}>
             <tbody>
+
               <tr>
                 {buttonOnTheLeft ? btnCell : titleCell}
                 {buttonOnTheLeft ? titleCell : btnCell}
               </tr>
+
               <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
                 <td colSpan={2} className={styles.dropdown_cell}>
                   <select
@@ -181,13 +177,15 @@ export const DropdownControl: FC<DropdownControlProps> = ({
                   </select>
                 </td>
               </tr>
+              
               {children && (
-                <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
+                <tr className={`${styles.extra_children} ${dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}`}>
                   <td colSpan={2}>
                     {children}
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>

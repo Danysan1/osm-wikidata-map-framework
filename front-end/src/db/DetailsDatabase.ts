@@ -24,10 +24,10 @@ export class DetailsDatabase extends Dexie {
             if (maxHours) {
                 const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
                     count = await this.details.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old details from indexedDB", { maxHours, count, threshold });
+                console.debug("Evicted old details from indexedDB", { maxHours, count, threshold });
             } else {
                 await this.details.clear();
-                if (process.env.NODE_ENV === 'development') console.debug("Cleared all details from indexedDB");
+                console.debug("Cleared all details from indexedDB");
             }
         });
     }

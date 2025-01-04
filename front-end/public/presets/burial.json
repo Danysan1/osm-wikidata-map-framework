@@ -15,6 +15,7 @@
         "buried:wikidata",
         "subject:wikidata"
     ],
+    "relation_member_role": "tomb",
     "wikidata_indirect_property": "P119",
     "wikidata_image_property": "P1442"
 }

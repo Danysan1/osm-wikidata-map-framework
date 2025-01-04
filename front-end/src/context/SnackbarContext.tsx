@@ -25,19 +25,19 @@ export const useSnackbarContext = () => useContext(SnackbarContext);
 export const SnackbarContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const [text, setText] = useState<string>(),
         [color, setColor] = useState<string>("green"),
-        [timeoutObj, setTimeoutObj] = useState<NodeJS.Timeout>();
+        [, setTimeoutObj] = useState<NodeJS.Timeout>();
     const showSnackbar = useCallback((message: string, color = "lightcoral", timeout = 3000) => {
         console.debug(
             "showSnackbar", { message, color, timeout }
         );
         setColor(color);
         setText(message);
-        setTimeoutObj(() => {
-            if (timeoutObj)
-                clearTimeout(timeoutObj);
+        setTimeoutObj((oldTimeoutObj) => {
+            if (oldTimeoutObj)
+                clearTimeout(oldTimeoutObj);
             return setTimeout(() => setText(undefined), timeout);
         });
-    }, [timeoutObj]);
+    }, []);
 
     return (
         <SnackbarContext.Provider value={{ showSnackbar }} >

@@ -13,8 +13,9 @@ export class WikimediaCommonsService {
     }
 
     /**
-     * @param imgName File name from Wikimedia Commons (NON URLencoded, withouth the initial "File:")
-     * @returns The attribution text for the file (includes license and author)
+     * Fetch the attribution text for a Wikimedia Commons file (includes license and author)
+     * 
+     * @param imgName File name from Wikimedia Commons (NON URLencoded, without the initial "File:")
      * @see https://commons.wikimedia.org/wiki/Commons:Credit_line#Automatic_handling_of_attribution_by_reusers
      * @see https://commons.wikimedia.org/w/api.php?action=help&modules=main
      * @see https://www.mediawiki.org/wiki/API:Main_page
@@ -22,6 +23,13 @@ export class WikimediaCommonsService {
      * @see https://www.mediawiki.org/wiki/Manual:CORS#Using_jQuery_methods
      */
     async fetchAttribution(imgName: string): Promise<string> {
+        const metadata = await this.fetchMetadata(imgName),
+            license = metadata?.LicenseShortName?.value ?? "?",
+            artist = metadata?.Artist?.value?.replace(/<span style="display: none;">.*<\/span>/, "") ?? "?";
+        return `Wikimedia Commons - ${artist} - ${license}`;
+    }
+
+    async fetchMetadata(imgName: string) {
         const res = await this.api.apiCall({
             action: "query",
             prop: "imageinfo",
@@ -35,14 +43,8 @@ export class WikimediaCommonsService {
         if (!pages)
             throw new Error("No pages in response");
         const pageID = Object.keys(pages)[0],
-            extmetadata = pages[pageID]?.imageinfo?.[0]?.extmetadata,
-            license = extmetadata?.LicenseShortName?.value,
-            artist = extmetadata?.Artist?.value;
-        let imgAttribution = "Wikimedia Commons";
-        if (typeof license === "string")
-            imgAttribution += " - " + license;
-        if (typeof artist === "string")
-            imgAttribution += " - " + artist.replace(/<span style="display: none;">.*<\/span>/, "");
-        return imgAttribution;
+            metadata = pages[pageID]?.imageinfo?.[0]?.extmetadata;
+        console.debug("Commons fetchMetadata", { imgName, pages, metadata });
+        return metadata;
     }
 }

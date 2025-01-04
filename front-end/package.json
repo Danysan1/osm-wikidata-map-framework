@@ -1,5 +1,5 @@
 {
-  "version": "4.2.0",
+  "version": "4.3.0",
   "name": "osm-wikidata-map-framework-front-end",
   "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
   "description": "OSM-Wikidata Map Framework - Create interactive maps to show details about map elements based on OpenStreetMap and Wikidata",
@@ -56,6 +56,7 @@
     "next": "^14.2.4",
     "osmtogeojson": "^3.0.0-beta.5",
     "overpass-ts": "^4.3.8",
+    "panoramax-js": "^0.4.8",
     "papaparse": "^5.4.1",
     "pmtiles": "^3.0.6",
     "raw-loader": "^4.0.2",

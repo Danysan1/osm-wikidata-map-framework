@@ -1,14 +1,14 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { OsmInstance } from "@/src/model/Etymology";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
-import { WikidataStatementService } from "@/src/services/WikidataStatementService";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
-import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
+import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
 import styles from "./FeatureView.module.css";
 
 interface FeatureViewProps {
@@ -20,11 +20,16 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
-    osm_full_id =
-      props?.osm_type && props.osm_id ? props.osm_type + "/" + props.osm_id : null,
+    fromOsmInstance = props?.from_osm_instance ?? OsmInstance.OpenStreetMap,
+    fromOsmType =
+      fromOsmInstance === OsmInstance.OpenHistoricalMap
+        ? props?.ohm_type
+        : props?.osm_type,
+    fromOsmId =
+      fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_id : props?.osm_id,
     fromOsmUrl =
-      props?.from_osm && osm_full_id
-        ? `https://www.openstreetmap.org/${osm_full_id}`
+      (!!props?.from_osm || props?.from_osm_instance) && fromOsmType && fromOsmId
+        ? `https://www.${fromOsmInstance}/${fromOsmType}/${fromOsmId}`
         : undefined,
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     fromWdEntity = props?.from_wikidata_entity || props?.wikidata,
@@ -49,8 +54,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
       return alt_name_set.size > 0 ? Array.from(alt_name_set) : undefined;
     }, [mainName, featureI18n.alt_name, featureI18n.name, featureI18n.official_name]),
-    [description, setDescription] = useState<string>(),
-    [commons, setCommons] = useState<string[]>();
+    [description, setDescription] = useState<string>();
 
   useEffect(() => {
     const local_name = featureI18n["name:" + i18n.language],
@@ -109,39 +113,9 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [featureI18n.description, i18n.language, props]);
 
-  useEffect(() => {
-    if (props?.commons?.includes("File:")) {
-      setCommons([props.commons]);
-    } else if (props?.picture?.includes("File:")) {
-      setCommons([props.picture]);
-    } else if (props?.wikidata) {
-      const statementService = new WikidataStatementService();
-      statementService
-        .getCommonsImageFromWikidataID(props.wikidata)
-        .then((image) => {
-          if (image) {
-            console.debug("Found image from Wikidata", { props, image });
-            setCommons([image]);
-          }
-        })
-        .catch(() => {
-          console.warn("Failed getting image from Wikidata", props);
-        });
-    }
-  }, [props]);
-
-  console.debug("FeatureView", {
-    feature,
-    mainName,
-    altNames,
-    description,
-    commons,
-    fromOsmUrl,
-    fromWikidataUrl,
-  });
   return (
     <div className={styles.detail_container}>
-      <h3 className={styles.element_name}>📍 {mainName}</h3>
+      {!!mainName && <h3 className={styles.element_name}>📍 {mainName}</h3>}
       {!!altNames?.length && (
         <p className={styles.element_alt_names}>
           {altNames.map((name) => '"' + name + '"').join(" / ")}
@@ -151,19 +125,14 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       <div className={styles.feature_buttons_container}>
         <FeatureButtonRow feature={feature} />
       </div>
-      {!!commons?.length && (
-        <div className="feature_pictures column">
-          {commons.map((img, i) => (
-            <CommonsImage key={i} name={img} />
-          ))}
-        </div>
-      )}
+      {props && <FeatureImages feature={props} />}
 
       {(!!props?.linked_entities || props?.text_etymology) && (
         <EtymologyList
           wdLinkedEntities={props.linked_entities ?? []}
           text_etymology={props.text_etymology}
           text_etymology_descr={props.text_etymology_descr}
+          from_osm_instance={props.from_osm_instance}
           from_osm_id={props.osm_id}
           from_osm_type={props.osm_type}
         />
@@ -183,13 +152,15 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         {t("feature_details.source")}&nbsp;
         {fromOsmUrl && (
           <a className="feature_src_osm" href={fromOsmUrl}>
-            OpenStreetMap
+            {fromOsmInstance}
           </a>
         )}
-        {fromOsmUrl && fromWikidataUrl && <span className="src_osm_and_wd">&nbsp;&</span>}
+        {fromOsmUrl && fromWikidataUrl && (
+          <span className="src_osm_and_wd">&nbsp;&&nbsp;</span>
+        )}
         {fromWikidataUrl && (
           <a className="feature_src_wd" href={fromWikidataUrl}>
-            &nbsp;Wikidata
+            Wikidata
           </a>
         )}
       </div>
