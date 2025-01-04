@@ -25,8 +25,8 @@ const PMTILES_GROUP_NAME = "Database (PMTiles)",
     OVERPASS_WDQS_GROUP_NAME = "OpenStreetMap (Overpass API) + Wikidata Query Service",
     OHM_WDQS_GROUP_NAME = "OpenHistoricalMap (Overpass API) + Wikidata Query Service",
     QLEVER_WD_GROUP_NAME = "QLever Wikidata",
-    QLEVER_OSM_GROUP_NAME = "QLever OpenStreetMap",
-    QLEVER_OHM_GROUP_NAME = "QLever OpenHistoricalMap";
+    QLEVER_OSM_GROUP_NAME = "QLever OpenStreetMap (beta)",
+    QLEVER_OHM_GROUP_NAME = "QLever OpenHistoricalMap (beta)";
 
 /**
  * Let the user choose the back-end from a list of available back-ends for the current instance and source preset.

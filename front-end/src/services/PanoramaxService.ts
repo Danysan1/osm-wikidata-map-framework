@@ -14,7 +14,7 @@ export class PanoramaxService {
         const metadata = (await this.api.imageInfo(imgUUID)).properties,
             artist = metadata.exif["Exif.Image.Artist"] ?? "?",
             producer = metadata["geovisio:producer"] ?? "?",
-            license = (metadata as any as  Record<string,string>).license ?? metadata["geovisio:license"] ?? "?";
+            license = (metadata as unknown as Record<string,string>).license ?? metadata["geovisio:license"] ?? "?";
         return `Panoramax - ${artist}, ${producer} - ${license}`;
     }
 }
