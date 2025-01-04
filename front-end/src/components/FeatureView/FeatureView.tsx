@@ -141,7 +141,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       <Button
         title={t("feature_details.report_problem")}
         className="ety_error_button"
-        href={`/${i18n.language}/contributing/${sourcePresetID}`}
+        href={`/${i18n.language}/contributing/${sourcePresetID}${process.env.owmf_static_export === "true" && process.env.NODE_ENV === "production" ? ".html" : ""}`}
         iconText="⚠️"
         iconAlt="Problem symbol"
         showText
