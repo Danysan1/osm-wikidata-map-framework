@@ -12,7 +12,15 @@ export const DateSelector: FC = () => {
   return (
     <label>
       {t("choose_year", "Choose the year:")}
-      <input type="number" name="year" value={year} onChange={changeDate}></input>
+      <input
+        type="number"
+        name="year"
+        value={year}
+        onChange={changeDate}
+        min="-1000"
+        max="2030"
+        inputMode="numeric"
+      ></input>
     </label>
   );
 };

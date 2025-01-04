@@ -3,13 +3,12 @@ import { OsmInstance } from "@/src/model/Etymology";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
-import { WikidataStatementService } from "@/src/services/WikidataStatementService";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
-import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
+import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
 import styles from "./FeatureView.module.css";
 
 interface FeatureViewProps {
@@ -51,8 +50,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
       return alt_name_set.size > 0 ? Array.from(alt_name_set) : undefined;
     }, [mainName, featureI18n.alt_name, featureI18n.name, featureI18n.official_name]),
-    [description, setDescription] = useState<string>(),
-    [commons, setCommons] = useState<string[]>();
+    [description, setDescription] = useState<string>();
 
   useEffect(() => {
     const local_name = featureI18n["name:" + i18n.language],
@@ -111,27 +109,6 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [featureI18n.description, i18n.language, props]);
 
-  useEffect(() => {
-    if (props?.commons?.includes("File:")) {
-      setCommons([props.commons]);
-    } else if (props?.picture?.includes("File:")) {
-      setCommons([props.picture]);
-    } else if (props?.wikidata) {
-      const statementService = new WikidataStatementService();
-      statementService
-        .getCommonsImageFromWikidataID(props.wikidata)
-        .then((image) => {
-          if (image) {
-            console.debug("Found image from Wikidata", { props, image });
-            setCommons([image]);
-          }
-        })
-        .catch(() => {
-          console.warn("Failed getting image from Wikidata", props);
-        });
-    }
-  }, [props]);
-
   return (
     <div className={styles.detail_container}>
       <h3 className={styles.element_name}>📍 {mainName}</h3>
@@ -144,13 +121,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       <div className={styles.feature_buttons_container}>
         <FeatureButtonRow feature={feature} />
       </div>
-      {!!commons?.length && (
-        <div className="feature_pictures column">
-          {commons.map((img, i) => (
-            <CommonsImage key={i} name={img} />
-          ))}
-        </div>
-      )}
+      {props && <FeatureImages feature={props} />}
 
       {(!!props?.linked_entities || props?.text_etymology) && (
         <EtymologyList

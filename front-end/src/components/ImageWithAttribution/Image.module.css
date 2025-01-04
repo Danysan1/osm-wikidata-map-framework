@@ -18,4 +18,5 @@ p.pic_attr img {
 img.pic_img {
   width: auto;
   height: auto;
+  max-width: 350px;
 }

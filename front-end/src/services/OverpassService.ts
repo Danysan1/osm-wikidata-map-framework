@@ -127,12 +127,13 @@ export class OverpassService implements MapService {
             }
         }
 
-        console.time("overpass_query");
+        const timerID = new Date().getMilliseconds();
+        console.time(`overpass_query_${timerID}`);
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
             endpoint = site === OsmInstance.OpenHistoricalMap ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
             res = await overpassJson(query, { endpoint });
-        console.timeEnd("overpass_query");
+        console.timeEnd(`overpass_query_${timerID}`);
         if (!res.elements)
             throw new Error("Bad response from Overpass");
 
@@ -141,7 +142,7 @@ export class OverpassService implements MapService {
         if (!res.elements && res.remark)
             throw new Error(`Overpass API error: ${res.remark}`);
 
-        console.time("overpass_transform");
+        console.time(`overpass_transform_${timerID}`);
         const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
         console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
@@ -155,7 +156,7 @@ export class OverpassService implements MapService {
         out.onlyCentroids = onlyCentroids;
         out.year = year;
         out.truncated = res.elements?.length === this.maxElements;
-        console.timeEnd("overpass_transform");
+        console.timeEnd(`overpass_transform_${timerID}`);
 
         return out;
     }
@@ -240,6 +241,7 @@ export class OverpassService implements MapService {
                 feature.properties?.relations
                     ?.filter(rel => rel.role && this.preset.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
+                        if(!rel.reltags[key]) return;
                         console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
                         linkedEntities.push(
                             ...rel.reltags[key]

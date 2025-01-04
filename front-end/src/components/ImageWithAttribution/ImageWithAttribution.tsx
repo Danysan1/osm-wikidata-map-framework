@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { useTranslation } from "react-i18next";
 import styles from "./Image.module.css";
 
 interface ImageWithAttributionProps {
@@ -7,6 +6,7 @@ interface ImageWithAttributionProps {
   originalUrl: string;
   attribution?: string;
   className?: string;
+  title: string;
 }
 
 /**
@@ -17,12 +17,8 @@ export const ImageWithAttribution: React.FC<ImageWithAttributionProps> = ({
   originalUrl,
   attribution,
   className,
+  title,
 }) => {
-  const { t } = useTranslation();
-  const title = t(
-    "feature_details.picture_via_commons",
-    "Picture from Wikimedia Commons"
-  );
   return (
     <div className={className}>
       <a className={styles.pic_link} href={originalUrl} title={title} aria-label={title}>
@@ -30,8 +26,8 @@ export const ImageWithAttribution: React.FC<ImageWithAttributionProps> = ({
           className={styles.pic_img}
           src={previewUrl}
           alt={title}
-          width={300}
-          height={300}
+          width={350}
+          height={350}
         />
       </a>
       {attribution && (

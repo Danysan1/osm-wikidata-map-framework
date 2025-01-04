@@ -1,53 +1,68 @@
-import { ImageWithAttribution } from "./ImageWithAttribution";
-import { useEffect, useState, FC } from "react";
 import { WikimediaCommonsService } from "@/src/services/WikimediaCommonsService";
+import { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ImageWithAttribution } from "./ImageWithAttribution";
 
 interface CommonsImageProps {
-    /**
-     * Standard name of the image
-     * 
-     * @example "Battle between Francisco Poras and Columbus on Jamaica (1).tif"
-     * @example "File:Battle between Francisco Poras and Columbus on Jamaica (1).tif"
-     * @example https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif
-     */
-    name: string;
-    className?: string;
+  /**
+   * Standard name of the image
+   *
+   * @example "Battle between Francisco Poras and Columbus on Jamaica (1).tif"
+   * @example "File:Battle between Francisco Poras and Columbus on Jamaica (1).tif"
+   * @example "https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif"
+   */
+  name: string;
+  className?: string;
 }
 
 /**
  * Display a Wikimedia Commons image and its attribution
  */
 export const CommonsImage: FC<CommonsImageProps> = ({ name, className }) => {
-    const decodedImg = decodeURIComponent(name.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
+  const { t } = useTranslation(),
+    title = t("feature_details.picture_via_commons", "Picture from Wikimedia Commons"),
+    decodedImg = decodeURIComponent(name.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
 
-    /**
-     * UrlEncoded name
-     * 
-     * @example "Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif"
-     */
-    const encodedImg = encodeURIComponent(decodedImg);
+  /**
+   * UrlEncoded name
+   *
+   * @example "Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif"
+   */
+  const encodedImg = encodeURIComponent(decodedImg);
 
-    /**
-     * Link to the lossy preview / thumbnail
-     * 
-     * @example "https://commons.wikimedia.org/wiki/Special:FilePath/Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif?width=300px"
-     * (links to https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif/lossy-page1-300px-Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif.jpg )
-     */
-    const imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedImg}?width=300px`;
+  /**
+   * Link to the lossy preview / thumbnail
+   *
+   * @example "https://commons.wikimedia.org/wiki/Special:FilePath/Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif?width=300px"
+   * (links to https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif/lossy-page1-300px-Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif.jpg )
+   */
+  const imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedImg}?width=350px`;
 
-    /**
-     * Link to original image page.
-     * 
-     * @example "https://commons.wikimedia.org/wiki/File:Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif"
-     * (redirects to https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif )
-     */
-    const imgUrl = 'https://commons.wikimedia.org/wiki/File:' + encodedImg;
+  /**
+   * Link to original image page.
+   *
+   * @example "https://commons.wikimedia.org/wiki/File:Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif"
+   * (redirects to https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif )
+   */
+  const imgUrl = "https://commons.wikimedia.org/wiki/File:" + encodedImg;
 
-    const [attribution, setAttribution] = useState<string>();
-    useEffect(() => {
-        new WikimediaCommonsService().fetchAttribution(name).then(setAttribution).catch(console.error);
-    }, [name]);
+  const [attribution, setAttribution] = useState<string>();
+  useEffect(() => {
+    new WikimediaCommonsService()
+      .fetchAttribution(decodedImg)
+      .then(setAttribution)
+      .catch(console.error);
+  }, [decodedImg]);
 
-    return decodedImg && <ImageWithAttribution previewUrl={imgPreviewUrl} originalUrl={imgUrl} attribution={attribution} className={className} />;
-}
-
+  return (
+    decodedImg && (
+      <ImageWithAttribution
+        previewUrl={imgPreviewUrl}
+        originalUrl={imgUrl}
+        attribution={attribution}
+        title={title}
+        className={className}
+      />
+    )
+  );
+};

@@ -263,13 +263,17 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
             &nbsp;
           </span>
         )}
-        &gt;&nbsp;
-        <a
-          className="etymology_src_entity"
-          href={`https://www.wikidata.org/wiki/${etymology.wikidata}`}
-        >
-          Wikidata
-        </a>
+        {etymology.wikidata && (
+          <span className="etymology_src_entity_wrapper">
+            &gt;&nbsp;
+            <a
+              className="etymology_src_entity"
+              href={`https://www.wikidata.org/wiki/${etymology.wikidata}`}
+            >
+              Wikidata
+            </a>
+          </span>
+        )}
       </span>
       <div className="etymology_parts_container">
         {!!parts?.length && <EtymologyList wdLinkedEntities={parts} />}

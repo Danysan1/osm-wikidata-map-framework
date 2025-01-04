@@ -1,6 +1,6 @@
 import { Feature, FeatureCollection, Geometry } from "geojson";
 import { Etymology, OsmInstance } from "./Etymology";
-import { FeatureTags, getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
+import { getPropLinkedEntities, getPropTags, OsmFeatureTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
 
 export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
 export type OwmfFeature = Feature<Geometry, OwmfResponseFeatureProperties>;
@@ -93,7 +93,7 @@ export function getFeatureLinkedEntities(f: OwmfFeature): Etymology[] {
     return getPropLinkedEntities(props);
 }
 
-export function getFeatureTags(f: OwmfFeature): FeatureTags {
+export function getFeatureTags(f: OwmfFeature): OsmFeatureTags {
     let props;
     if (f.properties) {
         props = f.properties;

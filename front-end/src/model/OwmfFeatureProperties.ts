@@ -1,12 +1,6 @@
 import type { Etymology, OsmInstance, OsmType } from "./Etymology";
 
-interface OsmToGeoJsonRelation {
-    rel: number;
-    reltags: Record<string, string>;
-    role?: string;
-}
-
-export interface FeatureTags {
+export interface OsmFeatureTags {
     /**
      * Other tags.
      * This includes localized names in name:* .
@@ -61,6 +55,16 @@ export interface FeatureTags {
     official_name?: string;
 
     /**
+     * UUID or URL of a Panoramax picture of this feature
+     * Prefer using the value in OwmfFeatureProperties which is checked for correctness
+     * 
+     * @example "5cd07218-e964-4279-a173-9b6c198b41ab"
+     * @example "https://taginfo.openstreetmap.org/tags/?key=panoramax&value=https%3A%2F%2Fpanoramax.openstreetmap.fr%2F%23focus%3Dpic%26map%3D15.6%2F47.419874%2F0.716441%26pic%3D0c39170f-cee5-42e8-adc4-c05c3e359068%26speed%3D250%26xyz%3D245.00%2F0.00%2F30"
+     * @link https://wiki.openstreetmap.org/wiki/Key:panoramax
+     */
+    panoramax?: string;
+
+    /**
      * URL of the official website for this element
      * 
      * @link https://wiki.openstreetmap.org/wiki/Key:website
@@ -77,6 +81,16 @@ export interface FeatureTags {
     wikidata?: string;
 
     /**
+     * Raw URL or name of Wikimedia Commons category or file.
+     * Prefer using the values in OwmfFeatureProperties which are checked for correctness
+     * 
+     * @see OwmfFeatureProperties.commons
+     * @see OwmfFeatureProperties.picture
+     * @link https://wiki.openstreetmap.org/wiki/Key:wikimedia_commons
+     */
+    wikimedia_commons?: string;
+
+    /**
      * Default Wikipedia reference
      * Prefer using the value in OwmfFeatureProperties which is checked for correctness
      * 
@@ -84,6 +98,28 @@ export interface FeatureTags {
      * @link https://wiki.openstreetmap.org/wiki/Key:wikipedia
      */
     wikipedia?: string;
+}
+
+/**
+ * osmtogeojson dumps here information about each relation that other elements are part of
+ */
+interface OsmToGeoJsonRelation {
+    /**
+     * OSM relation ID
+     * 
+     * @example 42 => https://www.openstreetmap.org/relation/42
+     */
+    rel: number;
+
+    /**
+     * Tags of the the relation
+     */
+    reltags: OsmFeatureTags;
+
+    /**
+     * Role that the linked element has in the relation
+     */
+    role?: string;
 }
 
 export interface OwmfFeatureProperties {
@@ -94,7 +130,7 @@ export interface OwmfFeatureProperties {
      * Typically in GeoJSON backends i18n is sent as a JS object.
      * Vector sources however stringify the object to JSON string in some circumstances.
      */
-    tags?: FeatureTags | string;
+    tags?: OsmFeatureTags | string;
 
     /**
      * osmtogeojson dumps here information about relations this element is part of
@@ -237,9 +273,9 @@ export function getPropLinkedEntities(props: OwmfFeatureProperties): Etymology[]
     }
 }
 
-export function getPropTags(props: OwmfFeatureProperties): FeatureTags {
+export function getPropTags(props: OwmfFeatureProperties): OsmFeatureTags {
     if (typeof props?.tags === "string") {
-        props.tags = JSON.parse(props.tags) as FeatureTags;
+        props.tags = JSON.parse(props.tags) as OsmFeatureTags;
         return props.tags;
     } else if (!props.tags) {
         props.tags = {};
