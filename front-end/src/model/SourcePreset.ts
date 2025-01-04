@@ -53,11 +53,18 @@ export interface SourcePreset {
     osm_wikidata_properties?: string[];
 
     /**
-     * Whitelist of OSM relation roles to consider when propagating linked entities from relations to their members
+     * OSM relation role to consider when propagating linked entities from relations to their members
      * 
-     * @example ["street"]
+     * @example "street" => If a relation has a linked entity it will be propagated to all members with the role "street"
      */
-    relation_role_whitelist?: string[];
+    relation_propagation_role?: string;
+
+    /**
+     * OSM relation role to consider when using an OSM relation as linked entity
+     * 
+     * @example "tomb" => If an element is member with type "tomb" of a relation, the relation and its possible wikidata=* entity are considered a linked entity
+     */
+    relation_member_role?: string;
 
     /**
      * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities

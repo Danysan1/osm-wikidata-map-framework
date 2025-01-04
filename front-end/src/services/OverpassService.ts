@@ -200,9 +200,9 @@ export class OverpassService implements MapService {
         if (this.preset?.osm_text_key) {
             if (tags[this.preset.osm_text_key])
                 feature.properties.text_etymology = tags[this.preset.osm_text_key];
-            else if (feature.properties.relations?.length && this.preset?.relation_role_whitelist?.length) {
+            else if (feature.properties.relations && this.preset?.relation_propagation_role) {
                 const text_etymologies = feature.properties.relations
-                    .filter(rel => rel.reltags?.[this.preset.osm_text_key!] && rel.role && this.preset.relation_role_whitelist?.includes(rel.role))
+                    .filter(rel => rel.role && this.preset.relation_propagation_role === rel.role && rel.reltags?.[this.preset.osm_text_key!])
                     .map(rel => rel.reltags[this.preset.osm_text_key!]);
                 if (text_etymologies.length > 1)
                     console.warn("Multiple text etymologies found for feature, using the first one", feature.properties);
@@ -237,11 +237,11 @@ export class OverpassService implements MapService {
                         wikidata: value
                     })) ?? []);
 
-            if (this.preset?.relation_role_whitelist?.length) {
+            if (this.preset?.relation_propagation_role) {
                 feature.properties?.relations
-                    ?.filter(rel => rel.role && this.preset.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
+                    ?.filter(rel => rel.role && this.preset.relation_propagation_role === rel.role && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
-                        if(!rel.reltags[key]) return;
+                        if (!rel.reltags[key]) return;
                         console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
                         linkedEntities.push(
                             ...rel.reltags[key]
@@ -265,6 +265,28 @@ export class OverpassService implements MapService {
                     });
             }
         });
+
+        if (this.preset.relation_member_role) {
+            feature.properties.relations
+                ?.filter(rel => rel.role === this.preset.relation_member_role)
+                ?.forEach(rel => {
+                    if (feature.properties && rel.reltags.name) {
+                        feature.properties.text_etymology = feature.properties.text_etymology ? feature.properties.text_etymology + ";" + rel.reltags.name : rel.reltags.name;
+                    }
+                    if (feature.properties && rel.reltags.description) {
+                        feature.properties.text_etymology_descr = feature.properties.text_etymology_descr ? feature.properties.text_etymology_descr + ";" + rel.reltags.description : rel.reltags.description;
+                    }
+                    linkedEntities.push({
+                        wikidata: rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
+                        from_osm_instance: site,
+                        from_osm_type: "relation",
+                        from_osm_id: rel.rel,
+                        from_wikidata: false,
+                        osm_wd_join_field: "OSM"
+                    })
+                });
+        }
+
         feature.properties.linked_entities = linkedEntities;
         feature.properties.linked_entity_count = linkedEntities.length + (feature.properties.text_etymology ? 1 : 0);
     }
@@ -295,6 +317,7 @@ export class OverpassService implements MapService {
 // Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
 // Secondary Wikidata keys: ${wd_keys.length ? wd_keys.join(", ") : "NONE"}
 // Text key: ${osm_text_key ?? "NONE"}
+// Relation membership link role: ${this.preset?.relation_member_role ?? "NONE"}
 // ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
 // Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
 // Year: ${year}
@@ -325,6 +348,9 @@ export class OverpassService implements MapService {
                         query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
                 }
             });
+
+            if (this.preset?.relation_member_role)
+                query += `nwr${notTooBig}${dateFilter}(if:count_by_role("${this.preset?.relation_member_role}") > 0); // relation as linked entity \n`;
         });
 
         const outClause = onlyCentroids ? `out ids center ${this.maxElements};` : `out body ${this.maxElements}; >; out skel qt;`;

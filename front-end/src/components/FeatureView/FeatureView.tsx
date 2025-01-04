@@ -21,8 +21,12 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
     fromOsmInstance = props?.from_osm_instance ?? OsmInstance.OpenStreetMap,
-    fromOsmType = fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_type : props?.osm_type,
-    fromOsmId = fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_id : props?.osm_id,
+    fromOsmType =
+      fromOsmInstance === OsmInstance.OpenHistoricalMap
+        ? props?.ohm_type
+        : props?.osm_type,
+    fromOsmId =
+      fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_id : props?.osm_id,
     fromOsmUrl =
       (!!props?.from_osm || props?.from_osm_instance) && fromOsmType && fromOsmId
         ? `https://www.${fromOsmInstance}/${fromOsmType}/${fromOsmId}`
@@ -111,7 +115,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
 
   return (
     <div className={styles.detail_container}>
-      <h3 className={styles.element_name}>📍 {mainName}</h3>
+      {!!mainName && <h3 className={styles.element_name}>📍 {mainName}</h3>}
       {!!altNames?.length && (
         <p className={styles.element_alt_names}>
           {altNames.map((name) => '"' + name + '"').join(" / ")}
@@ -151,7 +155,9 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
             {fromOsmInstance}
           </a>
         )}
-        {fromOsmUrl && fromWikidataUrl && <span className="src_osm_and_wd">&nbsp;&&nbsp;</span>}
+        {fromOsmUrl && fromWikidataUrl && (
+          <span className="src_osm_and_wd">&nbsp;&&nbsp;</span>
+        )}
         {fromWikidataUrl && (
           <a className="feature_src_wd" href={fromWikidataUrl}>
             Wikidata

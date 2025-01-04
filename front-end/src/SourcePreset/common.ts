@@ -27,7 +27,8 @@ export function getCustomSourcePreset(): SourcePreset {
         osm_description_key: process.env.owmf_osm_description_key,
         osm_wikidata_keys: process.env.owmf_osm_wikidata_keys ? parseStringArrayConfig(process.env.owmf_osm_wikidata_keys) : undefined,
         osm_wikidata_properties: process.env.owmf_osm_wikidata_properties ? parseStringArrayConfig(process.env.owmf_osm_wikidata_properties) : undefined,
-        relation_role_whitelist: process.env.owmf_relation_role_whitelist ? parseStringArrayConfig(process.env.owmf_relation_role_whitelist) : undefined,
+        relation_propagation_role: process.env.owmf_relation_propagation_role,
+        relation_member_role: process.env.owmf_relation_member_role,
         wikidata_indirect_property: process.env.owmf_wikidata_indirect_property,
         wikidata_image_property: process.env.owmf_wikidata_image_property,
     };
