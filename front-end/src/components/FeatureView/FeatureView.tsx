@@ -1,5 +1,4 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { OsmInstance } from "@/src/model/Etymology";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
@@ -9,6 +8,7 @@ import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
 import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
+import { FeatureSourceRow } from "./FeatureSourceRow";
 import styles from "./FeatureView.module.css";
 
 interface FeatureViewProps {
@@ -20,25 +20,6 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
-    fromOsmInstance = props?.from_osm_instance ?? OsmInstance.OpenStreetMap,
-    fromOsmType =
-      fromOsmInstance === OsmInstance.OpenHistoricalMap
-        ? props?.ohm_type
-        : props?.osm_type,
-    fromOsmId =
-      fromOsmInstance === OsmInstance.OpenHistoricalMap ? props?.ohm_id : props?.osm_id,
-    fromOsmUrl =
-      (!!props?.from_osm || props?.from_osm_instance) && fromOsmType && fromOsmId
-        ? `https://www.${fromOsmInstance}/${fromOsmType}/${fromOsmId}`
-        : undefined,
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    fromWdEntity = props?.from_wikidata_entity || props?.wikidata,
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    fromWdProperty = props?.from_wikidata_prop || "P625",
-    fromWikidataUrl =
-      props?.from_wikidata && fromWdEntity
-        ? `https://www.wikidata.org/wiki/${fromWdEntity}#${fromWdProperty}`
-        : undefined,
     [mainName, setMainName] = useState<string>(),
     altNames = useMemo(() => {
       const alt_name_set = new Set<string>();
@@ -148,22 +129,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         text={t("feature_details.report_problem")}
       />
 
-      <div className="feature_src_wrapper">
-        {t("feature_details.source")}&nbsp;
-        {fromOsmUrl && (
-          <a className="feature_src_osm" href={fromOsmUrl}>
-            {fromOsmInstance}
-          </a>
-        )}
-        {fromOsmUrl && fromWikidataUrl && (
-          <span className="src_osm_and_wd">&nbsp;&&nbsp;</span>
-        )}
-        {fromWikidataUrl && (
-          <a className="feature_src_wd" href={fromWikidataUrl}>
-            Wikidata
-          </a>
-        )}
-      </div>
+      {props && <FeatureSourceRow {...props} />}
     </div>
   );
 };
