@@ -8,7 +8,11 @@ import type { MapService } from "./MapService";
 
 const COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/,
     COMMONS_FILE_REGEX = /(File:[^;]+)/,
-    WIKIDATA_QID_REGEX = /^Q[0-9]+/;
+    WIKIDATA_QID_REGEX = /^Q[0-9]+/,
+    OVERPASS_ENDPOINTS: Record<OsmInstance, string> = {
+        [OsmInstance.OpenHistoricalMap]: "https://overpass-api.openhistoricalmap.org/api/interpreter",
+        [OsmInstance.OpenStreetMap]: "https://overpass-api.de/api/interpreter"
+    };
 
 /**
  * Service that handles the creation of Overpass QL queries and the execution of them on the appropriate instance of Overpass
@@ -45,7 +49,7 @@ export class OverpassService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        return /^overpass_(osm|ohm)_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
+        return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
@@ -85,6 +89,7 @@ export class OverpassService implements MapService {
         let site: OsmInstance,
             osm_keys: string[],
             use_wikidata: boolean,
+            relation_member_role: string | undefined,
             search_text_key: string | undefined = this.preset?.osm_text_key;
 
         if (backEndID.includes("overpass_osm_wd")) {
@@ -112,10 +117,20 @@ export class OverpassService implements MapService {
             if (keyCode.endsWith("_all_wd")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
                 osm_keys = this.preset.osm_wikidata_keys;
+                relation_member_role = this.preset.relation_member_role;
                 use_wikidata = true;
             } else if (keyCode.endsWith("_all")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*)
                 osm_keys = this.preset.osm_wikidata_keys;
+                relation_member_role = this.preset.relation_member_role;
+                use_wikidata = false;
+            } else if (keyCode.endsWith("_rel_role")) {
+                // Search elements members with a specific role in a linked entity relationship
+                if (!this.preset.relation_member_role)
+                    throw new Error(`relation_member_role is empty, invalid backEndID: "${backEndID}"`);
+                else
+                    relation_member_role = this.preset.relation_member_role;
+                osm_keys = [];
                 use_wikidata = false;
             } else if (this.wikidata_key_codes && (keyCode in this.wikidata_key_codes)) {
                 // Search a specific linked entity key (*:wikidata=*)
@@ -123,16 +138,16 @@ export class OverpassService implements MapService {
                 search_text_key = undefined;
                 use_wikidata = false;
             } else {
+                console.error("Invalid Overpass back-end ID", { backEndID, keyCode, keyCodes: this.wikidata_key_codes });
                 throw new Error(`Invalid Overpass back-end ID: "${backEndID}"`);
             }
         }
 
         const timerID = new Date().getMilliseconds();
         console.time(`overpass_query_${timerID}`);
-        const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
+        const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
-            endpoint = site === OsmInstance.OpenHistoricalMap ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
-            res = await overpassJson(query, { endpoint });
+            res = await overpassJson(query, { endpoint: OVERPASS_ENDPOINTS[site] });
         console.timeEnd(`overpass_query_${timerID}`);
         if (!res.elements)
             throw new Error("Bad response from Overpass");
@@ -292,12 +307,18 @@ export class OverpassService implements MapService {
     }
 
     private buildOverpassQuery(
-        wd_keys: string[], bbox: BBox, osm_text_key: string | undefined, use_wikidata: boolean, onlyCentroids: boolean, year: number
+        wd_keys: string[],
+        bbox: BBox,
+        osm_text_key: string | undefined,
+        relation_member_role: string | undefined,
+        use_wikidata: boolean,
+        onlyCentroids: boolean,
+        year: number
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
             notTooBig = `[!"sqkm"][!"boundary"]["type"!="boundary"]${maxMembersFilter}`,
-            dateFilters = year === new Date().getFullYear() ? [
+            dateFilters = process.env.owmf_enable_open_historical_map !== "true" || year === new Date().getFullYear() ? [
                 // Filter for openstreetmap.org or openhistoricalmap.org in the current year
                 '[!"end_date"]["route"!="historic"]'
             ] : [
@@ -317,7 +338,7 @@ export class OverpassService implements MapService {
 // Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
 // Secondary Wikidata keys: ${wd_keys.length ? wd_keys.join(", ") : "NONE"}
 // Text key: ${osm_text_key ?? "NONE"}
-// Relation membership link role: ${this.preset?.relation_member_role ?? "NONE"}
+// Relation membership link role: ${relation_member_role ?? "NONE"}
 // ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
 // Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
 // Year: ${year}
@@ -349,8 +370,8 @@ export class OverpassService implements MapService {
                 }
             });
 
-            if (this.preset?.relation_member_role)
-                query += `nwr${notTooBig}${dateFilter}(if:count_by_role("${this.preset?.relation_member_role}") > 0); // relation as linked entity \n`;
+            if (relation_member_role)
+                query += `nwr${notTooBig}${dateFilter}(if:count_by_role("${relation_member_role}") > 0); // relation as linked entity \n`;
         });
 
         const outClause = onlyCentroids ? `out ids center ${this.maxElements};` : `out body ${this.maxElements}; >; out skel qt;`;

@@ -34,7 +34,7 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
     if (!bbox || !props.backEndService?.canHandleBackEnd(props.backEndID)) {
-      console.debug("Unsupported back-end ID or missing bbox, NOT fetching map details", {
+      console.warn("Unsupported back-end ID or missing bbox, NOT fetching map details", {
         bbox,
         backEndID: props.backEndID,
       });

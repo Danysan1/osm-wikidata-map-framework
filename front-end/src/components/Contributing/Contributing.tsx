@@ -277,11 +277,11 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
             <p>The background maps are provided by third-party providers:</p>
             <ul>
                 {!!process.env.owmf_maptiler_key && <li><a href="https://www.maptiler.com/">Maptiler</a></li>}
-                {!!process.env.owmf_enable_versatiles && <li><a href="https://versatiles.org/">VersaTiles</a></li>}
-                {!!process.env.owmf_enable_stadia_maps && <li><a href="https://stadiamaps.com/">Stadia Maps</a></li>}
+                {process.env.owmf_enable_versatiles === "true" && <li><a href="https://versatiles.org/">VersaTiles</a></li>}
+                {process.env.owmf_enable_stadia_maps === "true" && <li><a href="https://stadiamaps.com/">Stadia Maps</a></li>}
                 {!!process.env.owmf_jawg_token && <li><a href="https://www.jawg.io/en/">Jawg</a></li>}
                 {!!process.env.owmf_mapbox_token && <li><a href="https://www.mapbox.com/">Mapbox</a></li>}
-                {!!process.env.owmf_enable_open_historical_map && <li><a href="https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse">OpenHistoricalMap</a></li>}
+                {process.env.owmf_enable_open_historical_map === "true" && <li><a href="https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse">OpenHistoricalMap</a></li>}
             </ul>
             <p>Most of them render data from OpenStreetMap, which can be improved on <a href="https://www.openstreetmap.org/">openstreetmap.org</a>.
                 You can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>.
