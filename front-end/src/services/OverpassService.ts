@@ -291,14 +291,16 @@ export class OverpassService implements MapService {
                     if (feature.properties && rel.reltags.description) {
                         feature.properties.text_etymology_descr = feature.properties.text_etymology_descr ? feature.properties.text_etymology_descr + ";" + rel.reltags.description : rel.reltags.description;
                     }
-                    linkedEntities.push({
-                        wikidata: rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
-                        from_osm_instance: site,
-                        from_osm_type: "relation",
-                        from_osm_id: rel.rel,
-                        from_wikidata: false,
-                        osm_wd_join_field: "OSM"
-                    })
+                    if (rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata)) {
+                        linkedEntities.push({
+                            wikidata: rel.reltags.wikidata,
+                            from_osm_instance: site,
+                            from_osm_type: "relation",
+                            from_osm_id: rel.rel,
+                            from_wikidata: false,
+                            osm_wd_join_field: "OSM"
+                        });
+                    }
                 });
         }
 

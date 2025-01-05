@@ -12,6 +12,7 @@ tr.data_table_row th {
 
 tr.data_table_row td>ul {
     list-style-type: none;
+    padding: 0;
 }
 
 tr.data_table_row:nth-child(even) {

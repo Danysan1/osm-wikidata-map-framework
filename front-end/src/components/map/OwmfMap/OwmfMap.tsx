@@ -51,6 +51,7 @@ import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
 import { PMTilesSource } from "../PMTilesSource";
 
 const PMTILES_PREFIX = "pmtiles",
+  MAX_ZOOM = 19,
   FALLBACK_COLOR = "#3bb2d0",
   POINT_LAYER = "layer_point",
   POINT_TAP_AREA_LAYER = "layer_point_tapArea",
@@ -267,7 +268,7 @@ export const OwmfMap = () => {
       latitude={mapLat}
       longitude={mapLon}
       zoom={mapZoom}
-      maxZoom={18}
+      maxZoom={MAX_ZOOM}
       onMove={onMoveHandler}
       onMoveEnd={onMoveEndHandler}
       transformRequest={requestTransformFunction}

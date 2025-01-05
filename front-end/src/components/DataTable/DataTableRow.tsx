@@ -1,9 +1,10 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { getFeatureTags, getFeatureLinkedEntities, OwmfFeature } from "@/src/model/OwmfResponse";
+import { getFeatureLinkedEntities, getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ButtonRow } from "../ButtonRow/ButtonRow";
 import styles from "./DataTable.module.css";
+import { LinkedEntityLink } from "./LinkedEntityLink";
 
 interface DataTableRowProps {
     feature: OwmfFeature;
@@ -14,13 +15,26 @@ interface DataTableRowProps {
 export const DataTableRow: FC<DataTableRowProps> = ({ feature, details, openFeatureDetails }) => {
     const { i18n } = useTranslation(),
         etys = getFeatureLinkedEntities(feature),
-        etyCellContent = etys?.length ? <ul>
-            {etys?.map(ety => <li key={ety.wikidata}>
-                <a href={`https://www.wikidata.org/wiki/${ety.wikidata}`} target="_blank" rel="noreferrer">
-                    {ety.wikidata && details?.[ety.wikidata]?.name ? details?.[ety.wikidata]?.name : ety.wikidata}
-                </a>
-            </li>)}
-        </ul> : feature.properties?.text_etymology,
+        etyCellContent = useMemo(() => {
+            if (etys?.length > 1) {
+                return <ul>
+                    {etys?.map((ety, i) => <li key={ety.wikidata ?? i}>
+                        <LinkedEntityLink wikidataQID={ety.wikidata} details={details} />
+                    </li>)}
+                </ul>;
+            } else if (etys?.length === 1) {
+                return <LinkedEntityLink wikidataQID={etys[0].wikidata} details={details} />;
+            } else if (feature.properties?.text_etymology?.includes(";")) {
+                const textEtys = feature.properties?.text_etymology?.split(";");
+                return <ul>
+                    {textEtys?.map((ety, i) => <li key={i}>
+                        {ety}
+                    </li>)}
+                </ul>;
+            } else {
+                return feature.properties?.text_etymology;
+            }
+        }, [details, etys, feature.properties?.text_etymology]),
         nameCellContent = useMemo(() => {
             const localNameKey = "name:" + i18n.language,
                 featureI18n = getFeatureTags(feature),
