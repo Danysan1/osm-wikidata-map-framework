@@ -280,7 +280,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
     // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
     console.debug("Setting json style", { style, styleSpec });
-    setBackgroundStyle(styleSpec);
+    setBackgroundStyle(styleSpec as MapStyle);
   }, [i18n.language, jsonStyleSpec, setBackgroundStyle, style, year]);
 
   return (

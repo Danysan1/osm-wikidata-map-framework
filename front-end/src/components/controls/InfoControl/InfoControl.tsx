@@ -1,16 +1,16 @@
 import { t } from "i18next";
-import type { ControlPosition, IControl, Map } from "maplibre-gl";
+import { Map } from "maplibre-gl";
 import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { useControl } from "react-map-gl/maplibre";
+import { ControlPosition, IControl, MapInstance, useControl } from "react-map-gl/maplibre";
 import { InfoPopup } from "../../popup/InfoPopup";
 import styles from "./InfoControl.module.css";
 
 class InfoControlObject implements IControl {
-  private _map?: Map;
+  private _map?: MapInstance;
   private _container?: HTMLElement;
 
-  onAdd(map: Map) {
+  onAdd(map: MapInstance) {
     this._map = map;
     this._container = document.createElement("div");
     this._container.className = `maplibregl-ctrl maplibregl-ctrl-group ${styles.control}`;
@@ -65,7 +65,7 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
         </button>
         {isPopupOpen && map && (
           <InfoPopup
-            position={map.getBounds().getSouthWest()}
+            position={(map as Map).getBounds().getSouthWest()}
             onClose={closePopup}
             showInstructions={showInstructions} />
         )}

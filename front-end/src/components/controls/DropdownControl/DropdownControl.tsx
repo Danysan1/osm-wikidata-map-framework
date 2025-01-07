@@ -1,5 +1,4 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import {
   ChangeEvent,
   ChangeEventHandler,
@@ -12,14 +11,14 @@ import {
   useState
 } from "react";
 import { createPortal } from "react-dom";
-import { useControl } from "react-map-gl/maplibre";
+import { ControlPosition, IControl, MapInstance, MapSourceDataEvent, useControl } from "react-map-gl/maplibre";
 import styles from "./DropdownControl.module.css";
 
 class DropdownControlObject implements IControl {
-  private _map?: Map;
+  private _map?: MapInstance;
   private _container?: HTMLElement;
 
-  onAdd(map: Map) {
+  onAdd(map: MapInstance) {
     this._map = map;
     this._container = document.createElement("div");
     this._container.className = `maplibregl-ctrl maplibregl-ctrl-group ${styles.control}`;

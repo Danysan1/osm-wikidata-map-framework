@@ -1,4 +1,4 @@
-import { DataDrivenPropertyValueSpecification, Feature, FilterSpecification } from "maplibre-gl";
+import { DataDrivenPropertyValueSpecification, ExpressionSpecification, Feature } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { Layer, MapGeoJSONFeature, MapLayerMouseEvent, useMap } from "react-map-gl/maplibre";
 
@@ -37,8 +37,9 @@ export interface DetailsLayersProps {
 export const DetailsLayers: FC<DetailsLayersProps> = ({
     minZoom, sourceID, keyID, source_layer, color, pointLayerID, pointTapAreaLayerID, lineLayerID, lineTapAreaLayerID, polygonBorderLayerID, polygonFillLayerID, setOpenFeature
 }) => {
+    type Filter = ["all", ...ExpressionSpecification[]];
     const createFilter = useCallback((geometryType: Feature["type"]) => {
-        const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
+        const out: Filter = ["all", ["==", ["geometry-type"], geometryType]];
         if (keyID)
             out.push(["in", keyID, ["get", "from_key_ids"]]);
         return out;
@@ -75,14 +76,15 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
     const pointFilter = useMemo(() => createFilter("Point"), [createFilter]),
         lineStringFilter = useMemo(() => createFilter("LineString"), [createFilter]),
         polygonFilter = useMemo(() => {
-            const filter = createFilter("Polygon");
-            filter.push(["case",
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], COUNTRY_MAX_ZOOM], // Show country boundaries only below COUNTRY_MAX_ZOOM
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], COUNTRY_MAX_ZOOM], ["<", ["zoom"], STATE_MAX_ZOOM]], // Show state boundaries only between COUNTRY_MAX_ZOOM and STATE_MAX_ZOOM
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], STATE_MAX_ZOOM], ["<", ["zoom"], PROVINCE_MAX_ZOOM]], // Show province boundaries only between STATE_MAX_ZOOM and PROVINCE_MAX_ZOOM
-                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], PROVINCE_MAX_ZOOM], ["<", ["zoom"], CITY_MAX_ZOOM]], // Show city boundaries only between PROVINCE_MAX_ZOOM and CITY_MAX_ZOOM
-                [">=", ["zoom"], CITY_MAX_ZOOM], // Show non-boundaries only above thresholdZoomLevel
-            ]);
+            const filter = createFilter("Polygon"),
+                boundaryFilter: ExpressionSpecification = ["case",
+                    ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], COUNTRY_MAX_ZOOM], // Show country boundaries only below COUNTRY_MAX_ZOOM
+                    ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], COUNTRY_MAX_ZOOM], ["<", ["zoom"], STATE_MAX_ZOOM]], // Show state boundaries only between COUNTRY_MAX_ZOOM and STATE_MAX_ZOOM
+                    ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], STATE_MAX_ZOOM], ["<", ["zoom"], PROVINCE_MAX_ZOOM]], // Show province boundaries only between STATE_MAX_ZOOM and PROVINCE_MAX_ZOOM
+                    ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], PROVINCE_MAX_ZOOM], ["<", ["zoom"], CITY_MAX_ZOOM]], // Show city boundaries only between PROVINCE_MAX_ZOOM and CITY_MAX_ZOOM
+                    [">=", ["zoom"], CITY_MAX_ZOOM], // Show non-boundaries only above thresholdZoomLevel
+                ];
+            filter.push(boundaryFilter);
             return filter;
         }, [createFilter]),
         { current: map } = useMap();
