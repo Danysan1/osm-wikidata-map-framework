@@ -28,6 +28,7 @@ import Map, {
   ErrorEvent,
   FullscreenControl,
   GeolocateControl,
+  MapEvent,
   MapSourceDataEvent,
   MapStyle,
   NavigationControl,
@@ -113,11 +114,13 @@ export const OwmfMap = () => {
     setMapZoom(zoom);
   }, [lat, lon, zoom]);
 
-  const onMoveEndHandler = useCallback(
-    (e: ViewStateChangeEvent) => {
-      setLon(e.viewState.longitude);
-      setLat(e.viewState.latitude);
-      setZoom(e.viewState.zoom);
+  const mapIdleHandler = useCallback(
+    (e: MapEvent) => {
+      const center = e.target.getCenter();
+      console.debug("mapIdleHandler", center);
+      setLon(center.lng);
+      setLat(center.lat);
+      setZoom(e.target.getZoom());
     },
     [setLat, setLon, setZoom]
   );
@@ -270,10 +273,10 @@ export const OwmfMap = () => {
       zoom={mapZoom}
       maxZoom={MAX_ZOOM}
       onMove={onMoveHandler}
-      onMoveEnd={onMoveEndHandler}
       transformRequest={requestTransformFunction}
       onSourceData={mapSourceDataHandler}
       onError={mapErrorHandler}
+      onIdle={mapIdleHandler}
     >
       <InfoControl position="top-left" />
       <SourcePresetControl position="top-left" />
