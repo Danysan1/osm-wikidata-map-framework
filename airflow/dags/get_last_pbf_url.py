@@ -1,4 +1,9 @@
-def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None, prefix:str='', download_ext:str="osm.pbf") -> str:
+def get_last_pbf_url(
+        download_url:str|None=None,
+        rss_url:str|None=None,
+        html_url:str|None=None,
+        prefix:str='',
+        download_ext:str="osm.pbf") -> str:
     """
     ## Get PBF file URL
 
@@ -9,7 +14,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
     from re import findall
     from os.path import basename
 
-    source_url:str = None
+    source_url:str|None = None
     if download_url:
         if not download_url.endswith(f'.{download_ext}'):
             raise Exception(f"The 'download_url' must end with '.{download_ext}':", download_url)
@@ -32,7 +37,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
             urls = [link.text for link in links]
             print("URLs found:", urls)
             extension = f'.{download_ext}.torrent'
-            urls = list(filter(lambda f: f!="" and basename(f).startswith(prefix) and f.endswith(extension), urls))
+            urls = list(filter(lambda f: f is not None and f!="" and basename(f).startswith(prefix) and f.endswith(extension), urls))
             print("Valid URLs found:", extension, urls)
 
             if len(urls) > 0:

@@ -18,7 +18,7 @@ DEFAULT_SKIP_IF_ALREADY_DOWNLOADED = True
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 15
 
-def get_source_url(ti:TaskInstance, **context) -> str:
+def get_source_url(ti:TaskInstance, **context):
     """
         # Get PBF file URL
 
@@ -112,10 +112,10 @@ class OsmPbfDownloadDAG(DAG):
     """
 
     def __init__(self,
-            pbf_url:str=None,
-            rss_url:str=None,
-            html_url:str=None,
-            prefix:str=None,
+            pbf_url:str|None=None,
+            rss_url:str|None=None,
+            html_url:str|None=None,
+            prefix:str|None=None,
             days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
             verify_md5:bool=True,
             **kwargs

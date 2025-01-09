@@ -16,7 +16,7 @@ class LoadRelatedDockerOperator(DockerOperator):
     * [load-related folder](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/front-end/src/load-related?ref_type=heads)
     * [WikidataBulkService folder](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/front-end/src/services/WikidataBulkService?ref_type=heads)
     """
-    def __init__(self, postgres_conn_id:str, wikidata_country:str=None, **kwargs) -> None:
+    def __init__(self, postgres_conn_id:str, wikidata_country:str|None=None, **kwargs) -> None:
         super().__init__(
             docker_url='unix://var/run/docker.sock',
             image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related",

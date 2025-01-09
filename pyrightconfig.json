@@ -1,3 +1,4 @@
 {
+    "reportUnusedExpression": "none",
     "include": ["airflow/dags/*.py", "airflow/plugins/*.py"]
 }

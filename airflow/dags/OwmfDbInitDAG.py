@@ -38,7 +38,7 @@ DEFAULT_UPLOAD_TO_S3 = True
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 7
 
-def get_absolute_path(filename:str, folder:str = None) -> str:
+def get_absolute_path(filename:str, folder:str|None = None) -> str:
     file_dir_path = dirname(abspath(__file__))
     if folder != None:
         file_dir_path = join(file_dir_path, folder)
@@ -261,7 +261,7 @@ class OwmfDbInitDAG(DAG):
             prefix:str,
             local_db_conn_id:str="local_owmf_postgis_db",
             days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
-            wikidata_country:str=None,
+            wikidata_country:str|None=None,
             **kwargs
         ):
         """
@@ -881,7 +881,7 @@ Dump all the elements from the local DB with their respective linked entities in
             # See https://gis.stackexchange.com/a/330575/196469
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
             max_zoom = 11,
-            extra_params = "--force --drop-densest-as-needed",
+            extra_params = "--force", # Not using --drop-densest-as-needed as it causes some countries to be dropped
             doc_md = dedent(TippecanoeOperator.__doc__)
         )
         [task_check_pmtiles, task_dump_boundaries_fgb] >> task_generate_boundaries_pmtiles
