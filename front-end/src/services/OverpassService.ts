@@ -87,10 +87,10 @@ export class OverpassService implements MapService {
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
         let site: OsmInstance,
-            osm_keys: string[],
-            use_wikidata: boolean,
+            osm_keys: string[] = [],
+            use_wikidata = false,
             relation_member_role: string | undefined,
-            search_text_key: string | undefined = this.preset?.osm_text_key;
+            search_text_key: string | undefined;
 
         if (backEndID.includes("overpass_osm_wd")) {
             // Search only elements with wikidata=*
@@ -98,7 +98,7 @@ export class OverpassService implements MapService {
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
-        } else if (backEndID.includes("overpass_ohm_wd")) {
+        } else if (process.env.enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
             site = OsmInstance.OpenHistoricalMap
             osm_keys = [];
             search_text_key = undefined;
@@ -118,11 +118,13 @@ export class OverpassService implements MapService {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
                 osm_keys = this.preset.osm_wikidata_keys;
                 relation_member_role = this.preset.relation_member_role;
+                search_text_key = this.preset.osm_text_key;
                 use_wikidata = true;
             } else if (keyCode.endsWith("_all")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*)
                 osm_keys = this.preset.osm_wikidata_keys;
                 relation_member_role = this.preset.relation_member_role;
+                search_text_key = this.preset.osm_text_key;
                 use_wikidata = false;
             } else if (keyCode.endsWith("_rel_role")) {
                 // Search elements members with a specific role in a linked entity relationship
@@ -131,6 +133,7 @@ export class OverpassService implements MapService {
                 else
                     relation_member_role = this.preset.relation_member_role;
                 osm_keys = [];
+                search_text_key = undefined;
                 use_wikidata = false;
             } else if (this.wikidata_key_codes && (keyCode in this.wikidata_key_codes)) {
                 // Search a specific linked entity key (*:wikidata=*)
@@ -304,7 +307,7 @@ export class OverpassService implements MapService {
                 });
         }
 
-        feature.properties.linked_entities = linkedEntities;
+        feature.properties.linked_entities = linkedEntities.length ? linkedEntities : undefined;
         feature.properties.linked_entity_count = linkedEntities.length + (feature.properties.text_etymology ? 1 : 0);
     }
 

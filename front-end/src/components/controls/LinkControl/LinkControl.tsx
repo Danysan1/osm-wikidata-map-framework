@@ -33,12 +33,25 @@ class LinkControlObject implements IControl {
 }
 
 interface LinkControlProps {
+  /** Link to redirect the user upon click */
   linkURL?: string;
+  
+  /** Icon to show inside the control */
   icon: string | StaticImport;
+
+  /** Alt text to show on hover */
   title: string;
+
+  /** Minimum zoom level to show the control */
   minZoomLevel?: number;
+
+  /** Position of the control on the screen */
   position?: ControlPosition;
+
+  /** Additional CSS class */
   className?: string;
+
+  /** Callback to execute on each map SourceData event */
   onSourceData?: (e: MapSourceDataEvent) => void;
 }
 

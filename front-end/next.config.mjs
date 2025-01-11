@@ -139,6 +139,7 @@ function generateCspHeaders() {
 const nextConfig = {
   basePath: process.env.owmf_base_path,
   output: process.env.owmf_static_export === "true" ? "export" : undefined,
+  trailingSlash: process.env.owmf_static_export === "true",
   env: clientEnv,
   compiler: {
     removeConsole: process.env.NODE_ENV === "production"

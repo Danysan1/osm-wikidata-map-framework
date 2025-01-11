@@ -91,7 +91,7 @@ export class QLeverMapService implements MapService {
         if (backEndID.startsWith("qlever_osm")) {
             backend = SparqlBackend.OsmPlanet;
             site = OsmInstance.OpenStreetMap
-        } else if (backEndID.startsWith("qlever_ohm")) {
+        } else if (process.env.enable_open_historical_map === "true" && backEndID.startsWith("qlever_ohm")) {
             backend = SparqlBackend.OhmPlanet;
             site = OsmInstance.OpenHistoricalMap;
         } else {

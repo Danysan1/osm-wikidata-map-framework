@@ -1,5 +1,6 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { Etymology, OsmInstance } from "@/src/model/Etymology";
+import Link from "next/link";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -74,16 +75,10 @@ export const LinkedEntitySourceRow: FC<Etymology> = ({
         {propagated && (
             <span className="etymology_propagated_wrapper">
                 &gt;&nbsp;
-                <a
-                    title={t("etymology_details.propagation")}
-                    href={`/${i18n.language}/contributing/${sourcePresetID}${process.env.owmf_static_export === "true" &&
-                        process.env.NODE_ENV === "production"
-                        ? ".html"
-                        : ""
-                        }#propagation`}
-                >
+                <Link title={t("etymology_details.propagation")}
+                    href={`/${i18n.language}/contributing/${sourcePresetID}#propagation`}>
                     {t("etymology_details.propagation")}
-                </a>
+                </Link>
                 &nbsp;
             </span>
         )}
