@@ -16,25 +16,12 @@ export const DataTableRow: FC<DataTableRowProps> = ({ feature, details, openFeat
     const { i18n } = useTranslation(),
         etys = getFeatureLinkedEntities(feature),
         etyCellContent = useMemo(() => {
-            if (etys?.length > 1) {
-                return <ul>
-                    {etys?.map((ety, i) => <li key={ety.wikidata ?? i}>
-                        <LinkedEntityLink wikidataQID={ety.wikidata} details={details} />
-                    </li>)}
-                </ul>;
-            } else if (etys?.length === 1) {
-                return <LinkedEntityLink wikidataQID={etys[0].wikidata} details={details} />;
-            } else if (feature.properties?.text_etymology?.includes(";")) {
-                const textEtys = feature.properties?.text_etymology?.split(";");
-                return <ul>
-                    {textEtys?.map((ety, i) => <li key={i}>
-                        {ety}
-                    </li>)}
-                </ul>;
-            } else {
-                return feature.properties?.text_etymology;
-            }
-        }, [details, etys, feature.properties?.text_etymology]),
+            return <ul>
+                {etys?.map((ety, i) => <li key={ety.wikidata ?? i}>
+                    <LinkedEntityLink wikidataQID={ety.wikidata} details={details} />
+                </li>)}
+            </ul>;
+        }, [details, etys]),
         nameCellContent = useMemo(() => {
             const localNameKey = "name:" + i18n.language,
                 featureI18n = getFeatureTags(feature),

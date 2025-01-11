@@ -1,7 +1,7 @@
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { MapDatabase } from "../db/MapDatabase";
-import { Etymology, OsmInstance, OsmType } from "../model/Etymology";
+import { DatePrecision, Etymology, OsmInstance, OsmType } from "../model/Etymology";
 import { getFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -215,23 +215,6 @@ export class OverpassService implements MapService {
         if (tags.wikipedia)
             feature.properties.wikipedia = tags.wikipedia;
 
-        if (this.preset?.osm_text_key) {
-            if (tags[this.preset.osm_text_key])
-                feature.properties.text_etymology = tags[this.preset.osm_text_key];
-            else if (feature.properties.relations && this.preset?.relation_propagation_role) {
-                const text_etymologies = feature.properties.relations
-                    .filter(rel => rel.role && this.preset.relation_propagation_role === rel.role && rel.reltags?.[this.preset.osm_text_key!])
-                    .map(rel => rel.reltags[this.preset.osm_text_key!]);
-                if (text_etymologies.length > 1)
-                    console.warn("Multiple text etymologies found for feature, using the first one", feature.properties);
-                if (text_etymologies.length)
-                    feature.properties.text_etymology = text_etymologies[0];
-            }
-        }
-
-        if (this.preset?.osm_description_key && tags[this.preset.osm_description_key])
-            feature.properties.text_etymology_descr = tags[this.preset.osm_description_key];
-
         if (tags.wikimedia_commons)
             feature.properties.commons = COMMONS_CATEGORY_REGEX.exec(tags.wikimedia_commons)?.at(1);
 
@@ -241,6 +224,32 @@ export class OverpassService implements MapService {
             feature.properties.picture = COMMONS_FILE_REGEX.exec(tags.image)?.at(1);
 
         const linkedEntities: Etymology[] = [];
+        if (!!this.preset?.osm_text_key || !!this.preset.osm_description_key) {
+            const linkedNames = this.preset.osm_text_key ? tags[this.preset.osm_text_key]?.split(";") : undefined,
+                linkedDescriptions = this.preset.osm_description_key ? tags[this.preset.osm_description_key]?.split(";") : undefined;
+            if (linkedNames) {
+                linkedEntities.push(...this.textLinkedEntities(site, linkedNames, linkedDescriptions, osm_type, osm_id));
+            } else if (linkedDescriptions) {
+                linkedEntities.push(...this.textLinkedEntities(site, linkedDescriptions, undefined, osm_type, osm_id));
+            }
+            
+            if (feature.properties.relations && this.preset?.relation_propagation_role) {
+                const relationsWithLinkedNames = feature.properties.relations.filter(rel => (
+                    rel.role && 
+                    this.preset.relation_propagation_role === rel.role && 
+                    ((!!this.preset.osm_text_key && !!rel.reltags[this.preset.osm_text_key]) || (!!this.preset.osm_description_key && !!rel.reltags[this.preset.osm_description_key]))
+                ));
+                relationsWithLinkedNames.forEach(rel => {
+                    const relationLinkedNames = this.preset.osm_text_key ? rel.reltags[this.preset.osm_text_key]?.split(";") : undefined,
+                        relationLinkedDescriptions = this.preset.osm_description_key ? rel.reltags[this.preset.osm_description_key]?.split(";") : undefined;
+                    if (relationLinkedNames)
+                        linkedEntities.push(...this.textLinkedEntities(site, relationLinkedNames, relationLinkedDescriptions, "relation", rel.rel));
+                    else if (relationLinkedDescriptions)
+                        linkedEntities.push(...this.textLinkedEntities(site, relationLinkedDescriptions, undefined, "relation", rel.rel));
+                });
+            }
+        }
+
         osm_keys.forEach(key => {
             linkedEntities.push(
                 ...tags[key]
@@ -288,27 +297,39 @@ export class OverpassService implements MapService {
             feature.properties.relations
                 ?.filter(rel => rel.role === this.preset.relation_member_role)
                 ?.forEach(rel => {
-                    if (feature.properties && rel.reltags.name) {
-                        feature.properties.text_etymology = feature.properties.text_etymology ? feature.properties.text_etymology + ";" + rel.reltags.name : rel.reltags.name;
-                    }
-                    if (feature.properties && rel.reltags.description) {
-                        feature.properties.text_etymology_descr = feature.properties.text_etymology_descr ? feature.properties.text_etymology_descr + ";" + rel.reltags.description : rel.reltags.description;
-                    }
-                    if (rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata)) {
-                        linkedEntities.push({
-                            wikidata: rel.reltags.wikidata,
-                            from_osm_instance: site,
-                            from_osm_type: "relation",
-                            from_osm_id: rel.rel,
-                            from_wikidata: false,
-                            osm_wd_join_field: "OSM"
-                        });
-                    }
+                    linkedEntities.push({
+                        name: rel.reltags?.name,
+                        description: rel.reltags?.description,
+                        birth_date: rel.reltags?.born,
+                        birth_date_precision: DatePrecision.day,
+                        birth_place: rel.reltags?.birthplace,
+                        death_date: rel.reltags?.died,
+                        death_date_precision: DatePrecision.day,
+                        death_place: rel.reltags?.deathplace,
+                        wikidata: rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
+                        from_osm_instance: site,
+                        from_osm_type: "relation",
+                        from_osm_id: rel.rel,
+                        from_wikidata: false,
+                        osm_wd_join_field: "OSM"
+                    });
                 });
         }
 
         feature.properties.linked_entities = linkedEntities.length ? linkedEntities : undefined;
-        feature.properties.linked_entity_count = linkedEntities.length + (feature.properties.text_etymology ? 1 : 0);
+        feature.properties.linked_entity_count = linkedEntities.length;
+    }
+
+    private textLinkedEntities(site:OsmInstance, names:string[], descriptions?:string[], osm_type?:OsmType, osm_id?:number): Etymology[] {
+        return names.map((name,i) => ({
+            name: name,
+            description: descriptions?.[i],
+            from_osm_instance: site,
+            from_osm_id: osm_id,
+            from_osm_type: osm_type,
+            from_wikidata: false,
+            propagated: false
+        }));
     }
 
     private buildOverpassQuery(

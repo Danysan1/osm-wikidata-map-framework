@@ -1,7 +1,7 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
-import { Etymology, OsmInstance } from "@/src/model/Etymology";
+import { OsmInstance } from "@/src/model/Etymology";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
-import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
+import { getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
@@ -283,13 +283,9 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       wikidata_IDs = new Set<string>(),
       propagation_IDs = new Set<string>();
     features.forEach(feature => {
-      const rawEntities = feature?.linked_entities,
-        entities = typeof rawEntities === 'string' ? JSON.parse(rawEntities) as Etymology[] : rawEntities;
-
-      if (entities?.some(ety => ety.wikidata)) {
-        entities.forEach(etymology => {
+        getPropLinkedEntities(feature).forEach((etymology,i) => {
           if (!etymology.wikidata) {
-            console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
+            osm_text_names.add(etymology.name ?? etymology.description ?? i.toString());
           } else if (etymology.propagated) {
             propagation_IDs.add(etymology.wikidata);
           } else if ((!!feature?.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap) && etymology.from_wikidata) {
@@ -306,9 +302,6 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
             console.debug("Unknown etymology source", feature, etymology);
           }
         });
-      } else if (feature?.text_etymology) {
-        osm_text_names.add(feature?.text_etymology);
-      }
     });
 
     const stats: EtymologyStat[] = [];

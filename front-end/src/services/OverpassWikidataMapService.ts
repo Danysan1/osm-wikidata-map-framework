@@ -77,7 +77,7 @@ export class OverpassWikidataMapService implements MapService {
             if (!onlyCentroids) {
                 out.features = out.features.filter((feature) => {
                     const noEtymologyRequired = wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length,
-                        hasEtymology = !!feature.properties?.linked_entity_count || !!feature.properties?.text_etymology?.length;
+                        hasEtymology = !!feature.properties?.linked_entity_count;
                     return noEtymologyRequired || hasEtymology;
                 });
                 out.total_entity_count = out.features
@@ -192,8 +192,8 @@ export class OverpassWikidataMapService implements MapService {
 
                     if (!osmFeature.properties)
                         osmFeature.properties = {};
-                    osmFeature.properties.linked_entities = osmEtymologies;
-                    osmFeature.properties.linked_entity_count = osmEtymologies.length + (osmFeature.properties.text_etymology ? 1 : 0);
+                    osmFeature.properties.linked_entities = osmEtymologies.length ? osmEtymologies : undefined;
+                    osmFeature.properties.linked_entity_count = osmEtymologies.length;
                 }
             });
         });

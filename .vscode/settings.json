@@ -29,6 +29,7 @@
     "VERIFYPEER",
     "WDQS",
     "wikibase",
+    "wikilink",
     "workdir"
   ],
   "python.linting.pylint": true,

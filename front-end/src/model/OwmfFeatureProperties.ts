@@ -98,6 +98,34 @@ export interface OsmFeatureTags {
      * @link https://wiki.openstreetmap.org/wiki/Key:wikipedia
      */
     wikipedia?: string;
+
+    /**
+     * Unofficial tag used by type=person relations to represent the birth date of the subject
+     * 
+     * @link https://wiki.openstreetmap.org/wiki/Proposal:Relation:person_(rewrite)
+     */
+    born?: string;
+
+    /**
+     * Unofficial tag used by type=person relations to represent the birth place of the subject
+     * 
+     * @link https://wiki.openstreetmap.org/wiki/Proposal:Relation:person_(rewrite)
+     */
+    birthplace?: string;
+
+    /**
+     * Unofficial tag used by type=person relations to represent the death date of the subject
+     * 
+     * @link https://wiki.openstreetmap.org/wiki/Proposal:Relation:person_(rewrite)
+     */
+    died?: string;
+
+    /**
+     * Unofficial tag used by type=person relations to represent the birth place of the subject
+     * 
+     * @link https://wiki.openstreetmap.org/wiki/Proposal:Relation:person_(rewrite)
+     */
+    deathplace?: string;
 }
 
 /**
@@ -229,16 +257,6 @@ export interface OwmfFeatureProperties {
      * Height of the feature in meters
      */
     render_height?: number;
-
-    /**
-     * Textual name of the etymology
-     */
-    text_etymology?: string;
-
-    /**
-     * Textual description of the etymology
-     */
-    text_etymology_descr?: string;
 
     /**
      * Q-ID of the Wikidata entity for this feature

@@ -362,16 +362,28 @@ export class QLeverMapService implements MapService {
                         else
                             id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
 
+                        const linkedEntities: Etymology[] = etymology ? [etymology] : [],
+                            linkedName = row.etymology_text?.value,
+                            linkedDescription = row.etymology_description?.value;
+                        if(!!linkedName || !!linkedDescription) {
+                            linkedEntities.push({
+                                from_osm_instance,
+                                from_osm_id: osm_id,
+                                from_osm_type: osm_type,
+                                from_wikidata: false,
+                                name: linkedName,
+                                description: linkedDescription,
+                            });
+                        }
+
                         acc.push({
                             type: "Feature",
                             id,
                             geometry,
                             properties: {
                                 commons: commons,
-                                linked_entities: etymology ? [etymology] : undefined,
-                                linked_entity_count: (etymology ? 1 : 0) + (row.etymology_text?.value ? 1 : 0),
-                                text_etymology: row.etymology_text?.value,
-                                text_etymology_descr: row.etymology_description?.value,
+                                linked_entities: linkedEntities.length ? linkedEntities : undefined,
+                                linked_entity_count: linkedEntities.length,
                                 from_osm_instance,
                                 from_wikidata: feature_from_wikidata,
                                 from_wikidata_entity,

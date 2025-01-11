@@ -1,15 +1,18 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
-import { Etymology } from "@/src/model/Etymology";
+import { Etymology, OsmInstance, OsmType } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
 import styles from "./EtymologyList.module.css";
-import { TextEtymologies, TextEtymologiesProps } from "./TextEtymologies";
 
-interface EtymologyListProps extends TextEtymologiesProps {
+interface EtymologyListProps {
+  other_etymologies?: EtymologyDetails[];
+  from_osm_instance?: OsmInstance;
+  from_osm_id?: number;
+  from_osm_type?: OsmType;
   wdLinkedEntities: string | Etymology[];
 }
 
@@ -98,7 +101,6 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
         ?.map((ety, i) => (
           <EtymologyView key={i} etymology={ety} />
         ))}
-      <TextEtymologies {...props} other_etymologies={etymologyDetails} />
     </div>
   );
 };

@@ -108,11 +108,9 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       </div>
       {props && <FeatureImages feature={props} />}
 
-      {(!!props?.linked_entities || props?.text_etymology) && (
+      {props?.linked_entities && (
         <EtymologyList
           wdLinkedEntities={props.linked_entities ?? []}
-          text_etymology={props.text_etymology}
-          text_etymology_descr={props.text_etymology_descr}
           from_osm_instance={props.from_osm_instance}
           from_osm_id={props.osm_id}
           from_osm_type={props.osm_type}

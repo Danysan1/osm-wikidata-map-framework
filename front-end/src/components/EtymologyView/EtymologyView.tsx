@@ -1,5 +1,5 @@
-import { Etymology } from "@/src/model/Etymology";
-import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { DatePrecision, Etymology } from "@/src/model/Etymology";
+import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
