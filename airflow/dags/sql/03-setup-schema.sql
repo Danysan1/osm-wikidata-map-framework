@@ -48,7 +48,6 @@ CREATE TABLE owmf.osmdata (
     osm_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL,
     osm_name VARCHAR,
     osm_commons VARCHAR,
-    osm_has_text_etymology BOOLEAN DEFAULT FALSE,
     CONSTRAINT osmdata_unique_ids UNIQUE NULLS NOT DISTINCT (osm_osm_type, osm_osm_id, osm_wd_id)
 );
 CREATE INDEX osmdata_wd_id_idx ON owmf.osmdata (osm_wd_id) WITH (fillfactor='70');
@@ -79,13 +78,15 @@ CREATE TABLE owmf.etymology (
     et_id SERIAL NOT NULL PRIMARY KEY,
     --et_el_id BIGINT NOT NULL REFERENCES owmf.element(el_id), -- element is populated only at the end
     et_el_id BIGINT NOT NULL,
-    et_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
+    et_wd_id INT REFERENCES owmf.wikidata(wd_id),
+    et_name VARCHAR,
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
-    et_from_osm BOOLEAN DEFAULT FALSE,
+    et_from_osm_instance VARCHAR,
     et_from_key_ids VARCHAR ARRAY,
     et_from_osm_wikidata_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
     et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- P-ID of the Wikidata property through which the etymology is derived
-    CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
+    CONSTRAINT et_not_empty CHECK (et_wd_id IS NOT NULL OR et_name IS NOT NULL),
+    CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id, et_name)
 );
 CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='80');

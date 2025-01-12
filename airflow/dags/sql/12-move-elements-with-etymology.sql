@@ -27,6 +27,5 @@ INSERT INTO owmf.element (
 FROM owmf.osmdata
 LEFT JOIN owmf.wikidata ON osm_wd_id = wd_id
 LEFT JOIN owmf.etymology ON osm_id = et_el_id
-WHERE osm_has_text_etymology
-OR etymology.et_id IS NOT NULL
+WHERE etymology.et_id IS NOT NULL
 ON CONFLICT (el_id) DO NOTHING
