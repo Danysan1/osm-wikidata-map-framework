@@ -35,6 +35,7 @@
         "architect": "Name of the 'architect' source preset",
         "artist": "Name of the 'artist' source preset",
         "base": "Name of the 'base' source preset",
+        "brand": "Name of the 'brand' source preset",
         "burial": "Name of the 'burial' source preset",
         "etymology": "Name of the 'etymology' source preset",
         "green_spaces": "Name of the 'green_spaces' source preset",
