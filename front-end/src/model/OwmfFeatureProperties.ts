@@ -167,8 +167,11 @@ export interface OwmfFeatureProperties {
 
     /**
      * Unique ID of the feature
-     * For OSM elements this is the OSM ID ({osm_type}/{osm_id})
-     * For Wikidata entities this is the Q-ID
+     * 
+     * @example "openstreetmap.org/way/42"
+     * @example "openhistoricalmap.org/way/42"
+     * @example "wikidata.org/entity/Q42"
+     * @example "openstreetmap.org/way/42_wikidata.org/entity/P42"
      */
     id?: string;
 
@@ -198,11 +201,6 @@ export interface OwmfFeatureProperties {
      */
     linked_entities?: Etymology[] | string;
 
-    /**
-     * Whether openstreetmap.org is the original source of the geometry and names of this feature.
-     * @deprecated
-     */
-    from_osm?: boolean;
     /**
      * Whether OpenStreetMap instance is the original source of the geometry and names of this feature.
      */

@@ -22,21 +22,11 @@ const PROPAGATED_COLOR = '#ff3333',
   FEATURE_SOURCE_LAYER_COLOR: ExpressionSpecification = [
     "case",
     ["all",
-      ["has", "from_osm"], // TODO remove (deprecated)
-      ["to-boolean", ["get", "from_osm"]],
-      ["has", "from_wikidata"],
-      ["to-boolean", ["get", "from_wikidata"]]
-    ], OSM_WIKIDATA_COLOR,
-    ["all",
       ["has", "from_osm_instance"],
       [">", ["length", ["get", "from_osm_instance"]], 0],
       ["has", "from_wikidata"],
       ["to-boolean", ["get", "from_wikidata"]]
     ], OSM_WIKIDATA_COLOR,
-    ["all",
-      ["has", "from_osm"], // TODO remove (deprecated)
-      ["to-boolean", ["get", "from_osm"]]
-    ], OSM_COLOR,
     ["all",
       ["has", "from_osm_instance"],
       [">", ["length", ["get", "from_osm_instance"]], 0]
@@ -56,32 +46,26 @@ const PROPAGATED_COLOR = '#ff3333',
     // Checks for vector tiles and PMTiles (where the linked_entities array is JSON-encoded with spaces)
     ["in", '"propagated" : true', ["get", "linked_entities"]], PROPAGATED_COLOR,
     ["all",
-      ["has", "from_osm"], // TODO remove (deprecated)
-      ["to-boolean", ["get", "from_osm"]],
-      ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
-    ], OSM_WIKIDATA_COLOR,
-    ["all",
       ["has", "from_osm_instance"],
       ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
     ], OSM_WIKIDATA_COLOR,
     ["in", '"from_wikidata" : true', ["get", "linked_entities"]], WIKIDATA_COLOR,
-    ["in", '"from_osm" : true', ["get", "linked_entities"]], OSM_COLOR, // TODO remove (deprecated)
-    ["in", '"from_osm_instance" : "', ["get", "linked_entities"]], OSM_COLOR,
+    ["all",
+      ["in", '"from_osm_instance" : "', ["get", "linked_entities"]],
+      ["in", '"wikidata" : "', ["get", "linked_entities"]]
+    ], OSM_COLOR,
 
     // Checks for cases where the map library JSON-encodes the linked_entities array without spaces
     ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], PROPAGATED_COLOR,
-    ["all",
-      ["has", "from_osm"], // TODO remove (deprecated)
-      ["to-boolean", ["get", "from_osm"]],
-      ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
-    ], OSM_WIKIDATA_COLOR,
     ["all",
       ["has", "from_osm_instance"],
       ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
     ], OSM_WIKIDATA_COLOR,
     ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], WIKIDATA_COLOR,
-    ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], OSM_COLOR, // TODO remove (deprecated)
-    ["in", '"from_osm_instance":"', ["to-string", ["get", "linked_entities"]]], OSM_COLOR,
+    ["all",
+      ["in", '"from_osm_instance":"', ["to-string", ["get", "linked_entities"]]],
+      ["in", '"wikidata":"', ["to-string", ["get", "linked_entities"]]]
+    ], OSM_COLOR,
 
     FALLBACK_COLOR
   ];
@@ -247,9 +231,9 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
     osmInstances.forEach(instance => {
-      if ((!!feature?.from_osm || feature?.from_osm_instance === instance) && feature?.from_wikidata)
+      if (feature?.from_osm_instance === instance && feature?.from_wikidata)
         IDs_by_source[instance + " + Wikidata"].add(id);
-      else if (!!feature.from_osm || feature?.from_osm_instance === instance)
+      else if (feature?.from_osm_instance === instance)
         IDs_by_source[instance].add(id);
       else if (feature?.from_wikidata)
         IDs_by_source.Wikidata.add(id);
@@ -283,25 +267,25 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       wikidata_IDs = new Set<string>(),
       propagation_IDs = new Set<string>();
     features.forEach(feature => {
-        getPropLinkedEntities(feature).forEach((etymology,i) => {
-          if (!etymology.wikidata) {
-            osm_text_names.add(etymology.name ?? etymology.description ?? i.toString());
-          } else if (etymology.propagated) {
-            propagation_IDs.add(etymology.wikidata);
-          } else if ((!!feature?.from_osm || feature?.from_osm_instance === OsmInstance.OpenStreetMap) && etymology.from_wikidata) {
-            osm_wikidata_IDs.add(etymology.wikidata);
-          } else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap && etymology.from_wikidata) {
-            ohm_wikidata_IDs.add(etymology.wikidata);
-          } else if (etymology.from_wikidata) {
-            wikidata_IDs.add(etymology.wikidata);
-          } else if (!!etymology.from_osm || etymology.from_osm_instance === OsmInstance.OpenStreetMap) {
-            osm_IDs.add(etymology.wikidata);
-          } else if (etymology.from_osm_instance === OsmInstance.OpenHistoricalMap) {
-            ohm_IDs.add(etymology.wikidata);
-          } else {
-            console.debug("Unknown etymology source", feature, etymology);
-          }
-        });
+      getPropLinkedEntities(feature).forEach((etymology, i) => {
+        if (!etymology.wikidata) {
+          osm_text_names.add(etymology.name ?? etymology.description ?? i.toString());
+        } else if (etymology.propagated) {
+          propagation_IDs.add(etymology.wikidata);
+        } else if (feature?.from_osm_instance === OsmInstance.OpenStreetMap && etymology.from_wikidata) {
+          osm_wikidata_IDs.add(etymology.wikidata);
+        } else if (feature?.from_osm_instance === OsmInstance.OpenHistoricalMap && etymology.from_wikidata) {
+          ohm_wikidata_IDs.add(etymology.wikidata);
+        } else if (etymology.from_wikidata) {
+          wikidata_IDs.add(etymology.wikidata);
+        } else if (etymology.from_osm_instance === OsmInstance.OpenStreetMap) {
+          osm_IDs.add(etymology.wikidata);
+        } else if (etymology.from_osm_instance === OsmInstance.OpenHistoricalMap) {
+          ohm_IDs.add(etymology.wikidata);
+        } else {
+          console.debug("Unknown etymology source", feature, etymology);
+        }
+      });
     });
 
     const stats: EtymologyStat[] = [];

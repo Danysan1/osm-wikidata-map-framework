@@ -5,7 +5,6 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 export const LinkedEntitySourceRow: FC<Etymology> = ({
-    from_osm,
     from_osm_instance,
     from_osm_type,
     from_osm_id,
@@ -20,7 +19,6 @@ export const LinkedEntitySourceRow: FC<Etymology> = ({
         { sourcePresetID } = useUrlFragmentContext(),
         fromOsm =
             osm_wd_join_field === "OSM" ||
-            !!from_osm ||
             !!from_osm_instance ||
             !!propagated,
         fromOsmInstance = from_osm_instance ?? OsmInstance.OpenStreetMap,

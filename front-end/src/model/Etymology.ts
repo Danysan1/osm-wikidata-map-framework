@@ -25,12 +25,6 @@ export const enum DatePrecision {
 
 export interface Etymology {
     /**
-     * Whether openstreetmap.org is the original source of this etymology
-     * @deprecated
-     */
-    from_osm?: boolean;
-
-    /**
      * Which OpenStreetMap instance is the original source of this etymology
      */
     from_osm_instance?: OsmInstance;

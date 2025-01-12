@@ -14,14 +14,15 @@ interface DataTableRowProps {
 
 export const DataTableRow: FC<DataTableRowProps> = ({ feature, details, openFeatureDetails }) => {
     const { i18n } = useTranslation(),
-        etys = getFeatureLinkedEntities(feature),
         etyCellContent = useMemo(() => {
             return <ul>
-                {etys?.map((ety, i) => <li key={ety.wikidata ?? i}>
-                    <LinkedEntityLink wikidataQID={ety.wikidata} details={details} />
-                </li>)}
+                {getFeatureLinkedEntities(feature)?.map((linkedEntity, i) => (
+                    <li key={linkedEntity.wikidata ?? linkedEntity.name ?? i}>
+                        <LinkedEntityLink linkedEntity={linkedEntity} details={details} />
+                    </li>
+                ))}
             </ul>;
-        }, [details, etys]),
+        }, [details, feature]),
         nameCellContent = useMemo(() => {
             const localNameKey = "name:" + i18n.language,
                 featureI18n = getFeatureTags(feature),

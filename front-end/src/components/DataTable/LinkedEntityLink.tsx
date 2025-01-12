@@ -1,16 +1,28 @@
+import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { FC } from "react";
 
 interface LinkedEntityLinkProps {
-    wikidataQID?: string;
-    details?: Record<string, EtymologyDetails>;
+  linkedEntity?: Etymology;
+  details?: Record<string, EtymologyDetails>;
 }
 
-export const LinkedEntityLink: FC<LinkedEntityLinkProps> = ({ wikidataQID, details }) => {
-    if (!wikidataQID) return null;
+export const LinkedEntityLink: FC<LinkedEntityLinkProps> = ({
+  linkedEntity,
+  details,
+}) => {
+  if (linkedEntity?.name && !linkedEntity.wikidata) return linkedEntity.name;
 
-    const name = details?.[wikidataQID]?.name;
-    return <a href={`https://www.wikidata.org/wiki/${wikidataQID}`} target="_blank" rel="noreferrer">
-        {name ? name : wikidataQID}
-    </a>;
-}
+  if (!linkedEntity?.wikidata) return null;
+
+  const name = details?.[linkedEntity?.wikidata]?.name;
+  return (
+    <a
+      href={`https://www.wikidata.org/wiki/${linkedEntity?.wikidata}`}
+      target="_blank"
+      rel="noreferrer"
+    >
+      {name ? name : linkedEntity?.wikidata}
+    </a>
+  );
+};

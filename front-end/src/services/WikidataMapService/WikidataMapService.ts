@@ -205,12 +205,14 @@ export class WikidataMapService extends WikidataService implements MapService {
                     render_height = 6;
 
                 const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                    from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
+                    from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+                    id = `wikidata.org/entity/${from_wikidata_entity}#${from_wikidata_prop}`;
                 acc.push({
                     type: "Feature",
-                    id: "wikidata.org/entity/" + from_wikidata_entity + "#" + from_wikidata_prop,
+                    id: id,
                     geometry,
                     properties: {
+                        id: id,
                         commons: row.commons?.value,
                         linked_entities: etymology ? [etymology] : undefined,
                         linked_entity_count: etymology ? 1 : 0,

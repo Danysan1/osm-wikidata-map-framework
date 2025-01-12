@@ -378,9 +378,10 @@ export class QLeverMapService implements MapService {
 
                         acc.push({
                             type: "Feature",
-                            id,
+                            id: id,
                             geometry,
                             properties: {
+                                id: id,
                                 commons: commons,
                                 linked_entities: linkedEntities.length ? linkedEntities : undefined,
                                 linked_entity_count: linkedEntities.length,

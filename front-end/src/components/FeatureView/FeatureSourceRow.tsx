@@ -7,7 +7,6 @@ export const FeatureSourceRow: FC<OwmfFeatureProperties> = ({
     from_wikidata,
     from_wikidata_entity,
     from_wikidata_prop,
-    from_osm,
     from_osm_instance,
     ohm_type,
     ohm_id,
@@ -16,12 +15,11 @@ export const FeatureSourceRow: FC<OwmfFeatureProperties> = ({
     wikidata
 }) => {
     const { t } = useTranslation();
-    const fromOsmInstance = from_osm_instance ?? OsmInstance.OpenStreetMap,
-        fromOsmType = fromOsmInstance === OsmInstance.OpenHistoricalMap ? ohm_type : osm_type,
-        fromOsmId = fromOsmInstance === OsmInstance.OpenHistoricalMap ? ohm_id : osm_id,
+    const fromOsmType = from_osm_instance === OsmInstance.OpenHistoricalMap ? ohm_type : osm_type,
+        fromOsmId = from_osm_instance === OsmInstance.OpenHistoricalMap ? ohm_id : osm_id,
         fromOsmUrl =
-            (!!from_osm || from_osm_instance) && fromOsmType && fromOsmId
-                ? `https://www.${fromOsmInstance}/${fromOsmType}/${fromOsmId}`
+            from_osm_instance && fromOsmType && fromOsmId
+                ? `https://www.${from_osm_instance}/${fromOsmType}/${fromOsmId}`
                 : undefined,
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         fromWdEntity = from_wikidata_entity || wikidata,
@@ -36,7 +34,7 @@ export const FeatureSourceRow: FC<OwmfFeatureProperties> = ({
         {t("feature_details.source")}&nbsp;
         {fromOsmUrl && (
             <a className="feature_src_osm" href={fromOsmUrl}>
-                {fromOsmInstance}
+                {from_osm_instance}
             </a>
         )}
         {fromOsmUrl && fromWikidataUrl && (

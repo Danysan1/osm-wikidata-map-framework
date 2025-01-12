@@ -132,10 +132,11 @@ export class OverpassWikidataMapService implements MapService {
             osmFeatures.push(wikidataFeature); // No existing OSM feature to merge with => Add the standalone Wikidata feature
 
         osmFeaturesToMerge.forEach((osmFeature) => {
-            osmFeature.id = osmFeature.id + "_" + wikidataFeature.id;
+            osmFeature.id = (osmFeature.id ?? osmFeature.properties?.id) + "_" + (wikidataFeature.id ?? wikidataFeature.properties?.id);
 
             if (!osmFeature.properties)
                 osmFeature.properties = {};
+            osmFeature.properties.id = osmFeature.id; // Copying the ID as sometimes Maplibre erases feature.id
             osmFeature.properties.from_wikidata = true;
             osmFeature.properties.from_wikidata_entity = wikidataFeature.properties?.from_wikidata_entity;
             osmFeature.properties.from_wikidata_prop = wikidataFeature.properties?.from_wikidata_prop;

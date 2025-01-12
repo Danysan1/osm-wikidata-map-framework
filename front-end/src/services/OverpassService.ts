@@ -183,7 +183,7 @@ export class OverpassService implements MapService {
         if (!feature.properties)
             feature.properties = {};
 
-
+        // osmtogeojson initializes feature.properties.id with the full OSM ID (osm_type/osm_id)
         const full_osm_props_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
             full_osm_base_id = typeof feature.id === "string" && feature.id.includes("/") ? feature.id : undefined,
             full_osm_id = full_osm_base_id ?? full_osm_props_id,
@@ -192,6 +192,7 @@ export class OverpassService implements MapService {
             osm_id = osmSplit?.length ? parseInt(osmSplit[1]) : undefined,
             tags = getFeatureTags(feature);
         feature.id = `${site}/${full_osm_id}`;
+        feature.properties.id = feature.id; // Copying the ID as sometimes Maplibre erases feature.id
         feature.properties.from_wikidata = false;
         feature.properties.from_osm_instance = site;
         if (site === OsmInstance.OpenStreetMap) {
@@ -232,11 +233,11 @@ export class OverpassService implements MapService {
             } else if (linkedDescriptions) {
                 linkedEntities.push(...this.textLinkedEntities(site, linkedDescriptions, undefined, osm_type, osm_id));
             }
-            
+
             if (feature.properties.relations && this.preset?.relation_propagation_role) {
                 const relationsWithLinkedNames = feature.properties.relations.filter(rel => (
-                    rel.role && 
-                    this.preset.relation_propagation_role === rel.role && 
+                    rel.role &&
+                    this.preset.relation_propagation_role === rel.role &&
                     ((!!this.preset.osm_text_key && !!rel.reltags[this.preset.osm_text_key]) || (!!this.preset.osm_description_key && !!rel.reltags[this.preset.osm_description_key]))
                 ));
                 relationsWithLinkedNames.forEach(rel => {
@@ -297,22 +298,26 @@ export class OverpassService implements MapService {
             feature.properties.relations
                 ?.filter(rel => rel.role === this.preset.relation_member_role)
                 ?.forEach(rel => {
-                    linkedEntities.push({
-                        name: rel.reltags?.name,
-                        description: rel.reltags?.description,
-                        birth_date: rel.reltags?.born,
-                        birth_date_precision: DatePrecision.day,
-                        birth_place: rel.reltags?.birthplace,
-                        death_date: rel.reltags?.died,
-                        death_date_precision: DatePrecision.day,
-                        death_place: rel.reltags?.deathplace,
-                        wikidata: rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
-                        from_osm_instance: site,
-                        from_osm_type: "relation",
-                        from_osm_id: rel.rel,
-                        from_wikidata: false,
-                        osm_wd_join_field: "OSM"
-                    });
+                    const relWikidataQID = rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
+                        entityAlreadyLinked = !!relWikidataQID && linkedEntities.some(e => e.wikidata === relWikidataQID);
+                    if (!entityAlreadyLinked) {
+                        linkedEntities.push({
+                            name: rel.reltags?.name,
+                            description: rel.reltags?.description,
+                            birth_date: rel.reltags?.born,
+                            birth_date_precision: DatePrecision.day,
+                            birth_place: rel.reltags?.birthplace,
+                            death_date: rel.reltags?.died,
+                            death_date_precision: DatePrecision.day,
+                            death_place: rel.reltags?.deathplace,
+                            wikidata: relWikidataQID,
+                            from_osm_instance: site,
+                            from_osm_type: "relation",
+                            from_osm_id: rel.rel,
+                            from_wikidata: false,
+                            osm_wd_join_field: "OSM"
+                        });
+                    }
                 });
         }
 
@@ -320,8 +325,8 @@ export class OverpassService implements MapService {
         feature.properties.linked_entity_count = linkedEntities.length;
     }
 
-    private textLinkedEntities(site:OsmInstance, names:string[], descriptions?:string[], osm_type?:OsmType, osm_id?:number): Etymology[] {
-        return names.map((name,i) => ({
+    private textLinkedEntities(site: OsmInstance, names: string[], descriptions?: string[], osm_type?: OsmType, osm_id?: number): Etymology[] {
+        return names.map((name, i) => ({
             name: name,
             description: descriptions?.[i],
             from_osm_instance: site,
