@@ -82,7 +82,7 @@ CREATE TABLE owmf.etymology (
     et_name VARCHAR,
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
-    et_from_osm_instance VARCHAR,
+    et_from_osm BOOLEAN DEFAULT FALSE,
     et_from_key_ids VARCHAR ARRAY,
     et_from_osm_wikidata_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
     et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- P-ID of the Wikidata property through which the etymology is derived

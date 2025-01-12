@@ -26,4 +26,4 @@ JOIN owmf.osmdata AS new_el
     AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
 WHERE old_et.et_recursion_depth = (:depth::INT - 1)
 AND old_et.et_wd_id IS NOT NULL
-ON CONFLICT (et_el_id, et_wd_id) DO NOTHING
+ON CONFLICT (et_el_id, et_wd_id, et_name) DO NOTHING

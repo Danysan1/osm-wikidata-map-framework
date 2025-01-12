@@ -20,7 +20,7 @@ SELECT
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
     CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
-        'from_osm_instance', et_from_osm_instance,
+        'from_osm_instance', CASE WHEN et_from_osm THEN 'openstreetmap.org' ELSE NULL END,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
         'osm_wd_join_field', CASE WHEN et_from_osm_wikidata_wd_id IS NULL THEN NULL ELSE 'OSM' END,
@@ -61,7 +61,7 @@ SELECT
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
     CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
-        'from_osm_instance', et_from_osm_instance,
+        'from_osm_instance', CASE WHEN et_from_osm THEN 'openstreetmap.org' ELSE NULL END,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
         'osm_wd_join_field', CASE WHEN et_from_osm_wikidata_wd_id IS NULL THEN NULL ELSE 'OSM' END,

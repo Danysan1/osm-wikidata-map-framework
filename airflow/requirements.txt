@@ -1,2 +1,2 @@
-apache-airflow[celery,postgres,docker,redis,amazon]~=2.10.2
+apache-airflow[celery,postgres,docker,redis,amazon]~=2.10.3
 transmission-rpc~=7.0.11

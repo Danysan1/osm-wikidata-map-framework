@@ -46,4 +46,4 @@ SELECT
 FROM propagatable_etymology AS pet
 JOIN owmf.etymology AS old_et ON pet.et_id = old_et.et_id
 JOIN relevant_element AS new_el ON pet.lower_name = new_el.lower_name
-ON CONFLICT (et_el_id, et_wd_id) DO NOTHING
+ON CONFLICT (et_el_id, et_wd_id, et_name) DO NOTHING

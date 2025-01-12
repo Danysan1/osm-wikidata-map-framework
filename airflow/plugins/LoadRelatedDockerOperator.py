@@ -29,6 +29,6 @@ class LoadRelatedDockerOperator(DockerOperator):
             retries = 3,
             network_mode = environ.get("AIRFLOW_VAR_POSTGIS_BRIDGE"), # The container needs to talk with the local DB
             mount_tmp_dir=False, # https://airflow.apache.org/docs/apache-airflow-providers-docker/3.5.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator
-            auto_remove=True,
+            auto_remove='success',
             **kwargs
         )
