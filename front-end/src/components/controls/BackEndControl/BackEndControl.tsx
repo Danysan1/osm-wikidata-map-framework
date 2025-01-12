@@ -96,9 +96,11 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                         dropdownItems.push(buildDropdownItem("qlever_ohm_wikidata_direct", ohmWikidataDirectText, QLEVER_OHM_GROUP_NAME));
                     }
                 }
-                for (const prop of preset.osm_wikidata_properties) {
-                    dropdownItems.push(buildDropdownItem("wd_direct_" + prop, "Wikidata " + prop, WDQS_GROUP_NAME));
-                    //dropdownItems.push(buildDropdownItem("qlever_wd_direct_" + prop, `Wikidata ${prop}`, QLEVER_GROUP_NAME)); // TODO: Implement and enable
+                if(preset.osm_wikidata_properties.length > 1) {
+                    for (const prop of preset.osm_wikidata_properties) {
+                        dropdownItems.push(buildDropdownItem("wd_direct_" + prop, "Wikidata " + prop, WDQS_GROUP_NAME));
+                        //dropdownItems.push(buildDropdownItem("qlever_wd_direct_" + prop, `Wikidata ${prop}`, QLEVER_GROUP_NAME)); // TODO: Implement and enable
+                    }
                 }
             }
 
