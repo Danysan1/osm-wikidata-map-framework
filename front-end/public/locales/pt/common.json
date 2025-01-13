@@ -77,15 +77,15 @@
         "etymology_source": "Pela origem da entidade ligada"
     },
     "feature_details": {
-        "source": "Origem do elemento:",
-        "loading_first_n_items": "A carregar apenas os primeiros {{partial}} entidades de um total de {{total}}...",
+        "source": "Fonte destacada:",
+        "loading_first_n_items": "A carregar apenas as primeiras {{partial}} entidades de um total de {{total}}...",
         "location": "Localização",
         "picture_via_commons": "Imagem do Wikimedia Commons",
         "loading": "A carregar as entidades...",
         "report_problem": "Comunicar um problema neste elemento"
     },
     "etymology_details": {
-        "source": "Origem da entidade:",
+        "source": "Fonte da entidade:",
         "propagation": "propagação",
         "propagation_title": "Descrição do mecanismo de propagação"
     },
@@ -99,6 +99,7 @@
     "change_language": "Alterar idioma",
     "choose_basemap": "Escolher o estilo do fundo",
     "choose_projection": "Escolher projeção do mapa",
+    "choose_year": "Escolher o ano:",
     "overpass_turbo_query": "Pedido de origem do OverpassQL no Overpass Turbo",
     "wdqs_query": "Pedido de origem do SPARQL no Wikidata Query Service",
     "qlever_query": "Pedido de origem do SPARQL no QLever UI",
