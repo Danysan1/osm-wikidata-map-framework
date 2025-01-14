@@ -5,6 +5,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
+import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./EtymologyView.module.css";
 import { LinkedEntitySourceRow } from "./LinkedEntitySourceRow";
@@ -174,13 +175,12 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
           </div>
         </div>
 
-        {!!etymology.pictures?.length && (
-          <div className="etymology_pictures column">
-            {etymology.pictures.slice(0, MAX_IMAGES).map((img, i) => (
-              <CommonsImage key={i} name={img} className={styles.etymology_image} />
-            ))}
-          </div>
-        )}
+        <div className="etymology_pictures column">
+          {etymology.pictures?.slice(0, MAX_IMAGES)?.map((img, i) => (
+            <CommonsImage key={i} name={img} className={styles.etymology_image} />
+          ))}
+          {etymology.iiif_url && <IIIFImages manifestURL={etymology.iiif_url} className={styles.etymology_image} />}
+        </div>
       </div>
 
       <LinkedEntitySourceRow {...etymology} />

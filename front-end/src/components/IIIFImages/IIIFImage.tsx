@@ -28,15 +28,17 @@ export const IIIFImage: FC<IIIFImageProps> = ({ manifest, className }) => {
 function findImageURL(manifest: Manifest): string | undefined {
   return manifest.items
     ?.map((canvas) => {
-    //   const thumbnail = canvas.thumbnail?.find((t) => t.type === "Image");
-    //   if (thumbnail) return thumbnail.id;
+      //   const thumbnail = canvas.thumbnail?.find((t) => t.type === "Image");
+      //   if (thumbnail) return thumbnail.id;
 
       return canvas.items
         ?.flatMap((annotationPage) =>
           annotationPage.items?.flatMap((annotation) => {
             if (Array.isArray(annotation.body)) {
               return annotation.body
-                .map((body) => typeof body !== "string" && body.type === "Image" ? body.id : undefined)
+                .map((body) =>
+                  typeof body !== "string" && body.type === "Image" ? body.id : undefined
+                )
                 .find((url) => url);
             } else if (
               typeof annotation.body !== "string" &&
@@ -53,7 +55,8 @@ function findImageURL(manifest: Manifest): string | undefined {
     .find((url) => url);
 }
 
-function findImageAttribution(manifest:Manifest): string {
-    const artist = manifest.metadata?.find(m => m.label?.en?.[0] === "Artist")?.value?.en?.[0];
-    return artist ? "IIIF - " + artist : "IIIF";
+function findImageAttribution(manifest: Manifest): string {
+  const artist = manifest.metadata?.find((m) => m.label?.en?.[0] === "Artist")?.value
+    ?.en?.[0];
+  return artist ? "IIIF - " + artist : "IIIF";
 }

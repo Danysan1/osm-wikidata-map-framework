@@ -28,17 +28,22 @@ export const IIIFImages: FC<IIIFImageProps> = ({ manifestURL, className }) => {
     fetchManifest(manifestURL).then(setManifest).catch(console.error);
   }, [manifestURL]);
 
-  return (
-    (manifest?.type === "Manifest" && (
-      <IIIFImage manifest={manifest} className={className} />
-    )) || (
-      <div>
-        {manifest?.items?.map((image) => (
-          image.type === "Manifest" && <IIIFImage key={image.id} manifest={image} className={className} />
-        ))}
-      </div>
-    )
-  );
+  if (!manifest) return null;
+
+  if (manifest?.type === "Collection") {
+    return (
+      <>
+        {manifest?.items?.map(
+          (image) =>
+            image.type === "Manifest" && (
+              <IIIFImage key={image.id} manifest={image} className={className} />
+            )
+        )}
+      </>
+    );
+  }
+
+  return <IIIFImage manifest={manifest} className={className} />;
 };
 
 /**
