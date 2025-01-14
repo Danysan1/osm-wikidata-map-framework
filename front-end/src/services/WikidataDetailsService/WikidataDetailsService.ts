@@ -63,6 +63,7 @@ export class WikidataDetailsService extends WikidataService {
                         event_place: row.event_place?.value,
                         gender: row.gender?.value,
                         genderID: row.genderID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                        iiif_url: row.iiif?.value,
                         instance: row.instance?.value,
                         instanceID: row.instanceID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         name: row.name?.value,

@@ -9,6 +9,7 @@ SELECT
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_wikispore) AS ?wikispore)
     (SAMPLE(?_picture) AS ?picture)
+    (SAMPLE(?_iiif) AS ?iiif)
     (SAMPLE(?_height) AS ?height)
     (SAMPLE(?_levels) AS ?levels)
     (SAMPLE(?_osm_node) AS ?osm_node)
@@ -39,6 +40,7 @@ WHERE {
     OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P7721 ?_wikispore. }
     OPTIONAL { ?item wdt:P18 ?_picture. }
+    OPTIONAL { ?item wdt:P6108 ?_iiif. }
     OPTIONAL { ?item p:P2048/psn:P2048/wikibase:quantityAmount ?_height. } # https://stackoverflow.com/a/57560572/2347196
     OPTIONAL { ?item wdt:P1101 ?_levels. }
     OPTIONAL { ?item wdt:P11693 ?_osm_node. }

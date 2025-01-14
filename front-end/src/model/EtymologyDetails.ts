@@ -34,6 +34,8 @@ export interface EtymologyDetails extends Etymology {
      * Localized name of the gender
      */
     gender?: string;
+
+    iiif_url?: string;
     
     /**
      * Q-ID of the Wikidata entity of the instance

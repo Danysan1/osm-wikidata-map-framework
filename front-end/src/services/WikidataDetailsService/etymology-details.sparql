@@ -13,6 +13,7 @@ SELECT ?wikidata
     (SAMPLE(?_countryID) AS ?countryID)
     (GROUP_CONCAT(DISTINCT ?country_name; SEPARATOR=', ') AS ?citizenship)
     (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
+    (SAMPLE(?_iiif) AS ?iiif)
     (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
     (SAMPLE(?_event_date) AS ?event_date)
     (SAMPLE(?_event_date_precision) AS ?event_date_precision)
@@ -103,6 +104,10 @@ WHERE {
 # locator map image - https://www.wikidata.org/wiki/Property:P242
 # route map - https://www.wikidata.org/wiki/Property:P15
 # flag - https://www.wikidata.org/wiki/Property:P41
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P6108 ?_iiif.
     }
 
     # ID and name of the gender of the entity

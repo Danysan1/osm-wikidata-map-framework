@@ -1,6 +1,7 @@
 import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
 import { FC, useEffect, useState } from "react";
+import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "./CommonsImage";
 import { PanoramaxImage } from "./PanoramaxImage";
 
@@ -46,6 +47,7 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
           <CommonsImage key={i} name={img} />
         ))}
         {panoramaxUUID && <PanoramaxImage uuid={panoramaxUUID} />}
+        {feature.iiif_url && <IIIFImages manifestURL={feature.iiif_url} />}
       </div>
     )
   );

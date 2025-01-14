@@ -6,7 +6,7 @@ interface PanoramaxImageProps {
   /**
    * UUID of the Panoramax image
    *
-   * @see https://wiki.openstreetmap.org/wiki/Key:panoramax
+   * @link https://wiki.openstreetmap.org/wiki/Key:panoramax
    * @example "cafb0ec8-51dd-43ac-836c-8cd1f7cb8725"
    */
   uuid: string;
@@ -15,6 +15,10 @@ interface PanoramaxImageProps {
 
 /**
  * Display a Panoramax image and its attribution
+ * 
+ * @link https://wiki.openstreetmap.org/wiki/Panoramax
+ * @link https://wiki.openstreetmap.org/wiki/Key:panoramax
+ * @link https://docs.panoramax.fr/
  */
 export const PanoramaxImage: FC<PanoramaxImageProps> = ({ uuid, className }) => {
   /**

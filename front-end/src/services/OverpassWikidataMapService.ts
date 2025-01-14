@@ -175,6 +175,8 @@ export class OverpassWikidataMapService implements MapService {
                 osmI18n.description = wdI18n.description;
             if (!osmFeature.properties.picture && wikidataFeature.properties?.picture)
                 osmFeature.properties.picture = wikidataFeature.properties?.picture;
+            if (!osmFeature.properties.iiif_url && wikidataFeature.properties?.iiif_url)
+                osmFeature.properties.iiif_url = wikidataFeature.properties?.iiif_url;
             if (!osmFeature.properties.commons && wikidataFeature.properties?.commons)
                 osmFeature.properties.commons = wikidataFeature.properties?.commons;
             if (!osmFeature.properties.wikidata && wikidataFeature.properties?.wikidata)

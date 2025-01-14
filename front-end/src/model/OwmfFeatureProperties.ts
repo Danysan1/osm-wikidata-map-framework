@@ -221,6 +221,8 @@ export interface OwmfFeatureProperties {
      */
     from_wikidata_prop?: string;
 
+    iiif_url?: string;
+
     /**
      * Number of linked entities
      */
