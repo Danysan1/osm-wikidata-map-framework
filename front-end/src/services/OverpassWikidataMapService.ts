@@ -1,7 +1,7 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import { OsmInstance, type Etymology, type OsmType, type OsmWdJoinField } from "../model/Etymology";
-import { getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
+import { createFeatureTags, getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
@@ -150,7 +150,7 @@ export class OverpassWikidataMapService implements MapService {
             if (wikidataFeature.properties?.render_height)
                 osmFeature.properties.render_height = wikidataFeature.properties?.render_height;
 
-            const osmI18n = getFeatureTags(osmFeature),
+            const osmI18n = createFeatureTags(osmFeature),
                 wdI18n = getFeatureTags(wikidataFeature),
                 lowerOsmName = osmI18n?.name?.toLowerCase(),
                 lowerOsmAltName = osmI18n?.alt_name?.toLowerCase(),
@@ -166,12 +166,12 @@ export class OverpassWikidataMapService implements MapService {
                 !lowerOsmName.includes(lowerWikidataName) &&
                 !lowerWikidataName.includes(lowerOsmAltName) &&
                 !lowerOsmAltName.includes(lowerWikidataName)) // If OSM has a name and an alt_name and Wikidata has a different name, append it to alt_name
-                osmI18n.alt_name = [osmI18n.alt_name, wdI18n.name].join(";");
+                osmI18n.alt_name = [osmI18n.alt_name, wdI18n?.name].join(";");
 
             // For other key, give priority to Overpass
-            if (!osmI18n.name && wdI18n.name)
+            if (!osmI18n.name && wdI18n?.name)
                 osmI18n.name = wdI18n.name;
-            if (!osmI18n.description && wdI18n.description)
+            if (!osmI18n.description && wdI18n?.description)
                 osmI18n.description = wdI18n.description;
             if (!osmFeature.properties.picture && wikidataFeature.properties?.picture)
                 osmFeature.properties.picture = wikidataFeature.properties?.picture;

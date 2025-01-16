@@ -2,7 +2,7 @@ import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import { DatePrecision, Etymology, OsmInstance, OsmType } from "../model/Etymology";
-import { getFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
+import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
@@ -190,7 +190,7 @@ export class OverpassService implements MapService {
             osmSplit = full_osm_id?.split("/"),
             osm_type = osmSplit?.length ? osmSplit[0] as OsmType : undefined,
             osm_id = osmSplit?.length ? parseInt(osmSplit[1]) : undefined,
-            tags = getFeatureTags(feature);
+            tags = createFeatureTags(feature);
         feature.id = `${site}/${full_osm_id}`;
         feature.properties.id = feature.id; // Copying the ID as sometimes Maplibre erases feature.id
         feature.properties.from_wikidata = false;

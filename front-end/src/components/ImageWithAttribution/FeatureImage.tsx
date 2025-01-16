@@ -14,7 +14,7 @@ interface FeatureImagesProps {
 
 export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) => {
   const tags = getPropTags(feature),
-    panoramaxUUID = tags.panoramax
+    panoramaxUUID = tags?.panoramax
       ? PANORAMAX_UUID_REGEX.exec(tags.panoramax)?.[0]
       : undefined;
 

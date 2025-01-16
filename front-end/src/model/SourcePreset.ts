@@ -55,7 +55,7 @@ export interface SourcePreset {
     /**
      * OSM relation role to consider when propagating linked entities from relations to their members
      * 
-     * @example "street" => If a relation has a linked entity it will be propagated to all members with the role "street"
+     * @example "street" => If a relation has a linked entity it will be propagated to all members with the role "street", for example members of https://overpass-turbo.eu/s/1XdC
      */
     relation_propagation_role?: string;
 

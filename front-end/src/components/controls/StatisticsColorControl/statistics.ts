@@ -229,7 +229,7 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
   });
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
+    const id = feature?.wikidata || getPropTags(feature)?.name?.toLowerCase() || i.toString();
     osmInstances.forEach(instance => {
       if (feature?.from_osm_instance === instance && feature?.from_wikidata)
         IDs_by_source[instance + " + Wikidata"].add(id);

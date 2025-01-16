@@ -22,7 +22,6 @@ export const PMTilesSource: FC<PMTilesSourceProps> = ({ id, children }) => {
 
   const fullPMTilesURL = `pmtiles://${process.env.owmf_pmtiles_base_url}${sourcePresetID}.pmtiles`; // Example: pmtiles://https://etymology.dsantini.it/etymology.pmtiles
 
-  console.debug("PMTilesSource", { fullPMTilesURL });
   return (
     <Source id={id} type="vector" url={fullPMTilesURL}>
       {children}

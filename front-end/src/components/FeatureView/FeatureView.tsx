@@ -22,6 +22,8 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     featureI18n = getFeatureTags(feature),
     [mainName, setMainName] = useState<string>(),
     altNames = useMemo(() => {
+      if(!featureI18n) return undefined;
+
       const alt_name_set = new Set<string>();
       [featureI18n.name, featureI18n.official_name, featureI18n.alt_name]
         .flatMap((name) => name?.split(";"))
@@ -34,22 +36,22 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         )
         .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
       return alt_name_set.size > 0 ? Array.from(alt_name_set) : undefined;
-    }, [mainName, featureI18n.alt_name, featureI18n.name, featureI18n.official_name]),
+    }, [featureI18n, mainName]),
     [description, setDescription] = useState<string>();
 
   useEffect(() => {
-    const local_name = featureI18n["name:" + i18n.language],
-      fallback_name = featureI18n["name:en"];
+    const local_name = featureI18n?.["name:" + i18n.language],
+      fallback_name = featureI18n?.["name:en"];
 
     if (typeof local_name === "string" && local_name !== "null") {
       setMainName(local_name);
-    } else if (featureI18n.name && featureI18n.name !== "null") {
+    } else if (featureI18n?.name && featureI18n.name !== "null") {
       setMainName(featureI18n.name);
     } else if (typeof fallback_name === "string" && fallback_name !== "null") {
       setMainName(fallback_name);
-    } else if (featureI18n.official_name && featureI18n.official_name !== "null") {
+    } else if (featureI18n?.official_name && featureI18n.official_name !== "null") {
       setMainName(featureI18n.official_name);
-    } else if (featureI18n.alt_name && featureI18n.alt_name !== "null") {
+    } else if (featureI18n?.alt_name && featureI18n.alt_name !== "null") {
       setMainName(featureI18n.alt_name);
     } else if (props?.wikidata) {
       setMainName(undefined);
@@ -92,7 +94,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
           });
         });
     }
-  }, [featureI18n.description, i18n.language, props]);
+  }, [featureI18n?.description, i18n.language, props]);
 
   return (
     <div className={styles.detail_container}>

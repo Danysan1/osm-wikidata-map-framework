@@ -291,9 +291,26 @@ export function getPropLinkedEntities(props: OwmfFeatureProperties): Etymology[]
     }
 }
 
-export function getPropTags(props: OwmfFeatureProperties): OsmFeatureTags {
+function parseJsonTags(tags: string): OsmFeatureTags {
+    const out: unknown = JSON.parse(tags);
+    if (!out || typeof out !== "object")
+        throw new Error("Failed parsing JSON string for tags of feature: " + tags);
+    return out as OsmFeatureTags;
+}
+
+/**
+ * Returns the tags of a feature from its properties, if available, without side effects
+ */
+export function getPropTags(props: OwmfFeatureProperties): OsmFeatureTags | undefined {
+    return typeof props.tags === "string" ? parseJsonTags(props.tags) : props.tags;
+}
+
+/**
+ * Returns the tags of a feature from its properties, creating an empty oject if they are missing
+ */
+export function createPropTags(props: OwmfFeatureProperties): OsmFeatureTags {
     if (typeof props?.tags === "string") {
-        props.tags = JSON.parse(props.tags) as OsmFeatureTags;
+        props.tags = parseJsonTags(props.tags);
         return props.tags;
     } else if (!props.tags) {
         props.tags = {};
@@ -306,10 +323,10 @@ export function getPropTags(props: OwmfFeatureProperties): OsmFeatureTags {
 export function getLocalizedName(props: OwmfFeatureProperties, language: string): string | null {
     const localNameKey = "name:" + language,
         tags = getPropTags(props),
-        localName = tags[localNameKey];
+        localName = tags?.[localNameKey];
     if (typeof localName === "string")
         return localName;
-    else if (tags.name)
+    else if (tags?.name)
         return tags.name;
     else
         return null;
