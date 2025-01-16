@@ -21,21 +21,25 @@ export const DataTablePopup: FC<DataTablePopupProps> = ({
   onClose,
   setOpenFeature,
 }) => {
-  const uniqueFeatures = useMemo(
-    () =>
-      Object.values(
-        features.reduce<Record<string, OwmfFeature>>((acc, feature, i) => {
+  const uniqueFeatures = useMemo(() => {
+    if (process.env.owmf_deduplicate_data_table !== "true") {
+      return features;
+    } else {
+      const uniqueMap = features.reduce<Record<string, OwmfFeature>>(
+        (acc, feature, i) => {
           const signatures = [
             getFeatureTags(feature)?.name ?? feature.id ?? feature.properties?.id ?? i,
             ...getFeatureLinkedEntities(feature).map((e, i) => e.wikidata ?? e.name ?? i),
           ];
           acc[signatures.join("_")] = feature;
-          // console.debug("Calculating unique features", { signatures, acc });
           return acc;
-        }, {})
-      ),
-    [features]
-  );
+        },
+        {}
+      );
+      console.debug("Calculated unique features", uniqueMap);
+      return Object.values(uniqueMap);
+    }
+  }, [features]);
 
   return (
     <Popup

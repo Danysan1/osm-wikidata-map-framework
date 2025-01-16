@@ -1,9 +1,9 @@
 import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import {
-    getFeatureLinkedEntities,
-    getFeatureTags,
-    OwmfFeature,
+  getFeatureLinkedEntities,
+  getFeatureTags,
+  OwmfFeature,
 } from "@/src/model/OwmfResponse";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,22 +24,28 @@ export const DataTableRow: FC<DataTableRowProps> = ({
 }) => {
   const { i18n } = useTranslation(),
     entitiesCellContent = useMemo(() => {
-      const uniqueEntities = getFeatureLinkedEntities(feature).reduce<
-        Record<string, Etymology>
-      >((acc, entity, i) => {
-        const wdQID = entity?.wikidata,
-          entityDetails = wdQID ? details?.[wdQID] : undefined,
-          signature = entityDetails?.name ?? entity.name ?? wdQID ?? i.toString();
-        if (!acc[signature]?.wikidata) acc[signature] = entityDetails ?? entity;
-        return acc;
-      }, {});
-      console.debug("Calculated unique entities", uniqueEntities);
+      let uniqueEntities: Etymology[];
+      if (process.env.owmf_deduplicate_data_table !== "true") {
+        uniqueEntities = getFeatureLinkedEntities(feature);
+      } else {
+        const uniqueMap = getFeatureLinkedEntities(feature).reduce<
+          Record<string, Etymology>
+        >((acc, entity, i) => {
+          const wdQID = entity?.wikidata,
+            entityDetails = wdQID ? details?.[wdQID] : undefined,
+            signature = entityDetails?.name ?? entity.name ?? wdQID ?? i.toString();
+          if (!acc[signature]?.wikidata) acc[signature] = entityDetails ?? entity;
+          return acc;
+        }, {});
+        console.debug("Calculated unique entities", uniqueMap);
+        uniqueEntities = Object.values(uniqueMap);
+      }
 
       return (
         <ul>
-          {Object.keys(uniqueEntities).map((signature) => (
-            <li key={signature}>
-              <LinkedEntityLink linkedEntity={uniqueEntities[signature]} />
+          {uniqueEntities.map((entity, i) => (
+            <li key={entity.wikidata ?? entity.name ?? i}>
+              <LinkedEntityLink linkedEntity={entity} />
             </li>
           ))}
         </ul>
