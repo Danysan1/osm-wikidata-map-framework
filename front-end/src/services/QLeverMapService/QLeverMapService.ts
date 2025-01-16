@@ -216,7 +216,7 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression);
         }
 
-        if(backEndID.includes("ohm")) {
+        if (backEndID.includes("ohm")) {
             sparqlQuery = sparqlQuery.replaceAll("openstreetmap.org/relation", "openhistoricalmap.org/relation");
         }
 
@@ -286,8 +286,7 @@ export class QLeverMapService implements MapService {
             const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 etymology_wd_ids: string[] | undefined = typeof row.etymology?.value === "string" ? row.etymology.value.split(";").map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")) : undefined;
 
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            (etymology_wd_ids || [undefined]).forEach(etymology_wd_id => { // [undefined] is used when there are no linked entities (like in https://osmwd.dsantini.it )
+            (etymology_wd_ids?.length ? etymology_wd_ids : [undefined]).forEach(etymology_wd_id => { // [undefined] is used when there are no linked entities (like in https://osmwd.dsantini.it )
                 const existingFeature = acc.find(feature => {
                     if (feature.id !== feature_wd_id)
                         return false; // Not the same feature
@@ -325,7 +324,7 @@ export class QLeverMapService implements MapService {
                         }
                     }
 
-                    const etymology: Etymology | null = etymology_wd_id ? {
+                    const etymology: Etymology | undefined = etymology_wd_id ? {
                         from_osm_instance,
                         from_osm_type: osm_type,
                         from_osm_id: osm_id,
@@ -335,75 +334,12 @@ export class QLeverMapService implements MapService {
                         propagated: false,
                         statementEntity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikidata: etymology_wd_id,
-                    } : null;
+                    } : undefined;
 
                     if (!existingFeature) { // Add the new feature for this item 
-                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                        const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
-                            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                            picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
-                        console.debug("featureReducer", { row, from_osm_instance, osm_id, osm_type, commons, picture });
-
-                        let render_height;
-                        if (row.height?.value)
-                            render_height = parseInt(row.height?.value);
-                        else if (row.levels?.value)
-                            render_height = parseInt(row.levels?.value) * 4;
-                        else if (row.building?.value)
-                            render_height = 6;
-
-                        const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                            from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
-                        let id;
-                        if (from_osm_instance && feature_from_wikidata)
-                            id = `${from_osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
-                        else if (from_osm_instance)
-                            id = `${from_osm_instance}/${osm_type}/${osm_id}`;
-                        else
-                            id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
-
-                        const linkedEntities: Etymology[] = etymology ? [etymology] : [],
-                            linkedName = row.etymology_text?.value,
-                            linkedDescription = row.etymology_description?.value;
-                        if(!!linkedName || !!linkedDescription) {
-                            linkedEntities.push({
-                                from_osm_instance,
-                                from_osm_id: osm_id,
-                                from_osm_type: osm_type,
-                                from_wikidata: false,
-                                name: linkedName,
-                                description: linkedDescription,
-                            });
-                        }
-
-                        acc.push({
-                            type: "Feature",
-                            id: id,
-                            geometry,
-                            properties: {
-                                id: id,
-                                commons: commons,
-                                linked_entities: linkedEntities.length ? linkedEntities : undefined,
-                                linked_entity_count: linkedEntities.length,
-                                from_osm_instance,
-                                from_wikidata: feature_from_wikidata,
-                                from_wikidata_entity,
-                                from_wikidata_prop,
-                                render_height: render_height,
-                                tags: {
-                                    description: row.itemDescription?.value,
-                                    name: row.itemLabel?.value,
-                                    website: row.website?.value,
-                                },
-                                ohm_id: site === OsmInstance.OpenHistoricalMap ? osm_id : undefined,
-                                ohm_type: site === OsmInstance.OpenHistoricalMap ? osm_type : undefined,
-                                osm_id: site === OsmInstance.OpenStreetMap ? osm_id : undefined,
-                                osm_type: site === OsmInstance.OpenStreetMap ? osm_type : undefined,
-                                picture: picture,
-                                wikidata: feature_wd_id,
-                                wikipedia: row.wikipedia?.value,
-                            }
-                        });
+                        acc.push(this.createFeature(
+                            row, geometry, feature_from_wikidata, feature_wd_id, from_osm_instance, osm_id, osm_type, etymology
+                        ));
                     } else if (etymology) { // Add the new etymology to the existing feature for this feature
                         getFeatureLinkedEntities(existingFeature)?.push(etymology);
                     }
@@ -411,5 +347,83 @@ export class QLeverMapService implements MapService {
             });
             return acc;
         }
+    }
+
+    private createFeature(
+        row: Record<string, SparqlResponseBindingValue>,
+        geometry: Point,
+        from_wikidata: boolean,
+        feature_wd_id?: string,
+        osm_instance?: OsmInstance,
+        osm_id?: number,
+        osm_type?: OsmType,
+        linkedEntity?: Etymology
+    ): OwmfFeature {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
+        console.debug("createFeature", { row, geometry, osm_instance, osm_id, osm_type, commons, picture });
+
+        let render_height;
+        if (row.height?.value)
+            render_height = parseInt(row.height?.value);
+        else if (row.levels?.value)
+            render_height = parseInt(row.levels?.value) * 4;
+        else if (row.building?.value)
+            render_height = 6;
+
+        const from_wikidata_entity = feature_wd_id ? feature_wd_id : linkedEntity?.from_wikidata_entity,
+            from_wikidata_prop = feature_wd_id ? "P625" : linkedEntity?.from_wikidata_prop;
+        let id;
+        if (osm_instance && from_wikidata)
+            id = `${osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
+        else if (osm_instance)
+            id = `${osm_instance}/${osm_type}/${osm_id}`;
+        else
+            id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
+
+        const linkedEntities: Etymology[] = linkedEntity ? [linkedEntity] : [],
+            linkedName = row.etymology_text?.value,
+            linkedDescription = row.etymology_description?.value;
+        if (!!linkedName || !!linkedDescription) {
+            linkedEntities.push({
+                from_osm_instance: osm_instance,
+                from_osm_id: osm_id,
+                from_osm_type: osm_type,
+                from_wikidata: false,
+                name: linkedName,
+                description: linkedDescription,
+            });
+        }
+
+        return {
+            type: "Feature",
+            id: id,
+            geometry,
+            properties: {
+                id: id,
+                commons: commons,
+                linked_entities: linkedEntities.length ? linkedEntities : undefined,
+                linked_entity_count: linkedEntities.length,
+                from_osm_instance: osm_instance,
+                from_wikidata: from_wikidata,
+                from_wikidata_entity,
+                from_wikidata_prop,
+                render_height: render_height,
+                tags: {
+                    description: row.itemDescription?.value,
+                    name: row.itemLabel?.value,
+                    website: row.website?.value,
+                },
+                ohm_id: osm_instance === OsmInstance.OpenHistoricalMap ? osm_id : undefined,
+                ohm_type: osm_instance === OsmInstance.OpenHistoricalMap ? osm_type : undefined,
+                osm_id: osm_instance === OsmInstance.OpenStreetMap ? osm_id : undefined,
+                osm_type: osm_instance === OsmInstance.OpenStreetMap ? osm_type : undefined,
+                picture: picture,
+                wikidata: feature_wd_id,
+                wikipedia: row.wikipedia?.value,
+            }
+        };
     }
 }
