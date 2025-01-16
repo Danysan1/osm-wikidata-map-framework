@@ -1,4 +1,4 @@
-.etymology_grid {
+.entity_grid {
   display: grid;
   grid-template-rows: auto;
   align-content: center;
@@ -10,7 +10,7 @@
   grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
 }
 
-.etymology {
+.entity {
   border: 1px solid #ccc;
   margin: 0.5em;
   padding: 1em;
@@ -21,11 +21,12 @@
   max-width: 75em;
 }
 
-.etymology_image img {
+.entity_pictures:empty {
+  display: none;
+}
+
+.entity_image img {
     margin: 0.5em;
-    /*padding: 0.5em;*/
-    min-width: 15em;
-    min-height: 15em;
     max-width: 26em;
     max-height: 26em;
 }

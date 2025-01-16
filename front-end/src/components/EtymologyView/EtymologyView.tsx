@@ -147,8 +147,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
   if (!etymology.name && !etymology.description && !etymology.wikidata) return null;
 
   return (
-    <div className={styles.etymology}>
-      <div className={styles.etymology_grid}>
+    <div className={styles.entity}>
+      <div className={styles.entity_grid}>
         <div className="column">
           <div>
             <h2 className="etymology_name">{etymology.name}</h2>
@@ -175,11 +175,11 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
           </div>
         </div>
 
-        <div className="etymology_pictures column">
+        <div className={styles.entity_pictures}>
           {etymology.pictures?.slice(0, MAX_IMAGES)?.map((img, i) => (
-            <CommonsImage key={i} name={img} className={styles.etymology_image} />
+            <CommonsImage key={i} name={img} className={styles.entity_image} />
           ))}
-          {etymology.iiif_url && <IIIFImages manifestURL={etymology.iiif_url} className={styles.etymology_image} />}
+          {etymology.iiif_url && <IIIFImages manifestURL={etymology.iiif_url} className={styles.entity_image} />}
         </div>
       </div>
 
