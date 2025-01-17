@@ -19,7 +19,7 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = ({ position }) 
             return getActiveSourcePresetIDs().map(
                 sourcePresetID => ({
                     id: sourcePresetID,
-                    text: t("preset." + sourcePresetID),
+                    text: t("preset." + sourcePresetID, sourcePresetID),
                     onSelect: () => setSourcePresetID(sourcePresetID)
                 })
             );

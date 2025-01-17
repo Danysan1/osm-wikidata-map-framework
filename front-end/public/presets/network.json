@@ -1,0 +1,14 @@
+{
+    "mapcomplete_theme": "transit",
+    "osm_filter_tags": [
+        "network:wikidata",
+        "network",
+        "public_transport"
+    ],
+    "osm_wikidata_keys": [
+        "network:wikidata"
+    ],
+    "osm_wikidata_properties": [
+        "P16"
+    ]
+}

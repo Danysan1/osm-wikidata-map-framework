@@ -1,11 +1,12 @@
 import { parse } from "papaparse";
 import { StatsDatabase } from "../../db/StatsDatabase";
 import type { EtymologyStat } from "../../model/EtymologyStat";
-import type { ColorSchemeID } from "../../model/colorScheme";
+import { ColorSchemeID } from "../../model/colorScheme";
 import { WikidataService } from "../WikidataService";
 import countryStatsQuery from "./country.sparql";
 import endCenturyStatsQuery from "./end-century.sparql";
 import genderStatsQuery from "./gender.sparql";
+import lineOfWorkStatsQuery from "./line_of_work.sparql";
 import occupationStatsQuery from "./occupation.sparql";
 import pictureStatsQuery from "./picture.sparql";
 import startCenturyStatsQuery from "./start-century.sparql";
@@ -13,22 +14,24 @@ import typeStatsQuery from "./type.sparql";
 import wikilinkStatsQuery from "./wikilink.sparql";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
-    type: `${process.env.owmf_base_path ?? ""}/csv/wikidata_types.csv`,
-    gender: `${process.env.owmf_base_path ?? ""}/csv/wikidata_genders.csv`,
-    country: `${process.env.owmf_base_path ?? ""}/csv/wikidata_countries.csv`,
-    occupation: `${process.env.owmf_base_path ?? ""}/csv/wikidata_occupations.csv`,
+    [ColorSchemeID.type]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_types.csv`,
+    [ColorSchemeID.gender]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_genders.csv`,
+    [ColorSchemeID.country]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_countries.csv`,
+    [ColorSchemeID.line_of_work]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_lines_of_work.csv`,
+    [ColorSchemeID.occupation]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_occupations.csv`,
 }
 
 export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
-    picture: pictureStatsQuery,
-    feature_link_count: wikilinkStatsQuery,
-    type: typeStatsQuery,
-    gender: genderStatsQuery,
-    country: countryStatsQuery,
-    occupation: occupationStatsQuery,
-    startCentury: startCenturyStatsQuery,
-    endCentury: endCenturyStatsQuery,
-    etymology_link_count: wikilinkStatsQuery,
+    [ColorSchemeID.picture]: pictureStatsQuery,
+    [ColorSchemeID.feature_link_count]: wikilinkStatsQuery,
+    [ColorSchemeID.type]: typeStatsQuery,
+    [ColorSchemeID.gender]: genderStatsQuery,
+    [ColorSchemeID.country]: countryStatsQuery,
+    [ColorSchemeID.line_of_work]: lineOfWorkStatsQuery,
+    [ColorSchemeID.occupation]: occupationStatsQuery,
+    [ColorSchemeID.startCentury]: startCenturyStatsQuery,
+    [ColorSchemeID.endCentury]: endCenturyStatsQuery,
+    [ColorSchemeID.etymology_link_count]: wikilinkStatsQuery,
 }
 
 export class WikidataStatsService extends WikidataService {

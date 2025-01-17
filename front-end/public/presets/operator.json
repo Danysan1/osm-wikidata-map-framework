@@ -1,0 +1,15 @@
+{
+    "osm_filter_tags": [
+        "operator:wikidata",
+        "operator",
+        "amenity"
+    ],
+    "osm_text_key": "operator",
+    "osm_wikidata_keys": [
+        "operator:wikidata"
+    ],
+    "osm_wikidata_properties": [
+        "P126", "P137"
+    ],
+    "relation_propagation_role": ""
+}

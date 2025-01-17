@@ -10,6 +10,7 @@ import { WikidataMapService } from "./WikidataMapService/WikidataMapService";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];
+    private alreadyFetchingPromise: Promise<OwmfResponse> | undefined;
 
     constructor(sourcePreset: SourcePreset) {
         this.services = [];
@@ -49,11 +50,20 @@ export class CombinedCachedMapService implements MapService {
         return this.services?.some(service => service.canHandleBackEnd(backEndID));
     }
 
-    public fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+        if(this.alreadyFetchingPromise !== undefined) {
+            console.debug("fetchMapElements: Already fetching data from back-end, skipping another fetch");
+            return this.alreadyFetchingPromise;
+        }
+
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        return service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
+        this.alreadyFetchingPromise = service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
+
+        const out = await this.alreadyFetchingPromise;
+        this.alreadyFetchingPromise = undefined;
+        return out;
     }
 }

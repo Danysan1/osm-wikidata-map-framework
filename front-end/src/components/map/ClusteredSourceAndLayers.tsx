@@ -14,7 +14,6 @@ const CLUSTER_LAYER = "_layer_cluster",
 
 interface ClusteredSourceAndLayersProps {
   backEndService: MapService;
-  backEndID: string;
 
   /** Map source ID */
   sourceID: string;
@@ -68,7 +67,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     [elementsData, setElementsData] = useState<OwmfResponse | null>(null),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
-    { lat, lon, zoom, year } = useUrlFragmentContext(),
+    { lat, lon, zoom, year, backEndID } = useUrlFragmentContext(),
     { current: map } = useMap(),
     { t, i18n } = useTranslation();
 
@@ -87,11 +86,11 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
 
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (!bbox || !props.backEndService?.canHandleBackEnd(props.backEndID)) {
-      console.warn(
-        "Unsupported back-end ID or missing bbox, NOT fetching map clusters",
-        { bbox, backEnd: props.backEndID }
-      );
+    if (!bbox || !props.backEndService?.canHandleBackEnd(backEndID)) {
+      console.warn("Unsupported back-end ID or missing bbox, NOT fetching map clusters", {
+        bbox,
+        backEndID,
+      });
       return;
     }
 
@@ -99,18 +98,18 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     if (bboxArea < 0.0000001 || bboxArea > 1.6) {
       console.debug("BBox area too big, NOT fetching map clusters", {
         bbox,
-        backEndID: props.backEndID,
+        backEndID,
       });
       return;
     }
 
     console.debug("ClusteredSourceAndLayers fetching map cluster", {
       bbox,
-      backEnd: props.backEndID,
+      backEndID,
     });
     showLoadingSpinner(true);
     props.backEndService
-      .fetchMapElements(props.backEndID, true, bbox, i18n.language, year)
+      .fetchMapElements(backEndID, true, bbox, i18n.language, year)
       .then((data) => {
         setElementsData(data);
       })
@@ -122,7 +121,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
   }, [
     i18n.language,
     map,
-    props.backEndID,
+    backEndID,
     props.backEndService,
     props.maxZoom,
     props.minZoom,

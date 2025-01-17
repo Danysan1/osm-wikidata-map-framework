@@ -211,6 +211,8 @@ Q6266,nation,Locations,#33ff66
 Q34763,peninsula,Locations,#33ff66
 Q3502482,cultural region,Locations,#33ff66
 Q1710033,italian autonomous region with special statute,Locations,#33ff66
+Q15089,province of Italy,Locations,#33ff66
+Q15110,metropolitan city of Italy,Locations,#33ff66
 Q137535,county of Iran,Locations,#33ff66
 Q1414991,area,Locations,#33ff66
 Q28575,county,Locations,#33ff66
@@ -339,6 +341,15 @@ Q157031,foundation,Organization,#9933ff
 Q79913,non-governmental organization,Organization,#9933ff
 Q1194093,international non-governmental organization,Organization,#9933ff
 Q178706,institution,Organization,#9933ff
+Q507619,retail chain,Organization,#9933ff
+Q18509232,fast food restaurant chain,Organization,#9933ff
+Q76213285,clothing store chain,Organization,#9933ff
+Q18534542,restaurant chain,Organization,#9933ff
+Q249556,railway company,Organization,#9933ff
+Q10429667,car brand,Organization,#9933ff
+Q270791,state-owned enterprise,Organization,#9933ff
+Q327333,government agency,Organization,#9933ff
+Q1618899,fashion label,Organization,#9933ff
 Q11424,film,Art,#ff33cc
 Q7889,video game,Art,#ff33cc
 Q4502142,visual artwork,Art,#ff33cc

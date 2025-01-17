@@ -8,9 +8,9 @@ SELECT
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
-    # occupation - https://www.wikidata.org/wiki/Property:P106
-    # members have occupation - https://www.wikidata.org/wiki/Property:P3989
-    ?wikidata wdt:P106|wdt:P3989 ?id.
+    # industry - https://www.wikidata.org/wiki/Property:P452
+    # field of work - https://www.wikidata.org/wiki/Property:P101
+    ?wikidata wdt:P452|wdt:P101 ?id.
     ?id rdfs:label ?name FILTER(lang(?name)='${language}').
 
     OPTIONAL { ?id wdt:P279 ?superClassID. }

@@ -11,18 +11,18 @@ import { useTranslation } from "react-i18next";
 import { MapSourceDataEvent, useMap } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "../DropdownControl/DropdownControl";
 import {
-    BLACK,
-    BLUE,
-    calculateEtymologySourceStats,
-    calculateFeatureSourceStats,
-    downloadChartDataForWikidataIDs,
-    FALLBACK_COLOR,
-    getLayerColorFromStats,
-    loadPictureAvailabilityChartData,
-    loadWikilinkChartData,
-    ORANGE,
-    RED,
-    StatisticsCalculator
+  BLACK,
+  BLUE,
+  calculateEtymologySourceStats,
+  calculateFeatureSourceStats,
+  downloadChartDataForWikidataIDs,
+  FALLBACK_COLOR,
+  getLayerColorFromStats,
+  loadPictureAvailabilityChartData,
+  loadWikilinkChartData,
+  ORANGE,
+  RED,
+  StatisticsCalculator
 } from "./statistics";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -125,21 +125,22 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
       }
 
       return {
-        black: () => setFixedColor(BLACK),
-        blue: () => setFixedColor(BLUE),
-        country: () => void downloadChartDataFromWikidata(ColorSchemeID.country),
-        endCentury: () => void downloadChartDataFromWikidata(ColorSchemeID.endCentury),
-        etymology_link_count: () => downloadChartDataFromWikidata(ColorSchemeID.etymology_link_count),
-        etymology_source: () => void calculateLocalChartData(calculateEtymologySourceStats(t("color_scheme.osm_text_only"))),
-        feature_link_count: () => void calculateLocalChartData(loadWikilinkChartData),
-        feature_source: () => void calculateLocalChartData(calculateFeatureSourceStats),
-        gender: () => void downloadChartDataFromWikidata(ColorSchemeID.gender),
-        occupation: () => void downloadChartDataFromWikidata(ColorSchemeID.occupation),
-        orange: () => setFixedColor(ORANGE),
-        picture: () => void calculateLocalChartData(loadPictureAvailabilityChartData(t("color_scheme.available"), t("color_scheme.unavailable"))),
-        red: () => setFixedColor(RED),
-        startCentury: () => void downloadChartDataFromWikidata(ColorSchemeID.startCentury),
-        type: () => void downloadChartDataFromWikidata(ColorSchemeID.type),
+        [ColorSchemeID.black]: () => setFixedColor(BLACK),
+        [ColorSchemeID.blue]: () => setFixedColor(BLUE),
+        [ColorSchemeID.country]: () => void downloadChartDataFromWikidata(ColorSchemeID.country),
+        [ColorSchemeID.endCentury]: () => void downloadChartDataFromWikidata(ColorSchemeID.endCentury),
+        [ColorSchemeID.etymology_link_count]: () => downloadChartDataFromWikidata(ColorSchemeID.etymology_link_count),
+        [ColorSchemeID.etymology_source]: () => void calculateLocalChartData(calculateEtymologySourceStats(t("color_scheme.osm_text_only"))),
+        [ColorSchemeID.feature_link_count]: () => void calculateLocalChartData(loadWikilinkChartData),
+        [ColorSchemeID.feature_source]: () => void calculateLocalChartData(calculateFeatureSourceStats),
+        [ColorSchemeID.gender]: () => void downloadChartDataFromWikidata(ColorSchemeID.gender),
+        [ColorSchemeID.line_of_work]: () => void downloadChartDataFromWikidata(ColorSchemeID.line_of_work),
+        [ColorSchemeID.occupation]: () => void downloadChartDataFromWikidata(ColorSchemeID.occupation),
+        [ColorSchemeID.orange]: () => setFixedColor(ORANGE),
+        [ColorSchemeID.picture]: () => void calculateLocalChartData(loadPictureAvailabilityChartData(t("color_scheme.available"), t("color_scheme.unavailable"))),
+        [ColorSchemeID.red]: () => setFixedColor(RED),
+        [ColorSchemeID.startCentury]: () => void downloadChartDataFromWikidata(ColorSchemeID.startCentury),
+        [ColorSchemeID.type]: () => void downloadChartDataFromWikidata(ColorSchemeID.type),
       };
     }, [i18n.language, layerIDs, map, setLayerColor, t]);
 
@@ -147,12 +148,12 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     const keys = preset.osm_wikidata_keys,
       wdDirectProperties = preset.osm_wikidata_properties,
       indirectWdProperty = preset.wikidata_indirect_property,
-      anyEtymology = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
+      anyLinkedEntity = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
       entries = Object.entries(colorSchemes) as [ColorSchemeID, ColorScheme][],
-      usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology);
+      usableColorSchemes = anyLinkedEntity ? entries : entries.filter(([, scheme]) => !scheme.requiresLinkedEntities);
     return usableColorSchemes.map(([id, item]) => ({
       id,
-      text: t(item.textKey, item.defaultText),
+      text: t("color_scheme."+id, item.defaultText),
       category: t(item.categoryKey, item.defaultCategoryText),
       onSelect: () => {
         setColorSchemeID(id);

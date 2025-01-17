@@ -11,14 +11,13 @@ import { DetailsLayers, DetailsLayersProps } from "./DetailsLayers";
 
 interface DetailsSourceAndLayersProps extends DetailsLayersProps {
   backEndService: MapService;
-  backEndID: string;
 }
 
 export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) => {
-  const [detailsData, setDetailsData] = useState<OwmfResponse | null>(null),
+  const [detailsData, setDetailsData] = useState<OwmfResponse>(),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
-    { lat, lon, zoom, year } = useUrlFragmentContext(),
+    { lat, lon, zoom, year, backEndID } = useUrlFragmentContext(),
     { current: map } = useMap(),
     { t, i18n } = useTranslation();
 
@@ -33,10 +32,10 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
 
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (!bbox || !props.backEndService?.canHandleBackEnd(props.backEndID)) {
+    if (!bbox || !props.backEndService?.canHandleBackEnd(backEndID)) {
       console.warn("Unsupported back-end ID or missing bbox, NOT fetching map details", {
         bbox,
-        backEndID: props.backEndID,
+        backEndID,
       });
       return;
     }
@@ -45,18 +44,15 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
     if (bboxArea < 0.0000001 || bboxArea > 1.5) {
       console.debug("BBox area too big, NOT fetching map details", {
         bbox,
-        backEndID: props.backEndID,
+        backEndID,
       });
       return;
     }
 
-    console.debug("DetailsSourceAndLayers fetching data", {
-      bbox,
-      backEndID: props.backEndID,
-    });
+    console.debug("DetailsSourceAndLayers fetching data");
     showLoadingSpinner(true);
     props.backEndService
-      .fetchMapElements(props.backEndID, false, bbox, i18n.language, year)
+      .fetchMapElements(backEndID, false, bbox, i18n.language, year)
       .then((data) => setDetailsData(data))
       .catch((e) => {
         console.error("Failed fetching map details", e);
@@ -64,25 +60,32 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
       })
       .finally(() => showLoadingSpinner(false));
   }, [
+    backEndID,
     i18n.language,
     lat,
     lon,
     map,
-    props.backEndID,
     props.backEndService,
     props.minZoom,
     showLoadingSpinner,
     showSnackbar,
     t,
     year,
-    zoom
+    zoom,
   ]);
 
+  if (!detailsData) {
+    console.debug("detailsData is still loading");
+    return null;
+  } else if (detailsData.backEndID !== backEndID) {
+    console.warn("Outdated detailsData backEndID, hiding details source");
+    setDetailsData(undefined);
+    return null;
+  }
+
   return (
-    detailsData && (
-      <Source id={props.sourceID} type="geojson" data={detailsData}>
-        <DetailsLayers {...props} />
-      </Source>
-    )
+    <Source id={props.sourceID} type="geojson" data={detailsData}>
+      <DetailsLayers {...props} />
+    </Source>
   );
 };

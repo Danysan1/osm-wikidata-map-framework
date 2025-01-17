@@ -89,12 +89,11 @@ export async function downloadChartDataForWikidataIDs(
     const stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
     if (!stats.length) {
-      console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
-      return null;
+      console.warn("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
     } else {
       console.debug("downloadChartDataForWikidataIDs: stats fetched", { colorSchemeID, uniqueIDs, stats });
-      return stats;
     }
+    return stats;
   } catch (e) {
     console.error("Stats fetch error", e);
     return null;
@@ -331,10 +330,8 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
       row.subjects.forEach(subject => {
         statsData.push(["in", subject + '"', ["to-string", ["get", "linked_entities"]]], color);
       });
-    } else if (row.count > 1) {
-      console.debug(
-        "getLayerColorFromStats: skipping row with no color or subjects", row
-      );
+    } else if (row.count > 5) {
+      console.debug("getLayerColorFromStats: skipping row with no color or subjects", row);
     }
   });
 

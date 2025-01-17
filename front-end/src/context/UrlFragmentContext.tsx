@@ -173,11 +173,15 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         zoomFromFragment !== undefined && !isNaN(zoomFromFragment)
           ? zoomFromFragment
           : undefined;
-    let newColorScheme: ColorSchemeID | undefined = split[
-      COLOR_SCHEME_POSITION
-    ] as ColorSchemeID;
-    if (!newColorScheme || !Object.values(ColorSchemeID).includes(newColorScheme)) {
-      console.warn("Invalid or empty color scheme in URL fragment", newColorScheme);
+    const rawColorScheme = split[COLOR_SCHEME_POSITION];
+    let newColorScheme: ColorSchemeID | undefined;
+    if (!rawColorScheme) {
+      console.warn("Empty color scheme in URL fragment");
+      newColorScheme = undefined;
+    } else if (Object.values(ColorSchemeID).includes(rawColorScheme as ColorSchemeID)) {
+      newColorScheme = rawColorScheme as ColorSchemeID;
+    } else {
+      console.warn("Invalid color scheme in URL fragment", rawColorScheme);
       newColorScheme = undefined;
     }
     const newBackEnd = split[BACK_END_POSITION],
@@ -212,7 +216,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       newBackEnd,
       backgroundStyleFromFragment,
       newSourcePreset,
-      newYear
+      newYear,
     });
   }, [setLat, setZoom]);
 
@@ -244,7 +248,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         backEndID,
         backgroundStyleID,
         sourcePresetID,
-        year
+        year,
       });
       window.location.hash = fragment;
     } else {
@@ -259,7 +263,17 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         sourcePresetID,
       });
     }
-  }, [backEndID, backgroundStyleID, colorSchemeID, initialized, lat, lon, sourcePresetID, year, zoom]);
+  }, [
+    backEndID,
+    backgroundStyleID,
+    colorSchemeID,
+    initialized,
+    lat,
+    lon,
+    sourcePresetID,
+    year,
+    zoom,
+  ]);
 
   return (
     <UrlFragmentContext.Provider

@@ -3,6 +3,7 @@ export enum ColorSchemeID {
     gender = "gender",
     type = "type",
     country = "country",
+    line_of_work = "line_of_work",
     occupation = "occupation",
     startCentury = "startCentury",
     endCentury = "endCentury",
@@ -17,62 +18,63 @@ export enum ColorSchemeID {
 }
 
 export interface ColorScheme {
-    /** i18n translation key for the label to be shown in the dropdown item for this color scheme */
-    textKey: string;
     /** Fallback text for the label to be shown in the dropdown item for this color scheme */
     defaultText: string;
     /** i18n translation key for the label to be shown in the dropdown category for this  */
     categoryKey: string;
     /** Fallback text for the label to be shown in the dropdown category for this  */
     defaultCategoryText: string;
-    /** Whether this color scheme should be available also when no etymology is available (es. https://osmwd.dsantini.it ) */
-    showWithoutEtymology?: boolean;
+    /** Whether this color scheme should be available only when linked entity are available (=> not with base preset) */
+    requiresLinkedEntities?: boolean;
 }
 
 export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
-    feature_source: {
-        textKey: "color_scheme.feature_source", defaultText: "By source", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
+    [ColorSchemeID.feature_source]: {
+        defaultText: "By source", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: true,
     },
-    picture: {
-        textKey: "color_scheme.feature_picture", defaultText: "By picture availability", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
+    [ColorSchemeID.picture]: {
+        defaultText: "By picture availability", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: true,
     },
-    feature_link_count: {
-        textKey: "color_scheme.link_count", defaultText: "By Wikilink count", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
+    [ColorSchemeID.feature_link_count]: {
+        defaultText: "By Wikilink count", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: true,
     },
-    etymology_source: {
-        textKey: "color_scheme.etymology_source", defaultText: "By source", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.etymology_source]: {
+        defaultText: "By source", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    gender: {
-        textKey: 'color_scheme.gender', defaultText: "By gender", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.gender]: {
+        defaultText: "By gender", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    type: {
-        textKey: 'color_scheme.type', defaultText: "By type", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.type]: {
+        defaultText: "By type", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    country: {
-        textKey: 'color_scheme.country', defaultText: "By country", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.country]: {
+        defaultText: "By country", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    occupation: {
-        textKey: 'color_scheme.occupation', defaultText: "By occupation", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.line_of_work]: {
+        defaultText: "By line of work", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    startCentury: {
-        textKey: 'color_scheme.start_century', defaultText: "By start/birth century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.occupation]: {
+        defaultText: "By occupation", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    endCentury: {
-        textKey: 'color_scheme.end_century', defaultText: "By end/death century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.startCentury]: {
+        defaultText: "By start/birth century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    etymology_link_count: {
-        textKey: "color_scheme.link_count", defaultText: "By Wikilink count", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    [ColorSchemeID.endCentury]: {
+        defaultText: "By end/death century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    blue: {
-        textKey: 'color_scheme.blue', defaultText: "Blue", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
+    [ColorSchemeID.etymology_link_count]: {
+        defaultText: "By Wikilink count", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
-    black: {
-        textKey: 'color_scheme.black', defaultText: "Black", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
+    [ColorSchemeID.blue]: {
+        defaultText: "Blue", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", requiresLinkedEntities: true,
     },
-    red: {
-        textKey: 'color_scheme.red', defaultText: "Red", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
+    [ColorSchemeID.black]: {
+        defaultText: "Black", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", requiresLinkedEntities: true,
     },
-    orange: {
-        textKey: 'color_scheme.orange', defaultText: "Orange", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
+    [ColorSchemeID.red]: {
+        defaultText: "Red", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", requiresLinkedEntities: true,
+    },
+    [ColorSchemeID.orange]: {
+        defaultText: "Orange", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", requiresLinkedEntities: true,
     },
 };

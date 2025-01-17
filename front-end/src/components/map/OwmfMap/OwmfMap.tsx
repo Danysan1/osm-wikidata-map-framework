@@ -364,7 +364,6 @@ export const OwmfMap = () => {
       {clustersActive && (
         <ClusteredSourceAndLayers
           backEndService={backEndService}
-          backEndID={backEndID}
           sourceID={ELEMENTS_SOURCE}
           minZoom={minZoomLevel}
           maxZoom={thresholdZoomLevel}
@@ -373,7 +372,6 @@ export const OwmfMap = () => {
       {detailsActive && (
         <DetailsSourceAndLayers
           backEndService={backEndService}
-          backEndID={backEndID}
           sourceID={DETAILS_SOURCE}
           minZoom={thresholdZoomLevel}
           setOpenFeature={setOpenFeature}

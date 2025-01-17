@@ -1,0 +1,61 @@
+Q31207,health care,Healthcare,#ff3333
+Q11190,medicine,Healthcare,#ff3333
+Q130370967,emergency and relief,Healthcare,#ff3333
+Q3565868,rail transport,Logistics,#ff9933
+Q1311670,rail infrastructure,Logistics,#ff9933
+Q178512,public transport,Logistics,#ff9933
+Q177777,logistics,Logistics,#ff9933
+Q7590,transport,Logistics,#ff9933
+Q2151621,energy industry,Energy,#ffff33
+Q112046,transmission system operator,Energy,#ffff33
+Q862571,petroleum industry,Energy,#ffff33
+Q16070574,petrochemical industry,Energy,#ffff33
+Q1326885,electrical industry,Energy,#ffff33
+Q43035,electrical engineering,Energy,#ffff33
+Q2401742,telecommunications,Telecommunications,#99ff33
+Q11033,mass media,Telecommunications,#99ff33
+Q11030,journalism,Telecommunications,#99ff33
+Q126793,retail,Retail,#33ff33
+Q57262277,jewelry industry,Retail,#33ff33
+Q12752882,cosmetics industry,Retail,#33ff33
+Q112165812,parfumerie,Retail,#33ff33
+Q484847,e-commerce,Retail,#33ff33
+Q540912,food industry,Retail,#33ff33
+Q57497035,fast-food industry,Retail,#33ff33
+Q837171,financial services,Finance,#33ff99
+Q57774188,financial sector,Finance,#33ff99
+Q806718,economics of banking,Finance,#33ff99
+Q941185,private banking,Finance,#33ff99
+Q607081,textile industry,Clothing,#33ffff
+Q11828862,clothing industry,Clothing,#33ffff
+Q12684,fashion,Clothing,#33ffff
+Q5915560,footwear industry,Clothing,#33ffff
+Q190117,automotive industry,Automotive,#3399ff
+Q291240,car rental,Automotive,#3399ff
+Q24050099,auto race,Automotive,#3399ff
+Q5386,car racing,Automotive,#3399ff
+Q11661,information technology,STEM,#3333ff
+Q5268834,ICT,STEM,#3333ff
+Q42240,research,STEM,#3333ff
+Q5358497,electronics industry,STEM,#3333ff
+Q413,physics,STEM,#3333ff
+Q333,astronomy,STEM,#3333ff
+Q395,mathematics,STEM,#3333ff
+Q12271,architecture,STEM,#3333ff
+Q1495452,hospitality industry,Tourism,#9933ff
+Q1285245,hotel industry,Tourism,#9933ff
+Q27686,hotel,Tourism,#9933ff
+Q49389,tourism,Tourism,#9933ff
+Q11629,painting,Art,#ff33ff
+Q11634,sculpture,Art,#ff33ff
+Q1344,opera,Art,#ff33ff
+Q638,music,Art,#ff33ff
+Q441,botany,Art,#ff33ff
+Q5891,philosophy,Humanities,#ff3399
+Q482,poetry,Humanities,#ff3399
+Q8242,literature,Humanities,#ff3399
+Q9174,religion,Humanities,#ff3399
+Q34178,theology,Humanities,#ff3399
+Q7163,politics,Politics,#ff33cc
+Q1791716,military affairs,Politics,#ff33cc
+Q1889,diplomacy,Politics,#ff33cc
