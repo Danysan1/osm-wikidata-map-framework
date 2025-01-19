@@ -4,7 +4,7 @@ import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
-import { EtymologyList } from "../EtymologyList/EtymologyList";
+import { LinkedEntityList } from "../EtymologyList/LinkedEntityList";
 import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./EtymologyView.module.css";
@@ -71,8 +71,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
       !!etymology.death_place;
     if (anyBirthOrDeath) {
       const birth_date = etymology.birth_date
-        ? formatDate(etymology.birth_date, etymology.birth_date_precision)
-        : "?",
+          ? formatDate(etymology.birth_date, etymology.birth_date_precision)
+          : "?",
         birth_place = etymology.birth_place ? etymology.birth_place : "?",
         death_date = etymology.death_date
           ? formatDate(etymology.death_date, etymology.death_date_precision)
@@ -81,8 +81,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
       return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
     } else if (!!etymology.start_date || !!etymology.end_date) {
       const start_date = etymology.start_date
-        ? formatDate(etymology.start_date, etymology.start_date_precision)
-        : "?",
+          ? formatDate(etymology.start_date, etymology.start_date_precision)
+          : "?",
         end_date = etymology.end_date
           ? formatDate(etymology.end_date, etymology.end_date_precision)
           : "?";
@@ -179,13 +179,18 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
           {etymology.pictures?.slice(0, MAX_IMAGES)?.map((img, i) => (
             <CommonsImage key={i} name={img} className={styles.entity_image} />
           ))}
-          {etymology.iiif_url && <IIIFImages manifestURL={etymology.iiif_url} className={styles.entity_image} />}
+          {etymology.iiif_url && (
+            <IIIFImages
+              manifestURL={etymology.iiif_url}
+              className={styles.entity_image}
+            />
+          )}
         </div>
       </div>
 
       <LinkedEntitySourceRow {...etymology} />
       <div className="etymology_parts_container">
-        {!!parts?.length && <EtymologyList wdLinkedEntities={parts} />}
+        {!!parts?.length && <LinkedEntityList linkedEntities={parts} />}
       </div>
     </div>
   );

@@ -1,35 +1,24 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
-import { Etymology, OsmInstance, OsmType } from "@/src/model/Etymology";
+import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
-import styles from "./EtymologyList.module.css";
+import styles from "./LinkedEntityList.module.css";
 
-interface EtymologyListProps {
-  other_etymologies?: EtymologyDetails[];
-  from_osm_instance?: OsmInstance;
-  from_osm_id?: number;
-  from_osm_type?: OsmType;
-  wdLinkedEntities: string | Etymology[];
+interface LinkedEntityListProps {
+  linkedEntities: Etymology[];
 }
 
-export const EtymologyList: FC<EtymologyListProps> = (props) => {
+export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) => {
   const { t, i18n } = useTranslation(),
     [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
-    [etymologyDetails, setEtymologyDetails] = useState<EtymologyDetails[]>(),
+    [entityDetails, setEntityDetails] = useState<EtymologyDetails[]>(),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
-    etys = useMemo(
-      () =>
-        typeof props.wdLinkedEntities === "string"
-          ? (JSON.parse(props.wdLinkedEntities) as Etymology[])
-          : props.wdLinkedEntities,
-      [props.wdLinkedEntities]
-    ),
-    downloadEtymologyDetails = useCallback(
+    downloadEntityDetails = useCallback(
       async (entities?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
         if (!entities?.length) return [];
 
@@ -59,16 +48,30 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
 
         try {
           const detailsService = new WikidataDetailsService(i18n.language),
-            downloadedEtymologies = await detailsService.fetchEtymologyDetails(
-              etymologyIDs
+            fetched = await detailsService.fetchEtymologyDetails(etymologyIDs);
+          const combined = entities.map<EtymologyDetails>((old) =>
+            old.wikidata && fetched[old.wikidata]
+              ? { ...old, ...fetched[old.wikidata] }
+              : old
+          );
+          const filtered = combined
+            .filter(
+              // Ignore text linked entities that duplicate a Wikidata entity
+              (e) =>
+                !!e.wikidata ||
+                !combined.some(
+                  (other) =>
+                    !!other.wikidata &&
+                    !!e.name &&
+                    other.name?.includes(e.name.replace(".", "").trim())
+                )
+            )
+            .sort(
+              // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
+              (a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0)
             );
-          return sortedIDs.map((wikidataID): EtymologyDetails => {
-            const baseEntity = entities.find((oldEty) => oldEty.wikidata === wikidataID),
-              downloadedDetails = downloadedEtymologies[wikidataID],
-              out = { ...baseEntity, ...downloadedDetails };
-            console.debug("Downloaded details", { baseEntity, downloadedDetails, out });
-            return out;
-          });
+          console.debug("downloadEntityDetails", { entities, combined, filtered });
+          return filtered;
         } catch (err) {
           console.error("Failed downloading etymology details", etymologyIDs, err);
           return entities;
@@ -78,15 +81,16 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
     );
 
   useEffect(() => {
+    setLoadingEtymologies(true);
     showLoadingSpinner(true);
-    downloadEtymologyDetails(etys)
-      .then(setEtymologyDetails)
+    downloadEntityDetails(linkedEntities)
+      .then(setEntityDetails)
       .catch(console.error)
       .finally(() => {
         setLoadingEtymologies(false);
         showLoadingSpinner(false);
       });
-  }, [downloadEtymologyDetails, etys, showLoadingSpinner]);
+  }, [downloadEntityDetails, linkedEntities, showLoadingSpinner]);
 
   return (
     <div className={styles.linked_entities_grid}>
@@ -96,11 +100,9 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
         </div>
       )}
 
-      {etymologyDetails // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
-        ?.sort((a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0))
-        ?.map((ety, i) => (
-          <EtymologyView key={i} etymology={ety} />
-        ))}
+      {entityDetails?.map((ety, i) => (
+        <EtymologyView key={i} etymology={ety} />
+      ))}
     </div>
   );
 };

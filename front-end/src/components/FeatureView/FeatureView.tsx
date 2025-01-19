@@ -1,4 +1,5 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { getPropLinkedEntities } from "@/src/model/OwmfFeatureProperties";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
@@ -6,7 +7,7 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
-import { EtymologyList } from "../EtymologyList/EtymologyList";
+import { LinkedEntityList } from "../EtymologyList/LinkedEntityList";
 import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
 import { FeatureSourceRow } from "./FeatureSourceRow";
 import styles from "./FeatureView.module.css";
@@ -22,7 +23,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     featureI18n = getFeatureTags(feature),
     [mainName, setMainName] = useState<string>(),
     altNames = useMemo(() => {
-      if(!featureI18n) return undefined;
+      if (!featureI18n) return undefined;
 
       const alt_name_set = new Set<string>();
       [featureI18n.name, featureI18n.official_name, featureI18n.alt_name]
@@ -111,12 +112,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       {props && <FeatureImages feature={props} />}
 
       {props?.linked_entities && (
-        <EtymologyList
-          wdLinkedEntities={props.linked_entities ?? []}
-          from_osm_instance={props.from_osm_instance}
-          from_osm_id={props.osm_id}
-          from_osm_type={props.osm_type}
-        />
+        <LinkedEntityList linkedEntities={getPropLinkedEntities(props)} />
       )}
 
       <Button
