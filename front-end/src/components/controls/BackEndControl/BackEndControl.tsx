@@ -169,7 +169,8 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                 }
             });
 
-            if (!preset.osm_wikidata_keys?.length && !preset.osm_wikidata_properties?.length && !preset.wikidata_indirect_property && !preset.osm_text_key) {
+            const anyLinkedEntity = !!preset.osm_wikidata_keys || !!preset.osm_wikidata_properties || !!preset.wikidata_indirect_property || !!preset.osm_text_key;
+            if (!anyLinkedEntity) {
                 dropdownItems.push(buildDropdownItem("overpass_osm_wd+wd_base", "OSM wikidata=* + Wikidata P625", OVERPASS_WDQS_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("overpass_osm_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
                 if (ohmEnabled) {
@@ -210,11 +211,15 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             const preferredBackends = process.env.owmf_preferred_backends ? parseStringArrayConfig(process.env.owmf_preferred_backends) : [],
                 preferredBackend = preferredBackends.find(backend => !!dropdownItems.find(item => item.id === backend)),
                 newItem = dropdownItems.find(item => item.id === preferredBackend) ?? dropdownItems[0];
-            console.debug(
-                "BackEndControl: Back-end ID did not exist, updating to existing one",
-                { backEndID, dropdownItems, preferredBackends, preferredBackend, newItem }
-            );
-            newItem.onSelect();
+            if(!newItem) {
+                console.error("No back-end available");
+            } else {
+                console.debug(
+                    "BackEndControl: Back-end ID did not exist, updating to existing one",
+                    { backEndID, dropdownItems, preferredBackends, preferredBackend, newItem }
+                );
+                newItem.onSelect();
+            }
         }
     }, [backEndID, dropdownItems]);
 

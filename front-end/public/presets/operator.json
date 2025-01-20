@@ -10,6 +10,5 @@
     ],
     "osm_wikidata_properties": [
         "P126", "P137"
-    ],
-    "relation_propagation_role": ""
+    ]
 }

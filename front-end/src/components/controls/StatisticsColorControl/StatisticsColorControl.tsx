@@ -145,10 +145,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     }, [i18n.language, layerIDs, map, setLayerColor, t]);
 
   const dropdownItems = useMemo((): DropdownItem[] => {
-    const keys = preset.osm_wikidata_keys,
-      wdDirectProperties = preset.osm_wikidata_properties,
-      indirectWdProperty = preset.wikidata_indirect_property,
-      anyLinkedEntity = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
+    const anyLinkedEntity = !!preset.osm_wikidata_keys || !!preset.osm_wikidata_properties || !!preset.wikidata_indirect_property || !!preset.osm_text_key,
       entries = Object.entries(colorSchemes) as [ColorSchemeID, ColorScheme][],
       usableColorSchemes = anyLinkedEntity ? entries : entries.filter(([, scheme]) => !scheme.requiresLinkedEntities);
     return usableColorSchemes.map(([id, item]) => ({
@@ -162,7 +159,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         // onSchemeChange(id as ColorSchemeID);
       }
     }));
-  }, [preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setColorSchemeID, t]);
+  }, [preset.osm_text_key, preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setColorSchemeID, t]);
 
   const onSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
     if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIDs.includes(e.sourceId))
