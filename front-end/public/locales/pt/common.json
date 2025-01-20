@@ -63,7 +63,8 @@
         "occupation": "Pela profissão",
         "start_century": "Pelo século de início/nascimento",
         "end_century": "Pelo fim/século de morte",
-        "link_count": "Pelo número de wikiligações",
+        "entity_link_count": "Pelo número de wikiligações",
+        "feature_link_count": "Pelo número de wikiligações",
         "feature_picture": "Pela disponibilidade de imagens",
         "available": "Disponível",
         "unavailable": "Não disponível",
@@ -74,7 +75,7 @@
         "black": "Preto",
         "red": "Vermelho",
         "orange": "Laranja",
-        "etymology_source": "Pela origem da entidade ligada"
+        "entity_source": "Pela origem da entidade ligada"
     },
     "feature_details": {
         "source": "Fonte destacada:",

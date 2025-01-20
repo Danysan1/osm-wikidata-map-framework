@@ -63,7 +63,8 @@
         "occupation": "Efter beskæftigelse",
         "start_century": "Efter start/fødselsårhundrede",
         "end_century": "Efter slut/dødsårhundrede",
-        "link_count": "Efter Wikilink antal",
+        "entity_link_count": "Efter Wikilink antal",
+        "feature_link_count": "Efter Wikilink antal",
         "feature_picture": "Efter billedtilgængelighed",
         "available": "Tilgængelig",
         "unavailable": "Ikke tilgængelig",
@@ -74,7 +75,7 @@
         "black": "Sort",
         "red": "Rød",
         "orange": "Orange",
-        "etymology_source": "Efter tilknyttet objektkilde"
+        "entity_source": "Efter tilknyttet objektkilde"
     },
     "feature_details": {
         "source": "Elementkilde:",

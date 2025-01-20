@@ -62,7 +62,8 @@
         "occupation": "Dropdown item for linked entity occupation statistics",
         "start_century": "Dropdown item for linked entity start/birth century statistics",
         "end_century": "Dropdown item for linked entity end/death century statistics",
-        "link_count": "Dropdown item for linked entity Wikilink count statistics",
+        "entity_link_count": "Dropdown item for feature Wikilink count statistics",
+        "feature_link_count": "Dropdown item for linked entity Wikilink count statistics",
         "feature_picture": "Dropdown item for feature picture availability statistics",
         "available": "Available",
         "unavailable": "Unavailable",
@@ -73,7 +74,7 @@
         "black": "Dropdown item for uniform black color",
         "red": "Dropdown item for uniform red color",
         "orange": "Dropdown item for uniform orange color",
-        "etymology_source": "Dropdown item for linked entity source statistics"
+        "entity_source": "Dropdown item for linked entity source statistics"
     },
     "feature_details": {
         "source": "Initial text of the feature source row",

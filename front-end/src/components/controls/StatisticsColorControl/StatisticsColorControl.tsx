@@ -128,9 +128,9 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         [ColorSchemeID.black]: () => setFixedColor(BLACK),
         [ColorSchemeID.blue]: () => setFixedColor(BLUE),
         [ColorSchemeID.country]: () => void downloadChartDataFromWikidata(ColorSchemeID.country),
-        [ColorSchemeID.endCentury]: () => void downloadChartDataFromWikidata(ColorSchemeID.endCentury),
-        [ColorSchemeID.etymology_link_count]: () => downloadChartDataFromWikidata(ColorSchemeID.etymology_link_count),
-        [ColorSchemeID.etymology_source]: () => void calculateLocalChartData(calculateEtymologySourceStats(t("color_scheme.osm_text_only"))),
+        [ColorSchemeID.end_century]: () => void downloadChartDataFromWikidata(ColorSchemeID.end_century),
+        [ColorSchemeID.entity_link_count]: () => downloadChartDataFromWikidata(ColorSchemeID.entity_link_count),
+        [ColorSchemeID.entity_source]: () => void calculateLocalChartData(calculateEtymologySourceStats(t("color_scheme.osm_text_only"))),
         [ColorSchemeID.feature_link_count]: () => void calculateLocalChartData(loadWikilinkChartData),
         [ColorSchemeID.feature_source]: () => void calculateLocalChartData(calculateFeatureSourceStats),
         [ColorSchemeID.gender]: () => void downloadChartDataFromWikidata(ColorSchemeID.gender),
@@ -139,7 +139,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         [ColorSchemeID.orange]: () => setFixedColor(ORANGE),
         [ColorSchemeID.picture]: () => void calculateLocalChartData(loadPictureAvailabilityChartData(t("color_scheme.available"), t("color_scheme.unavailable"))),
         [ColorSchemeID.red]: () => setFixedColor(RED),
-        [ColorSchemeID.startCentury]: () => void downloadChartDataFromWikidata(ColorSchemeID.startCentury),
+        [ColorSchemeID.start_century]: () => void downloadChartDataFromWikidata(ColorSchemeID.start_century),
         [ColorSchemeID.type]: () => void downloadChartDataFromWikidata(ColorSchemeID.type),
       };
     }, [i18n.language, layerIDs, map, setLayerColor, t]);

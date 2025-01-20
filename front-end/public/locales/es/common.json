@@ -63,7 +63,8 @@
         "occupation": "Por ocupación",
         "start_century": "Por siglo de inicio/nacimiento",
         "end_century": "Por siglo de fin/muerte",
-        "link_count": "Por recuento de Wikilinks",
+        "entity_link_count": "Por recuento de Wikilinks",
+        "feature_link_count": "Por recuento de Wikilinks",
         "feature_picture": "Por disponibilidad de imágenes",
         "available": "Disponible",
         "unavailable": "Indisponible",
@@ -74,7 +75,7 @@
         "black": "Negro",
         "red": "Rojo",
         "orange": "Naranja",
-        "etymology_source": "Por fuente de entidades conectadas"
+        "entity_source": "Por fuente de entidades conectadas"
     },
     "feature_details": {
         "source": "Fuente del elemento:",

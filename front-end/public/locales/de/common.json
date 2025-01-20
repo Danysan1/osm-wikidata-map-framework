@@ -63,7 +63,8 @@
         "occupation": "Nach Tätigkeit",
         "start_century": "Nach Gründungs-/Geburtsjahrhundert",
         "end_century": "Nach Jahrhundert des Endes/Todes",
-        "link_count": "Nach Wikilink-Zählung",
+        "entity_link_count": "Nach Wikilink-Zählung",
+        "feature_link_count": "Nach Wikilink-Zählung",
         "feature_picture": "Nach Bildverfügbarkeit",
         "available": "Verfügbar",
         "unavailable": "Nicht verfügbar",
@@ -74,7 +75,7 @@
         "black": "Schwarz",
         "red": "Rot",
         "orange": "Orange",
-        "etymology_source": "Nach Quelle der verknüpften Entitäten"
+        "entity_source": "Nach Quelle der verknüpften Entitäten"
     },
     "feature_details": {
         "source": "Elementquelle:",

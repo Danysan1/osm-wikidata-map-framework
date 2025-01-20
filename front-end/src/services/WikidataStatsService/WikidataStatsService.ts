@@ -29,9 +29,9 @@ export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
     [ColorSchemeID.country]: countryStatsQuery,
     [ColorSchemeID.line_of_work]: lineOfWorkStatsQuery,
     [ColorSchemeID.occupation]: occupationStatsQuery,
-    [ColorSchemeID.startCentury]: startCenturyStatsQuery,
-    [ColorSchemeID.endCentury]: endCenturyStatsQuery,
-    [ColorSchemeID.etymology_link_count]: wikilinkStatsQuery,
+    [ColorSchemeID.start_century]: startCenturyStatsQuery,
+    [ColorSchemeID.end_century]: endCenturyStatsQuery,
+    [ColorSchemeID.entity_link_count]: wikilinkStatsQuery,
 }
 
 export class WikidataStatsService extends WikidataService {

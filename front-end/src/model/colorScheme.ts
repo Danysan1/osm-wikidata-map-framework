@@ -5,13 +5,13 @@ export enum ColorSchemeID {
     country = "country",
     line_of_work = "line_of_work",
     occupation = "occupation",
-    startCentury = "startCentury",
-    endCentury = "endCentury",
+    start_century = "start_century",
+    end_century = "end_century",
     feature_source = "feature_source",
     feature_link_count = "feature_link_count",
-    etymology_source = "etymology_source",
-    etymology_link_count = "etymology_link_count",
-    picture = "picture",
+    entity_source = "entity_source",
+    entity_link_count = "entity_link_count",
+    picture = "feature_picture",
     black = "black",
     red = "red",
     orange = "orange",
@@ -38,7 +38,7 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     [ColorSchemeID.feature_link_count]: {
         defaultText: "By Wikilink count", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: false,
     },
-    [ColorSchemeID.etymology_source]: {
+    [ColorSchemeID.entity_source]: {
         defaultText: "By source", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
     [ColorSchemeID.gender]: {
@@ -56,13 +56,13 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     [ColorSchemeID.occupation]: {
         defaultText: "By occupation", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
-    [ColorSchemeID.startCentury]: {
+    [ColorSchemeID.start_century]: {
         defaultText: "By start/birth century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
-    [ColorSchemeID.endCentury]: {
+    [ColorSchemeID.end_century]: {
         defaultText: "By end/death century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
-    [ColorSchemeID.etymology_link_count]: {
+    [ColorSchemeID.entity_link_count]: {
         defaultText: "By Wikilink count", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
     [ColorSchemeID.blue]: {

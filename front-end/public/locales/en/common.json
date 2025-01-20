@@ -63,7 +63,8 @@
         "occupation": "By occupation",
         "start_century": "By start/birth century",
         "end_century": "By end/death century",
-        "link_count": "By Wikilink count",
+        "entity_link_count": "By entity Wikilink count",
+        "feature_link_count": "By element Wikilink count",
         "feature_picture": "By picture availability",
         "available": "Available",
         "unavailable": "Unavailable",
@@ -74,7 +75,7 @@
         "black": "Black",
         "red": "Red",
         "orange": "Orange",
-        "etymology_source": "By linked entity source"
+        "entity_source": "By linked entity source"
     },
     "feature_details": {
         "source": "Feature source:",
