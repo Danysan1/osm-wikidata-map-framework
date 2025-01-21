@@ -63,7 +63,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
                   (other) =>
                     !!other.wikidata &&
                     !!e.name &&
-                    other.name?.includes(e.name.replace(".", "").trim())
+                    other.name?.toLowerCase()?.includes(e.name.replace(/\.$/, "").trim().toLowerCase())
                 )
             )
             .sort(
