@@ -1,5 +1,6 @@
 .control {
   transform: none;
+  background-color: var(--owmf-background-color);
 }
 
 .control:empty {

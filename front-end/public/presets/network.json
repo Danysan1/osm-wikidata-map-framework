@@ -1,4 +1,5 @@
 {
+    "background_color": "hsl(210, 100%, 97%)",
     "mapcomplete_theme": "transit",
     "osm_filter_tags": [
         "network:wikidata",

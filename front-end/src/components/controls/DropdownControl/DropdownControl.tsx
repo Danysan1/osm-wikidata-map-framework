@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { ControlPosition, IControl, MapInstance, MapSourceDataEvent, useControl } from "react-map-gl/maplibre";
+import commonStyles from "../control.module.css";
 import styles from "./DropdownControl.module.css";
 
 class DropdownControlObject implements IControl {
@@ -153,7 +154,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
   const element = useMemo(
     () =>
       visible ? (
-        <div className={className}>
+        <div className={`${commonStyles.control} ${className}`}>
           <table className={styles.ctrl_table}>
             <tbody>
 

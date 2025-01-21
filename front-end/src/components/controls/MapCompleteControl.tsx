@@ -3,7 +3,7 @@ import mapcompleteLogo from "@/src/img/mapcomplete.svg";
 import { ControlPosition } from "maplibre-gl";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { FC, useMemo } from "react";
-import { LinkControl } from "./LinkControl/LinkControl";
+import { LinkControl } from "./LinkControl";
 
 interface MapCompleteControlProps {
   minZoomLevel: number;

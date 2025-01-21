@@ -3,7 +3,7 @@ import { OwmfResponse } from '@/src/model/OwmfResponse';
 import { ControlPosition, MapSourceDataEvent } from 'maplibre-gl';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useCallback, useState } from 'react';
-import { LinkControl } from './LinkControl/LinkControl';
+import { LinkControl } from './LinkControl';
 
 interface QueryLinkControlProps {
     sourceIDs: string[];

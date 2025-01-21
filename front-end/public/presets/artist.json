@@ -1,4 +1,5 @@
 {
+    "background_color": "hsl(30, 100%, 97%)",
     "fetch_parts_of_linked_entities": true,
     "mapcomplete_theme": "artwork",
     "osm_filter_tags": [

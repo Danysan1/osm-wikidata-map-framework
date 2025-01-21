@@ -22,7 +22,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { Protocol } from "pmtiles";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Map, {
   ErrorEvent,
@@ -37,8 +37,8 @@ import Map, {
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../../controls/BackEndControl/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
-import { DataTableControl } from "../../controls/DataTableControl/DataTableControl";
-import { InfoControl } from "../../controls/InfoControl/InfoControl";
+import { DataTableControl } from "../../controls/DataTableControl";
+import { InfoControl } from "../../controls/InfoControl";
 import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
 import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/QLeverQueryLinkControl";
@@ -85,6 +85,14 @@ export const OwmfMap = () => {
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
     [pmtilesReady, setPMTilesReady] = useState(false),
+    inlineStyle = useMemo(
+      () =>
+        process.env.owmf_use_background_color === "true" ? {
+          backgroundColor: sourcePreset?.background_color ?? "#ffffff",
+          "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
+        } as CSSProperties : undefined,
+      [sourcePreset?.background_color]
+    ),
     pmtilesActive =
       pmtilesReady &&
       !!process.env.owmf_pmtiles_base_url &&
@@ -268,6 +276,7 @@ export const OwmfMap = () => {
       mapLib={import("maplibre-gl")}
       RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
       mapStyle={backgroundStyle}
+      style={inlineStyle}
       latitude={mapLat}
       longitude={mapLon}
       zoom={mapZoom}
@@ -300,13 +309,14 @@ export const OwmfMap = () => {
         />
       )}
 
-      <NavigationControl visualizePitch position="top-right" />
+      <NavigationControl visualizePitch position="top-right" style={inlineStyle} />
       <GeolocateControl
         positionOptions={{ enableHighAccuracy: true }}
+        style={inlineStyle}
         trackUserLocation={false}
         position="top-right"
       />
-      <FullscreenControl position="top-right" />
+      <FullscreenControl position="top-right" style={inlineStyle} />
       <BackgroundStyleControl
         setBackgroundStyle={setBackgroundStyle}
         position="top-right"

@@ -1,4 +1,5 @@
 {
+    "background_color": "hsl(180, 100%, 97%)",
     "osm_filter_tags": [
         "place_of_worship=holy_well"
     ],

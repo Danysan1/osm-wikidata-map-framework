@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FC, cloneElement, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { ControlPosition, IControl, MapInstance, MapSourceDataEvent, useControl } from "react-map-gl/maplibre";
-import styles from "./LinkControl.module.css";
+import styles from "./control.module.css";
 
 class LinkControlObject implements IControl {
   private _map?: MapInstance;
@@ -83,7 +83,7 @@ export const LinkControl: FC<LinkControlProps> = ({
   const element = useMemo(
     () =>
       visible ? (
-        <div className={className}>
+        <div className={`${styles.control} ${className}`}>
           <button title={title} aria-label={title} onClick={openLink} className={styles.button}>
             <Image
               className={styles.icon}

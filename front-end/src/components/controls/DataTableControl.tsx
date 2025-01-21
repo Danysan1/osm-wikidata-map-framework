@@ -8,8 +8,8 @@ import { FC, cloneElement, useCallback, useEffect, useMemo, useState } from "rea
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { ControlPosition, IControl, LngLat, MapInstance, MapSourceDataEvent, useControl } from "react-map-gl/maplibre";
-import { DataTablePopup } from "../../popup/DataTablePopup";
-import styles from "./DataTableControl.module.css";
+import { DataTablePopup } from "../popup/DataTablePopup";
+import styles from "./control.module.css";
 
 class DataTableControlObject implements IControl {
   private _map?: MapInstance;
@@ -80,7 +80,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
   const element = useMemo(
     () =>
       visible && (
-        <div className={props.className}>
+        <div className={`${styles.control} ${props.className}`}>
           <button
             title={t("data_table.view_data_table")}
             aria-label={t("data_table.view_data_table")}

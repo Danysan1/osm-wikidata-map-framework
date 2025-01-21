@@ -1,4 +1,5 @@
 {
+    "background_color": "hsl(300, 100%, 97%)",
     "fetch_parts_of_linked_entities": true,
     "mapcomplete_theme": "memorials",
     "osm_filter_tags": [

@@ -3,8 +3,8 @@ import { Map } from "maplibre-gl";
 import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ControlPosition, IControl, MapInstance, useControl } from "react-map-gl/maplibre";
-import { InfoPopup } from "../../popup/InfoPopup";
-import styles from "./InfoControl.module.css";
+import { InfoPopup } from "../popup/InfoPopup";
+import styles from "./control.module.css";
 
 class InfoControlObject implements IControl {
   private _map?: MapInstance;
@@ -54,7 +54,7 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
     container = ctrl.getContainer();
   const element = useMemo(
     () => (
-      <div className={props.className}>
+      <div className={`${styles.control} ${props.className}`}>
         <button
           className={styles.button}
           onClick={openPopup}

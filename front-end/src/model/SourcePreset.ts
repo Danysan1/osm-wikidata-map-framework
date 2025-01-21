@@ -86,4 +86,6 @@ export interface SourcePreset {
      * @example "P1442"
      */
     wikidata_image_property?: string;
+
+    background_color?: string;
 }
