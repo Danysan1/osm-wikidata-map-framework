@@ -11,6 +11,7 @@ div.custom_popup {
   z-index: 1000;
   overflow: auto;
   flex-direction: column;
+  transform: none !important;
 }
 
 div.custom_popup > :global(.maplibregl-popup-content) {
