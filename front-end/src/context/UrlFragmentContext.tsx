@@ -11,7 +11,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { parseStringArrayConfig } from "../config";
 import { ColorSchemeID } from "../model/colorScheme";
 import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
 import { getActiveSourcePresetIDs } from "../SourcePreset/common";
@@ -24,12 +23,13 @@ const LONGITUDE_POSITION = 0,
   BACKGROUND_STYLE_POSITION = 5,
   PRESET_POSITION = 6,
   YEAR_POSITION = 7,
-  DEFAULT_LATITUDE = 0,
-  DEFAULT_LONGITUDE = 0,
-  DEFAULT_ZOOM = 1,
-  DEFAULT_COLOR_SCHEME = ColorSchemeID.blue,
+  DEFAULT_LATITUDE = process.env.owmf_default_center_lat ? parseFloat(process.env.owmf_default_center_lat) : 0,
+  DEFAULT_LONGITUDE = process.env.owmf_default_center_lon ? parseFloat(process.env.owmf_default_center_lon) : 0,
+  DEFAULT_ZOOM = process.env.owmf_default_zoom ? parseInt(process.env.owmf_default_zoom) : 1,
+  DEFAULT_COLOR_SCHEME = process.env.owmf_default_color_scheme && Object.values(ColorSchemeID).includes(process.env.owmf_default_color_scheme as ColorSchemeID) ? process.env.owmf_default_color_scheme as ColorSchemeID : ColorSchemeID.blue,
   DEFAULT_BACKEND_ID = "overpass_osm_all",
-  DEFAULT_BACKGROUND_STYLE_ID = "stadia_alidade";
+  DEFAULT_BACKGROUND_STYLE_ID = process.env.owmf_default_background_style ?? "stadia_alidade",
+  DEFAULT_YEAR = new Date().getFullYear();
 
 interface UrlFragmentState {
   lon: number;
@@ -49,13 +49,55 @@ interface UrlFragmentState {
   year: number;
   setYear: (date: number) => void;
 }
+function readLatitudeFromFragment(splitFragment: string[]) {
+  const rawLat = splitFragment[LATITUDE_POSITION];
+  return rawLat && !isNaN(parseFloat(rawLat)) ? parseFloat(rawLat) : undefined;
+}
+function readLongitudeFromFragment(splitFragment: string[]) {
+  const rawLon = splitFragment[LONGITUDE_POSITION];
+  return rawLon && !isNaN(parseFloat(rawLon)) ? parseFloat(rawLon) : undefined;
+}
+function readZoomFromFragment(splitFragment: string[]) {
+  const rawZoom = splitFragment[ZOOM_POSITION];
+  return rawZoom && !isNaN(parseFloat(rawZoom)) ? parseFloat(rawZoom) : undefined;
+}
+function readColorSchemeIdFromFragment(splitFragment: string[]) {
+  const rawID = splitFragment[COLOR_SCHEME_POSITION];
+  if (rawID && Object.values(ColorSchemeID).includes(rawID as ColorSchemeID)) {
+    return rawID as ColorSchemeID;
+  } else {
+    console.warn("Invalid color scheme in URL fragment", rawID);
+    return undefined;
+  }
+}
+function readBackEndIdFromFragment(splitFragment: string[]) {
+  return splitFragment[BACK_END_POSITION];
+}
+function readBackgroundStyleIdFromFragment(splitFragment: string[]) {
+  const rawFragmentID = splitFragment[BACKGROUND_STYLE_POSITION],
+    rawQueryID = window.location.search ? new URLSearchParams(window.location.search).get("style") : undefined;
+  return rawFragmentID ?? rawQueryID;
+}
+function readYearFromFragment(splitFragment: string[]) {
+  const rawYear = splitFragment[YEAR_POSITION];
+  return !rawYear || isNaN(parseInt(rawYear)) ? undefined : parseInt(rawYear);
+}
+function readSourcePresetIdFromFragment(splitFragment: string[]) {
+  const rawID = splitFragment[PRESET_POSITION];
+  if (rawID && getActiveSourcePresetIDs().includes(rawID)) {
+    return rawID;
+  } else {
+    console.warn("Invalid or empty source preset in URL fragment", rawID);
+    return undefined;
+  }
+}
 
 const UrlFragmentContext = createContext<UrlFragmentState>({
-  lon: DEFAULT_LATITUDE,
+  lon: DEFAULT_LONGITUDE,
   setLon: () => {
     /* placeholder */
   },
-  lat: DEFAULT_LONGITUDE,
+  lat: DEFAULT_LATITUDE,
   setLat: () => {
     /* placeholder */
   },
@@ -79,7 +121,7 @@ const UrlFragmentContext = createContext<UrlFragmentState>({
   setSourcePresetID: () => {
     /* placeholder */
   },
-  year: new Date().getFullYear(),
+  year: DEFAULT_YEAR,
   setYear: () => {
     /* placeholder */
   },
@@ -89,50 +131,14 @@ export const useUrlFragmentContext = () => useContext(UrlFragmentContext);
 
 export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [initialized, setInitialized] = useState(false),
-    [lat, _setLat] = useState<number>(() => {
-      const latFromConfig = process.env.owmf_default_center_lat
-        ? parseFloat(process.env.owmf_default_center_lat)
-        : undefined;
-      return latFromConfig !== undefined && !isNaN(latFromConfig)
-        ? latFromConfig
-        : DEFAULT_LATITUDE;
-    }),
-    [lon, setLon] = useState<number>(() => {
-      const lonFromConfig = process.env.owmf_default_center_lon
-        ? parseFloat(process.env.owmf_default_center_lon)
-        : undefined;
-      return lonFromConfig !== undefined && !isNaN(lonFromConfig)
-        ? lonFromConfig
-        : DEFAULT_LONGITUDE;
-    }),
-    [zoom, _setZoom] = useState<number>(() => {
-      const zoomFromConfig = process.env.owmf_default_zoom
-        ? parseInt(process.env.owmf_default_zoom)
-        : undefined;
-      return zoomFromConfig !== undefined && !isNaN(zoomFromConfig)
-        ? zoomFromConfig
-        : DEFAULT_ZOOM;
-    }),
-    [colorSchemeID, setColorSchemeID] = useState<ColorSchemeID>(() => {
-      const colorFromConfig = process.env.owmf_default_color_scheme as ColorSchemeID;
-      return colorFromConfig && Object.values(ColorSchemeID).includes(colorFromConfig)
-        ? colorFromConfig
-        : DEFAULT_COLOR_SCHEME;
-    }),
-    [backEndID, setBackEndID] = useState<string>(() => {
-      const preferredBackends = process.env.owmf_preferred_backends
-        ? parseStringArrayConfig(process.env.owmf_preferred_backends)
-        : [];
-      return preferredBackends[0]?.length ? preferredBackends[0] : DEFAULT_BACKEND_ID;
-    }),
-    [backgroundStyleID, setBackgroundStyleID] = useState<string>(
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      () => process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID
-    ),
-    [sourcePresetID, setSourcePresetID] = useState<string>(
-      () => getActiveSourcePresetIDs()[0]
-    ),
-    [year, setYear] = useState<number>(() => new Date().getFullYear()),
+    [lat, _setLat] = useState<number>(DEFAULT_LATITUDE),
+    [lon, setLon] = useState<number>(DEFAULT_LONGITUDE),
+    [zoom, _setZoom] = useState<number>(DEFAULT_ZOOM),
+    [colorSchemeID, setColorSchemeID] = useState<ColorSchemeID>(DEFAULT_COLOR_SCHEME),
+    [backEndID, setBackEndID] = useState<string>(DEFAULT_BACKEND_ID),
+    [backgroundStyleID, setBackgroundStyleID] = useState<string>(DEFAULT_BACKGROUND_STYLE_ID),
+    [sourcePresetID, setSourcePresetID] = useState<string>(getActiveSourcePresetIDs()[0] ?? DEFAULT_SOURCE_PRESET_ID),
+    [year, setYear] = useState<number>(DEFAULT_YEAR),
     setLat: Dispatch<SetStateAction<number>> = useCallback(
       (lat) => {
         if (typeof lat === "number" && (isNaN(lat) || lat < -90 || lat > 90))
@@ -152,61 +158,23 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
 
   const updateStateFromFragment = useCallback(() => {
     const split = window.location.hash.replace("#", "").split(",") ?? [],
-      latitudeFromFragment = split[LATITUDE_POSITION]
-        ? parseFloat(split[LATITUDE_POSITION])
-        : undefined,
-      newLat =
-        latitudeFromFragment !== undefined && !isNaN(latitudeFromFragment)
-          ? latitudeFromFragment
-          : undefined,
-      longitudeFromFragment = split[LONGITUDE_POSITION]
-        ? parseFloat(split[LONGITUDE_POSITION])
-        : undefined,
-      newLon =
-        longitudeFromFragment !== undefined && !isNaN(longitudeFromFragment)
-          ? longitudeFromFragment
-          : undefined,
-      zoomFromFragment = split[ZOOM_POSITION]
-        ? parseFloat(split[ZOOM_POSITION])
-        : undefined,
-      newZoom =
-        zoomFromFragment !== undefined && !isNaN(zoomFromFragment)
-          ? zoomFromFragment
-          : undefined;
-    const rawColorScheme = split[COLOR_SCHEME_POSITION];
-    let newColorScheme: ColorSchemeID | undefined;
-    if (!rawColorScheme) {
-      console.warn("Empty color scheme in URL fragment");
-      newColorScheme = undefined;
-    } else if (Object.values(ColorSchemeID).includes(rawColorScheme as ColorSchemeID)) {
-      newColorScheme = rawColorScheme as ColorSchemeID;
-    } else {
-      console.warn("Invalid color scheme in URL fragment", rawColorScheme);
-      newColorScheme = undefined;
-    }
-    const newBackEnd = split[BACK_END_POSITION],
-      backgroundStyleFromFragment = split[BACKGROUND_STYLE_POSITION],
-      backgroundStyleFromQueryString = window.location.search
-        ? new URLSearchParams(window.location.search).get("style")
-        : null;
-    let newSourcePreset: string | undefined = split[PRESET_POSITION];
-    if (!newSourcePreset || !getActiveSourcePresetIDs().includes(newSourcePreset)) {
-      console.warn("Invalid or empty source preset in URL fragment", newSourcePreset);
-      newSourcePreset = undefined;
-    }
-    const newYear = split[YEAR_POSITION];
+      newLat = readLatitudeFromFragment(split),
+      newLon = readLongitudeFromFragment(split),
+      newZoom = readZoomFromFragment(split),
+      newColorScheme = readColorSchemeIdFromFragment(split),
+      newBackEnd = readBackEndIdFromFragment(split),
+      newBackgroundStyle = readBackgroundStyleIdFromFragment(split),
+      newSourcePreset = readSourcePresetIdFromFragment(split),
+      newYear = readYearFromFragment(split);
 
     if (newLat) setLat(newLat);
     if (newLon) setLon(newLon);
     if (newZoom) setZoom(newZoom);
     if (newColorScheme) setColorSchemeID(newColorScheme);
     if (newBackEnd) setBackEndID(newBackEnd);
+    if (newBackgroundStyle) setBackgroundStyleID(newBackgroundStyle);
     if (newSourcePreset) setSourcePresetID(newSourcePreset);
-    if (newYear && !isNaN(parseInt(newYear))) setYear(parseInt(newYear));
-
-    if (backgroundStyleFromFragment) setBackgroundStyleID(backgroundStyleFromFragment);
-    else if (backgroundStyleFromQueryString)
-      setBackgroundStyleID(backgroundStyleFromQueryString);
+    if (newYear) setYear(newYear);
 
     console.debug("UrlFragmentContextProvider: loaded fragment", {
       newLat,
@@ -214,7 +182,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       newZoom,
       newColorScheme,
       newBackEnd,
-      backgroundStyleFromFragment,
+      newBackgroundStyle,
       newSourcePreset,
       newYear,
     });

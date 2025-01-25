@@ -16,7 +16,7 @@ div.custom_popup {
 
 div.custom_popup > :global(.maplibregl-popup-content) {
   border: 1px solid #ccc;
-  background-color: var(--owmf-background-color);
+  background-color: var(--owmf-background-color, #fff);
 }
 
 div.custom_popup > :global(.maplibregl-popup-tip) {

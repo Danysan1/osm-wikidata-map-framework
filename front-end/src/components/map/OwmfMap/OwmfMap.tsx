@@ -69,10 +69,11 @@ export const OwmfMap = () => {
   const { t } = useTranslation(),
     { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } =
       useUrlFragmentContext(),
-    [mapLon, setMapLon] = useState(lon),
-    [mapLat, setMapLat] = useState(lat),
-    [mapZoom, setMapZoom] = useState(zoom),
-    [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
+    [mapLon, setMapLon] = useState<number>(),
+    [mapLat, setMapLat] = useState<number>(),
+    [mapZoom, setMapZoom] = useState<number>(),
+    [fetchedSourcePreset, setFetchedSourcePreset] = useState<SourcePreset>(),
+    [sourcePreset, setSourcePreset] = useState<SourcePreset>(),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<OwmfFeature | undefined>(undefined),
     [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(
@@ -176,24 +177,7 @@ export const OwmfMap = () => {
       old: sourcePreset?.id,
     });
     fetchSourcePreset(sourcePresetID)
-      .then((newPreset) => {
-        setSourcePreset((oldPreset) => {
-          if (oldPreset?.id === newPreset.id) {
-            console.log("Skipping redundant source preset update", {
-              old: oldPreset?.id,
-              new: newPreset.id,
-            });
-            return oldPreset;
-          }
-
-          console.debug("Updating source preset", {
-            old: oldPreset?.id,
-            new: newPreset.id,
-          });
-          setBackEndService(new CombinedCachedMapService(newPreset));
-          return newPreset;
-        });
-      })
+      .then(setFetchedSourcePreset)
       .catch((e) => {
         //setBackEndService(null);
         //setSourcePreset(null);
@@ -201,6 +185,33 @@ export const OwmfMap = () => {
         showSnackbar(t("snackbar.map_error"));
       });
   }, [showSnackbar, sourcePreset?.id, sourcePresetID, t]);
+
+  // The intermediate variable fetchedSourcePreset is needed to prevent setting the wrong sourcePreset when different presets are fetched in very close succession
+  useEffect(() => {
+    if (!fetchedSourcePreset) return;
+
+    if (fetchedSourcePreset.id !== sourcePresetID) {
+      console.debug("Not setting wrong source preset", { sourcePresetID, new: fetchedSourcePreset.id });
+      return;
+    }
+
+    setSourcePreset((oldPreset) => {
+      if (oldPreset?.id === fetchedSourcePreset?.id) {
+        console.log("Skipping redundant source preset update", {
+          old: oldPreset?.id,
+          new: fetchedSourcePreset.id,
+        });
+        return oldPreset;
+      }
+
+      console.debug("Updating source preset", {
+        old: oldPreset?.id,
+        new: fetchedSourcePreset.id,
+      });
+      setBackEndService(new CombinedCachedMapService(fetchedSourcePreset));
+      return fetchedSourcePreset;
+    });
+  }, [fetchedSourcePreset, sourcePresetID]);
 
   /**
    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
@@ -271,7 +282,7 @@ export const OwmfMap = () => {
     [showSnackbar, t]
   );
 
-  return (
+  return mapLat !== undefined && mapLon !== undefined && mapZoom && (
     <Map
       mapLib={import("maplibre-gl")}
       RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"

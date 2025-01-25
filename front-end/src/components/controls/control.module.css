@@ -1,6 +1,6 @@
 .control {
   transform: none;
-  background-color: var(--owmf-background-color);
+  background-color: var(--owmf-background-color, #fff);
 }
 
 .control:empty {
