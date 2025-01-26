@@ -6,7 +6,7 @@ import { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
 import { OverpassWikidataMapService } from "./OverpassWikidataMapService";
 import { QLeverMapService } from "./QLeverMapService/QLeverMapService";
-import { WikidataMapService } from "./WikidataMapService/WikidataMapService";
+import { WikidataMapService } from "./WikidataMapService";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];

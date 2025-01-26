@@ -1,8 +1,9 @@
+import { readFile } from "fs/promises";
+import reversePreset from "../../public/presets/burial.json";
+import directPreset from "../../public/presets/etymology.json";
+import { SourcePreset } from '../model/SourcePreset';
+import { runServiceTests } from './MapServiceTest';
 import { WikidataMapService } from "./WikidataMapService";
-import directPreset from "../../../public/presets/etymology.json";
-import reversePreset from "../../../public/presets/burial.json";
-import { SourcePreset } from '../../model/SourcePreset';
-import { runServiceTests } from '../MapServiceTest';
 
 const BASE_PRESET = { id: "base_test" },
     BAD_BASE_BACKEND_IDS = [
@@ -54,7 +55,6 @@ const BASE_PRESET = { id: "base_test" },
         "overpass_osm_wd+wd_direct",
         "overpass_osm_wd",
         "overpass_ohm_wd",
-        "wd_base",
         "wd_direct",
         "qlever_osm_wd",
     ],
@@ -62,10 +62,12 @@ const BASE_PRESET = { id: "base_test" },
         "wd_reverse",
         "wd_qualifier",
         "wd_indirect",
+        // "wd_base", // Checked in base preset
     ],
-    baseService = new WikidataMapService(BASE_PRESET),
-    directService = new WikidataMapService(directPreset as SourcePreset),
-    reverseService = new WikidataMapService(reversePreset as SourcePreset);
+    resolveQuery = (type: string) => readFile(`src/services/WikidataMapService/${type}.sparql`).then(b => b.toString()),
+    baseService = new WikidataMapService(BASE_PRESET, undefined, resolveQuery),
+    directService = new WikidataMapService(directPreset as SourcePreset, undefined, resolveQuery),
+    reverseService = new WikidataMapService(reversePreset as SourcePreset, undefined, resolveQuery);
 
 runServiceTests("WikidataMapService base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS);
 runServiceTests("WikidataMapService direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS);
