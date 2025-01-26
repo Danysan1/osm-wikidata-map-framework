@@ -41,11 +41,12 @@
     "public/locales"
   ],
   "[typescript]": {
-      "editor.defaultFormatter": "vscode.typescript-language-features"
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit",
   },
   "i18n-ally.keystyle": "nested",
-  "i18n-ally.indent": 4
+  "i18n-ally.indent": 4,
+  "jest.runMode": "on-demand"
 }

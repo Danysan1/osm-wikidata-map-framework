@@ -199,89 +199,94 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
       return;
     }
 
-    const styleSpec = JSON.parse(jsonStyleSpec) as StyleSpecification;
-    if (style.keyPlaceholder && style.key) {
-      Object.values(styleSpec.sources)
-        .filter((src) => src.type === "vector")
-        .forEach(
-          (src) => (src.url = src.url?.replace(style.keyPlaceholder!, style.key!))
-        );
-    }
+    try {
+      const styleSpec = JSON.parse(jsonStyleSpec) as StyleSpecification;
+      if (style.keyPlaceholder && style.key) {
+        Object.values(styleSpec.sources)
+          .filter((src) => src.type === "vector")
+          .forEach(
+            (src) => (src.url = src.url?.replace(style.keyPlaceholder!, style.key!))
+          );
+      }
 
-    if (style.canFilterByDate) {
+      if (style.canFilterByDate) {
+        /**
+         * Filter the features by date, where applicable
+         *
+         * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse#Vector_tiles_and_stylesheets
+         */
+        const startFilter: ExpressionSpecification = [
+            "any",
+            ["!", ["has", "start_date"]],
+            [">=", year, ["get", "start_decdate"]],
+          ],
+          endFilter: ExpressionSpecification = [
+            "any",
+            ["!", ["has", "end_date"]],
+            ["<", year, ["get", "end_decdate"]],
+          ];
+        styleSpec.layers.forEach((l) => {
+          if (l.type !== "raster" && l.type !== "background") {
+            if (!l.filter) l.filter = ["all", startFilter, endFilter];
+            else if (Array.isArray(l.filter) && l.filter[0] === "all")
+              (l.filter as ExpressionSpecification[]).push(startFilter, endFilter);
+            else if (Array.isArray(l.filter))
+              l.filter = [
+                "all",
+                l.filter as ExpressionSpecification,
+                startFilter,
+                endFilter,
+              ];
+            else console.debug("Skipping filtering layer by date", l);
+          }
+        });
+        console.debug("styleSpec", styleSpec);
+      }
+
       /**
-       * Filter the features by date, where applicable
+       * Set the application culture for i18n
        *
-       * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse#Vector_tiles_and_stylesheets
+       * Mainly, sets the map's query to get labels.
+       * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
+       * Mapbox vector tiles use the fields name_*.
+       *
+       * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
+       * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
+       * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+       * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
        */
-      const startFilter: ExpressionSpecification = [
-          "any",
-          ["!", ["has", "start_date"]],
-          [">=", year, ["get", "start_decdate"]],
-        ],
-        endFilter: ExpressionSpecification = [
-          "any",
-          ["!", ["has", "end_date"]],
-          ["<", year, ["get", "end_decdate"]],
-        ];
-      styleSpec.layers.forEach((l) => {
-        if (l.type !== "raster" && l.type !== "background") {
-          if (!l.filter) l.filter = ["all", startFilter, endFilter];
-          else if (Array.isArray(l.filter) && l.filter[0] === "all")
-            (l.filter as ExpressionSpecification[]).push(startFilter, endFilter);
-          else if (Array.isArray(l.filter))
-            l.filter = [
-              "all",
-              l.filter as ExpressionSpecification,
-              startFilter,
-              endFilter,
-            ];
-          else console.debug("Skipping filtering layer by date", l);
+      const newTextField: DataDrivenPropertyValueSpecification<string> = [
+        "coalesce",
+        ["get", "name:" + i18n.language], // Main language name in OpenMapTiles vector tiles
+        ["get", "name_" + i18n.language], // Main language name in Mapbox vector tiles
+        ["get", "name"],
+        ["get", "name:" + DEFAULT_LANGUAGE], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+        ["get", "name_" + DEFAULT_LANGUAGE], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
+      ];
+      styleSpec.layers?.forEach((layer) => {
+        if (layer.type === "symbol" && layer.layout) {
+          const labelExpression = layer.layout["text-field"],
+            isSimpleName =
+              typeof labelExpression === "string" && labelExpression.startsWith("{name"); // "{name}" / "{name:en}" / "{name:latin}\n{name:nonlatin}" / ...
+          if (isSimpleName || someArrayItemStartWithName(labelExpression)) {
+            layer.layout["text-field"] = newTextField;
+          }
         }
       });
-      console.debug("styleSpec", styleSpec);
-    }
-
-    /**
-     * Set the application culture for i18n
-     *
-     * Mainly, sets the map's query to get labels.
-     * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
-     * Mapbox vector tiles use the fields name_*.
-     *
-     * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
-     * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
-     * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
-     * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
-     */
-    const newTextField: DataDrivenPropertyValueSpecification<string> = [
-      "coalesce",
-      ["get", "name:" + i18n.language], // Main language name in OpenMapTiles vector tiles
-      ["get", "name_" + i18n.language], // Main language name in Mapbox vector tiles
-      ["get", "name"],
-      ["get", "name:" + DEFAULT_LANGUAGE], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
-      ["get", "name_" + DEFAULT_LANGUAGE], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
-    ];
-    styleSpec.layers?.forEach((layer) => {
-      if (layer.type === "symbol" && layer.layout) {
-        const labelExpression = layer.layout["text-field"],
-          isSimpleName =
-            typeof labelExpression === "string" && labelExpression.startsWith("{name"); // "{name}" / "{name:en}" / "{name:latin}\n{name:nonlatin}" / ...
-        if (isSimpleName || someArrayItemStartWithName(labelExpression)) {
-          layer.layout["text-field"] = newTextField;
-        }
+      if (styleSpec.projection?.type) {
+        styleSpec.projection = { type: styleSpec.projection.type };
+      } else {
+        styleSpec.projection = undefined; // Prevent 'Error: name: unknown property "name"' with Mapbox styles
       }
-    });
-    if (styleSpec.projection?.type) {
-      styleSpec.projection = { type: styleSpec.projection.type };
-    } else {
-      styleSpec.projection = undefined; // Prevent 'Error: name: unknown property "name"' with Mapbox styles
-    }
-    // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
+      // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
-    console.debug("Setting json style", { style, styleSpec });
-    setBackgroundStyle(styleSpec as MapStyle);
-  }, [i18n.language, jsonStyleSpec, setBackgroundStyle, style, year]);
+      console.debug("Setting json style", { style, styleSpec });
+      setBackgroundStyle(styleSpec as MapStyle);
+    } catch (e) {
+      console.error("Failed parsing and applying json style specification", { jsonStyleSpec, e });
+      showSnackbar(t("snackbar.map_error"));
+    }
+  }, [i18n.language, jsonStyleSpec, setBackgroundStyle, showSnackbar, style, t, year]);
 
   return (
     <DropdownControl

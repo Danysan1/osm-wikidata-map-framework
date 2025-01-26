@@ -35,7 +35,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        console.debug("No cached response found, fetching from Overpass", { sourcePresetID: this.preset?.id, backEndID, bbox, language });
+        console.debug("No cached response found, fetching from Wikidata Query Service", { sourcePresetID: this.preset?.id, backEndID, bbox, language });
         let sparqlQueryTemplate: string;
         if (backEndID === "wd_base")
             sparqlQueryTemplate = await this.getBaseSparqlQuery();

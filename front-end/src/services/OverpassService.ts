@@ -49,7 +49,12 @@ export class OverpassService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
+        if (process.env.owmf_enable_open_historical_map !== "true" && backEndID.includes("ohm"))
+            return false;
+        else if (this.preset?.osm_wikidata_keys)
+            return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
+        else
+            return /^overpass_(osm|ohm)_wd$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
@@ -67,16 +72,18 @@ export class OverpassService implements MapService {
 
         console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, year);
-        if (!onlyCentroids) {
+        if (onlyCentroids) {
+            console.debug(`Overpass fetchMapElements found ${out.features.length} centroids`);
+        } else {
             out.features = out.features.filter(
                 (feature: OwmfFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
                     || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
             );
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
+            console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
         }
         out.language = language;
 
-        console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -98,7 +105,7 @@ export class OverpassService implements MapService {
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
-        } else if (process.env.enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
+        } else if (process.env.owmf_enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
             site = OsmInstance.OpenHistoricalMap
             osm_keys = [];
             search_text_key = undefined;
@@ -162,7 +169,8 @@ export class OverpassService implements MapService {
 
         console.time(`overpass_transform_${timerID}`);
         const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
-        console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
+        console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES`);
+        // console.table(out.features);
 
         out.features.forEach(f => this.transformFeature(f, osm_keys, site));
         out.site = site;
