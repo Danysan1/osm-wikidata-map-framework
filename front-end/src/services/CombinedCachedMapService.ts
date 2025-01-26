@@ -5,7 +5,7 @@ import { SourcePreset } from "../model/SourcePreset";
 import { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
 import { OverpassWikidataMapService } from "./OverpassWikidataMapService";
-import { QLeverMapService } from "./QLeverMapService/QLeverMapService";
+import { QLeverMapService } from "./QLeverMapService";
 import { WikidataMapService } from "./WikidataMapService";
 
 export class CombinedCachedMapService implements MapService {
@@ -15,14 +15,10 @@ export class CombinedCachedMapService implements MapService {
     constructor(sourcePreset: SourcePreset) {
         this.services = [];
         const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24"),
-            osm_text_key = sourcePreset?.osm_text_key,
-            osm_description_key = sourcePreset?.osm_description_key,
             rawMaxElements = process.env.owmf_max_map_elements,
             maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
             rawMaxRelationMembers = process.env.owmf_max_relation_members,
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
-            osmWikidataKeys = sourcePreset?.osm_wikidata_keys,
-            osmFilterTags = sourcePreset?.osm_filter_tags,
             westLon = process.env.owmf_min_lon ? parseFloat(process.env.owmf_min_lon) : undefined,
             southLat = process.env.owmf_min_lat ? parseFloat(process.env.owmf_min_lat) : undefined,
             eastLon = process.env.owmf_max_lon ? parseFloat(process.env.owmf_max_lon) : undefined,
@@ -30,7 +26,7 @@ export class CombinedCachedMapService implements MapService {
             bbox: BBox | undefined = westLon && southLat && eastLon && northLat ? [westLon, southLat, eastLon, northLat] : undefined;
         console.debug(
             "CombinedCachedMapService: initializing map services",
-            { maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags }
+            { maxHours, maxElements, maxRelationMembers }
         );
         const db = new MapDatabase(),
             overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox),
@@ -41,7 +37,7 @@ export class CombinedCachedMapService implements MapService {
             new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db)
         )
         if (process.env.owmf_qlever_enable === "true")
-            this.services.push(new QLeverMapService(sourcePreset, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox));
+            this.services.push(new QLeverMapService(sourcePreset, maxElements, maxRelationMembers, db, bbox));
 
         setTimeout(() => void db.clearMaps(maxHours), 10_000);
     }

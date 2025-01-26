@@ -1,23 +1,13 @@
 import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
-import type { MapDatabase } from "../../db/MapDatabase";
-import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../../generated/sparql/api";
-import { Configuration } from "../../generated/sparql/configuration";
-import { Etymology, OsmInstance, OsmType } from "../../model/Etymology";
-import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
-import { SourcePreset } from "../../model/SourcePreset";
-import type { MapService } from "../MapService";
-import { WikidataService } from "../WikidataService";
-import osm_all_query from "./osm_all.sparql";
-import osm_wd_query from "./osm_wd.sparql";
-import osm_wd_base_query from "./osm_wd_base.sparql";
-import osm_wd_direct_query from "./osm_wd_direct.sparql";
-import osm_wd_reverse_query from "./osm_wd_reverse.sparql";
-import wd_base_query from "./wd_base.sparql";
-import wd_direct_query from "./wd_direct.sparql";
-import wd_indirect_query from "./wd_indirect.sparql";
-import wd_qualifier_query from "./wd_qualifier.sparql";
-import wd_reverse_query from "./wd_reverse.sparql";
+import type { MapDatabase } from "../db/MapDatabase";
+import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
+import { Configuration } from "../generated/sparql/configuration";
+import { Etymology, OsmInstance, OsmType } from "../model/Etymology";
+import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
+import { SourcePreset } from "../model/SourcePreset";
+import type { MapService } from "./MapService";
+import { WikidataService } from "./WikidataService";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -34,41 +24,34 @@ export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     private readonly preset: SourcePreset;
-    private readonly osmTextKey?: string;
-    private readonly osmDescriptionKey?: string;
     private readonly maxElements?: number;
-    private readonly osmWikidataKeys?: string[];
-    private readonly osmFilterTags?: string[];
     private readonly db?: MapDatabase;
     private readonly baseBBox?: BBox;
     private readonly api: SparqlApi;
+    private readonly resolveQuery: (type: string) => Promise<string>;
 
     public constructor(
         preset: SourcePreset,
-        osmTextKey?: string,
-        osmDescriptionKey?: string,
         maxElements?: number,
         maxRelationMembers?: number,
-        osmWikidataKeys?: string[],
-        osmFilterTags?: string[],
         db?: MapDatabase,
         bbox?: BBox,
+        resolveQuery?: (type: string) => Promise<string>,
         basePath = 'https://qlever.cs.uni-freiburg.de/api'
     ) {
         this.preset = preset;
-        this.osmTextKey = osmTextKey;
-        this.osmDescriptionKey = osmDescriptionKey;
         this.maxElements = maxElements;
-        this.osmWikidataKeys = osmWikidataKeys;
-        this.osmFilterTags = osmFilterTags;
         this.db = db;
         this.baseBBox = bbox;
+        this.resolveQuery = resolveQuery ?? (
+            (type) => fetch(`/wdqs/${type}.sparql`).then(r => r.text())
+        );
         this.api = new SparqlApi(new Configuration({
             basePath,
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
         }));
 
-        console.debug("QLeverMapService currently ignores maxRelationMembers", { osmTextKey, osmDescriptionKey, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, basePath });
+        console.debug("QLeverMapService currently ignores maxRelationMembers", { maxElements, maxRelationMembers, basePath });
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -101,7 +84,7 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
             // TODO Filter by date
-            ret: SparqlResponse = await this.api.postSparqlQuery(backend, sparqlQuery, "json").data;
+            ret: SparqlResponse = (await this.api.postSparqlQuery(backend, sparqlQuery, "json")).data;
 
         if (!ret.results?.bindings)
             throw new Error("Invalid response from Wikidata (no bindings)");
@@ -131,31 +114,28 @@ export class QLeverMapService implements MapService {
     }
 
     private async getSparqlQueryTemplate(backEndID: string) {
-        let queryURL: string;
-        if (backEndID.endsWith("m_wd")) // qlever_osm_wd
-            queryURL = osm_wd_query;
+        if (backEndID.endsWith("m_wd")) // qlever_osm_wd, qlever_ohm_wd
+            return await this.resolveQuery("osm_wd");
         else if (backEndID.endsWith("m_wd_base")) // qlever_osm_wd_base
-            queryURL = osm_wd_base_query;
+            return await this.resolveQuery("osm_wd_base");
         else if (backEndID.endsWith("m_wikidata_direct")) // qlever_osm_wikidata_direct
-            queryURL = osm_wd_direct_query;
+            return await this.resolveQuery("osm_wd_direct");
         else if (backEndID.endsWith("m_wikidata_reverse")) // qlever_osm_wikidata_reverse
-            queryURL = osm_wd_reverse_query;
+            return await this.resolveQuery("osm_wd_reverse");
         else if (/^qlever_o[sh]m_[^w]/.test(backEndID)) // qlever_osm_architect
-            queryURL = osm_all_query;
+            return await this.resolveQuery("osm_all");
         else if (backEndID === "qlever_wd_base")
-            queryURL = wd_base_query;
+            return await this.resolveQuery("wd_base");
         else if (backEndID.startsWith("qlever_wd_direct"))
-            queryURL = wd_direct_query;
+            return await this.resolveQuery("wd_direct");
         else if (backEndID === "qlever_wd_indirect")
-            queryURL = wd_indirect_query;
+            return await this.resolveQuery("wd_indirect");
         else if (backEndID === "qlever_wd_reverse")
-            queryURL = wd_reverse_query;
+            return await this.resolveQuery("wd_reverse");
         else if (backEndID === "qlever_wd_qualifier")
-            queryURL = wd_qualifier_query;
+            return await this.resolveQuery("wd_qualifier");
         else
             throw new Error(`Invalid QLever back-end ID: "${backEndID}"`);
-
-        return await fetch(queryURL).then(response => response.text());
     }
 
     private fillPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {
@@ -163,18 +143,18 @@ export class QLeverMapService implements MapService {
         if (backEndID.includes("osm") || backEndID.includes("ohm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
-                osm_text_key = all_osm_wikidata_keys_selected ? this.osmTextKey : undefined,
-                osm_description_key = all_osm_wikidata_keys_selected ? this.osmDescriptionKey : undefined,
-                selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? this.osmWikidataKeys : this.osmWikidataKeys?.filter(key => osmKeyToKeyID(key) === selected_key_id);
-            if (this.osmWikidataKeys?.length && !selected_osm_wikidata_keys?.length)
+                osm_text_key = all_osm_wikidata_keys_selected ? this.preset.osm_text_key : undefined,
+                osm_description_key = all_osm_wikidata_keys_selected ? this.preset.osm_description_key : undefined,
+                selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? this.preset.osm_wikidata_keys : this.preset.osm_wikidata_keys?.filter(key => osmKeyToKeyID(key) === selected_key_id);
+            if (this.preset.osm_wikidata_keys?.length && !selected_osm_wikidata_keys?.length)
                 throw new Error(`Invalid selected_key_id: ${backEndID} => ${selected_key_id} not in osmWikidataKeys`);
 
-            const filter_tags = this.osmFilterTags?.map(tag => tag.replace("=*", "")),
+            const filter_tags = this.preset.osm_filter_tags?.map(tag => tag.replace("=*", "")),
                 filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
                 filter_keys = filter_tags?.filter(tag => !tag.includes("=")),
                 filter_osm_wd_keys = filter_tags?.length ? selected_osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : selected_osm_wikidata_keys,
                 non_filter_osm_wd_keys = selected_osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
-                filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !this.osmWikidataKeys?.includes(key)),
+                filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !this.preset.osm_wikidata_keys?.includes(key)),
                 filterKeysExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_value; " : "", // TODO Use blank nodes
                 non_filter_osm_wd_predicate = non_filter_osm_wd_keys?.map(keyPredicate)?.join('|'),
                 osmEtymologyUnionBranches: string[] = [];
