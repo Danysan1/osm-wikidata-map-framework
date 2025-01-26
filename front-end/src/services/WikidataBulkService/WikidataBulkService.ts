@@ -1,8 +1,7 @@
 import { readFileSync } from 'fs';
 import { Connection, DataTypeOIDs, PreparedStatement } from 'postgrejs';
-import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
-import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
-import { Configuration } from "../../generated/sparql/runtime";
+import { SparqlApi, SparqlBackend } from "../../generated/sparql/api";
+import { Configuration } from "../../generated/sparql/configuration";
 
 // This file is compiled with tsc without webpack, so we can't use import for raw assets
 const elementInsertQuery = readFileSync("src/services/WikidataBulkService/element-insert.sql", "utf8"),
@@ -19,7 +18,9 @@ export class WikidataBulkService {
         this.backend = useQLever ? "wikidata" : "sparql";
         this.api = new SparqlApi(new Configuration({
             basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query.wikidata.org",
-            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // Must be set: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
+            baseOptions: {
+                headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // Must be set: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
+            }
         }));
     }
 
@@ -86,16 +87,14 @@ export class WikidataBulkService {
         etymologyStatement: PreparedStatement // Adds the linked entities to the etymology table
     ): Promise<number> {
         console.time("fetch");
-        const response = await this.api.postSparqlQueryRaw({
-            backend: this.backend, format: "json", query: sparqlQuery
-        });
-        const json = await response.raw.text();
+        const response = await this.api.postSparqlQuery(this.backend, sparqlQuery, "json");
         console.timeEnd("fetch");
-        if (response.raw.status !== 200)
-            throw new Error(`Failed to fetch data: ${json}`);
-        if (json.includes("java.util.concurrent.TimeoutException"))
-            throw new Error("Timeout while fetching data");
-
+        
+        if (response.status !== 200)
+            throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        // if (json.includes("java.util.concurrent.TimeoutException"))
+        //     throw new Error("Timeout while fetching data");
+        const json = JSON.stringify(response.data);
         console.debug(`Fetched data, loading Wikidata entities...`);
 
         try {

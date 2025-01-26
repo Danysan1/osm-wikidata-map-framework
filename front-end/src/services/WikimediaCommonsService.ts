@@ -30,9 +30,9 @@ export class WikimediaCommonsService {
     }
 
     async fetchMetadata(imgName: string) {
-        const res: CommonsApiResponse = await this.api.apiCall(
+        const res: CommonsApiResponse = (await this.api.apiCall(
             "query", "json", undefined, "Artist|LicenseShortName", "extmetadata", "*", "imageinfo", "File:" + imgName
-        ).data,
+        )).data,
             pages = res.query?.pages;
         if (!pages)
             throw new Error("No pages in response");
