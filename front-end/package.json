@@ -44,6 +44,7 @@
     "@next/third-parties": "^14.2.3",
     "@sentry/nextjs": "^8.7.0",
     "@stadiamaps/maplibre-search-box": "^1.1.0",
+    "axios": "^1.7.9",
     "chart.js": "^4.4.3",
     "dexie": "^4.0.7",
     "i18next": "^23.11.5",

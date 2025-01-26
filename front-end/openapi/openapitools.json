@@ -7,7 +7,7 @@
       "commons": {
         "inputSpec": "./commons.yaml",
         "output": "../src/generated/commons",
-        "generatorName": "typescript-fetch",
+        "generatorName": "typescript-axios",
         "additionalProperties": {
           "modelPropertyNaming": "original"
         }
@@ -15,7 +15,7 @@
       "sparql": {
         "glob": "./sparql.yaml",
         "output": "../src/generated/sparql",
-        "generatorName": "typescript-fetch",
+        "generatorName": "typescript-axios",
         "additionalProperties": {
           "modelPropertyNaming": "original"
         }

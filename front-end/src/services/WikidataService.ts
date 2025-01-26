@@ -1,6 +1,5 @@
-import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
-import type { SparqlResponse } from "../generated/sparql/models/SparqlResponse";
-import { Configuration } from "../generated/sparql/runtime";
+import { SparqlApi, SparqlResponse } from "../generated/sparql/api";
+import { Configuration } from "../generated/sparql/configuration";
 
 export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
@@ -20,6 +19,6 @@ export class WikidataService {
             sparqlQuery = sparqlQueryTemplate
                 .replaceAll('${wikidataValues}', wikidataValues)
                 .replaceAll('${language}', language);
-        return await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
+        return await this.api.postSparqlQuery("sparql", "json", sparqlQuery) as SparqlResponse;
     }
 }

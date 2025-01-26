@@ -1,10 +1,8 @@
 import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
-import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
-import { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
-import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
-import { Configuration } from "../../generated/sparql/runtime";
+import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../../generated/sparql/api";
+import { Configuration } from "../../generated/sparql/configuration";
 import { Etymology, OsmInstance, OsmType } from "../../model/Etymology";
 import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
@@ -103,7 +101,7 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
             // TODO Filter by date
-            ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
+            ret: SparqlResponse = await this.api.postSparqlQuery(backend, sparqlQuery, "json").data;
 
         if (!ret.results?.bindings)
             throw new Error("Invalid response from Wikidata (no bindings)");

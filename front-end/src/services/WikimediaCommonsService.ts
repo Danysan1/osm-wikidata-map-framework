@@ -1,5 +1,5 @@
-import { CommonsApi } from "../generated/commons/apis/CommonsApi";
-import { Configuration } from "../generated/commons/runtime";
+import { CommonsApi, CommonsApiResponse } from "../generated/commons/api";
+import { Configuration } from "../generated/commons/configuration";
 
 export class WikimediaCommonsService {
     private readonly api: CommonsApi;
@@ -30,15 +30,9 @@ export class WikimediaCommonsService {
     }
 
     async fetchMetadata(imgName: string) {
-        const res = await this.api.apiCall({
-            action: "query",
-            prop: "imageinfo",
-            iiprop: "extmetadata",
-            iiextmetadatafilter: "Artist|LicenseShortName",
-            format: "json",
-            titles: "File:" + imgName,
-            origin: '*',
-        }),
+        const res: CommonsApiResponse = await this.api.apiCall(
+            "query", "json", undefined, "Artist|LicenseShortName", "extmetadata", "*", "imageinfo", "File:" + imgName
+        ).data,
             pages = res.query?.pages;
         if (!pages)
             throw new Error("No pages in response");

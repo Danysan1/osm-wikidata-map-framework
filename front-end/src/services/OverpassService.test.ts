@@ -1,7 +1,7 @@
-import { OverpassService } from "./OverpassService";
 import directPreset from "../../public/presets/etymology.json";
 import { SourcePreset } from '../model/SourcePreset';
-import { runServiceTests } from './MapServiceTest';
+import { BERLIN_BBOX, runServiceTests } from './MapServiceTest';
+import { OverpassService } from "./OverpassService";
 
 const BASE_PRESET = { id: "base_test" },
     BAD_BASE_BACKEND_IDS = [
@@ -40,5 +40,5 @@ const BASE_PRESET = { id: "base_test" },
     baseService = new OverpassService(BASE_PRESET, 8000, 800),
     directService = new OverpassService(directPreset as SourcePreset, 8000, 800);
 
-runServiceTests("OverpassService base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS);
-runServiceTests("OverpassService direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS);
+runServiceTests("OverpassService base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BERLIN_BBOX);
+runServiceTests("OverpassService direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BERLIN_BBOX);

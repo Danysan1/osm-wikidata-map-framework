@@ -1,7 +1,7 @@
 import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
-import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
+import type { SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
 import type { Etymology, OsmType } from "../model/Etymology";
 import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
@@ -66,7 +66,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         // TODO Filter by year
 
         console.time("wikidata_fetch");
-        const ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
+        const ret: SparqlResponse = (await this.api.postSparqlQuery("sparql", sparqlQuery, "json")).data;
         console.timeEnd("wikidata_fetch");
 
         if (!ret.results?.bindings)
@@ -76,7 +76,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
-            features: ret.results.bindings.reduce((acc: OwmfFeature[], row) => this.featureReducer(acc, row), []),
+            features: ret.results.bindings.reduce<OwmfFeature[]>((acc, row) => this.featureReducer(acc, row), []),
             wdqs_query: sparqlQuery,
             timestamp: new Date().toISOString(),
             sourcePresetID: this.preset.id,
