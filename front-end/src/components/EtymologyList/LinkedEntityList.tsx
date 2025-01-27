@@ -2,7 +2,7 @@ import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
+import { CachedDetailsService } from "@/src/services/WikidataDetailsService/CachedDetailsService";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
@@ -47,7 +47,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
         }
 
         try {
-          const detailsService = new WikidataDetailsService(i18n.language),
+          const detailsService = new CachedDetailsService(i18n.language),
             fetched = await detailsService.fetchEtymologyDetails(etymologyIDs);
           const combined = entities.map<EtymologyDetails>((old) =>
             old.wikidata && fetched[old.wikidata]

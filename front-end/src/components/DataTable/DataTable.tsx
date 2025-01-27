@@ -1,6 +1,6 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { getFeatureLinkedEntities, OwmfFeature } from "@/src/model/OwmfResponse";
-import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
+import { CachedDetailsService } from "@/src/services/WikidataDetailsService/CachedDetailsService";
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./DataTable.module.css";
@@ -22,7 +22,7 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
           .map((e) => e.wikidata!)
       ),
       uniqueWikidataIds = new Set<string>(wikidataIdArray),
-      detailsService = new WikidataDetailsService(i18n.language);
+      detailsService = new CachedDetailsService(i18n.language);
 
     detailsService
       .fetchEtymologyDetails(uniqueWikidataIds)

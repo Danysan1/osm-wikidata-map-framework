@@ -27,7 +27,7 @@ const LONGITUDE_POSITION = 0,
   DEFAULT_LONGITUDE = process.env.owmf_default_center_lon ? parseFloat(process.env.owmf_default_center_lon) : 0,
   DEFAULT_ZOOM = process.env.owmf_default_zoom ? parseInt(process.env.owmf_default_zoom) : 1,
   DEFAULT_COLOR_SCHEME = process.env.owmf_default_color_scheme && Object.values(ColorSchemeID).includes(process.env.owmf_default_color_scheme as ColorSchemeID) ? process.env.owmf_default_color_scheme as ColorSchemeID : ColorSchemeID.blue,
-  DEFAULT_BACKEND_ID = "overpass_osm_all",
+  DEFAULT_BACKEND_ID = "pmtiles_all",
   DEFAULT_BACKGROUND_STYLE_ID = process.env.owmf_default_background_style ?? "stadia_alidade",
   DEFAULT_YEAR = new Date().getFullYear();
 

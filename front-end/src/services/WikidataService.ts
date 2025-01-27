@@ -19,6 +19,6 @@ export class WikidataService {
             sparqlQuery = sparqlQueryTemplate
                 .replaceAll('${wikidataValues}', wikidataValues)
                 .replaceAll('${language}', language);
-        return await this.api.postSparqlQuery("sparql", "json", sparqlQuery) as SparqlResponse;
+        return (await this.api.postSparqlQuery("sparql", sparqlQuery, "json")).data;
     }
 }

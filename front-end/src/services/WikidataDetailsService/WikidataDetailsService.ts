@@ -1,28 +1,40 @@
 import { DetailsDatabase } from "../../db/DetailsDatabase";
 import type { EtymologyDetails } from "../../model/EtymologyDetails";
 import { WikidataService } from "../WikidataService";
-import detailsQueryURL from "./etymology-details.sparql";
 
 export class WikidataDetailsService extends WikidataService {
-    private readonly db: DetailsDatabase;
+    private readonly db?: DetailsDatabase;
     private readonly language: string;
+    private readonly resolveQuery: () => Promise<string>;
 
-    public constructor(language: string) {
+    public constructor(language: string, db?: DetailsDatabase, resolveQuery?: () => Promise<string>) {
         super();
-        this.db = new DetailsDatabase();
+        this.db = db;
         this.language = language;
-
-        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
-        setTimeout(() => void this.db.clearDetails(maxHours), 10_000);
+        this.resolveQuery = resolveQuery ?? (
+            () => fetch(`/wdqs/entity-details.sparql`).then(r => r.text())
+        );
     }
 
-    public async fetchEtymologyDetails(wikidataIDs: Set<string>): Promise<Record<string, EtymologyDetails>> {
-        let out = await this.db.getDetails(wikidataIDs, this.language);
+    public async fetchEtymologyDetails(wikidataIDs: Set<string> | string[]): Promise<Record<string, EtymologyDetails>> {
+        if (Array.isArray(wikidataIDs))
+            wikidataIDs = new Set(wikidataIDs);
+
+        if (!wikidataIDs.size) {
+            throw new Error("Empty Wikidata ID set", { cause: wikidataIDs });
+        }
+
+        wikidataIDs.forEach(id => {
+            if (!id.startsWith("Q") || id === "Q")
+                throw new Error("Invalid Wikidata ID", { cause: id });
+        });
+
+        let out = await this.db?.getDetails(wikidataIDs, this.language);
         if (out) {
-            console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: this.language, wikidataIDs, out });
+            console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: this.language, wikidataIDs });
         } else {
             console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: this.language, wikidataIDs });
-            const sparqlQueryTemplate = await fetch(detailsQueryURL).then(res => res.text()),
+            const sparqlQueryTemplate = await this.resolveQuery(),
                 res = await this.etymologyIDsQuery(this.language, Array.from(wikidataIDs), sparqlQueryTemplate);
 
             if (!res?.results?.bindings?.length) {
@@ -87,8 +99,8 @@ export class WikidataDetailsService extends WikidataService {
                 return acc;
             }, {});
             try {
-                console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { lang: this.language, wikidataIDs, out });
-                void this.db.addDetails(out, wikidataIDs, this.language);
+                console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { lang: this.language, wikidataIDs });
+                void this.db?.addDetails(out, wikidataIDs, this.language);
             } catch (e) {
                 console.warn("Failed to store details data in cache", { lang: this.language, wikidataIDs, out, e });
             }
