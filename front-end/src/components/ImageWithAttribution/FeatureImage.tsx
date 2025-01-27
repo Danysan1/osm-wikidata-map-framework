@@ -18,12 +18,14 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
       ? PANORAMAX_UUID_REGEX.exec(tags.panoramax)?.[0]
       : undefined;
 
-  const [commons, setCommons] = useState<string[]>();
+  const [commons, setCommons] = useState<string>();
   useEffect(() => {
     if (feature.commons?.includes("File:")) {
-      setCommons([feature.commons]);
-    } else if (feature.picture?.includes("File:")) {
-      setCommons([feature.picture]);
+      console.debug("FeatureImages: Found Commons image in commons", feature);
+      setCommons(feature.commons);
+    } else if (!!feature.picture?.includes("File:") || !!feature.picture?.includes("Special:FilePath")) {
+      console.debug("FeatureImages: Found Commons image in picture", feature);
+      setCommons(feature.picture);
     } else if (feature.wikidata) {
       const statementService = new WikidataStatementService();
       statementService
@@ -31,21 +33,23 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
         .then((image) => {
           if (image) {
             console.debug("Found image from Wikidata", { feature, image });
-            setCommons([image]);
+            setCommons(image);
+          } else {
+            console.debug("No Commons image found from Wikidata", feature.wikidata);
           }
         })
         .catch(() => {
           console.warn("Failed getting image from Wikidata", feature);
         });
+    } else {
+      console.debug("FeatureImages: No Commons image available", feature.wikidata);
     }
   }, [feature]);
 
   return (
     (!!commons || !!panoramaxUUID) && (
       <div className={className}>
-        {commons?.map((img, i) => (
-          <CommonsImage key={i} name={img} />
-        ))}
+        {commons && <CommonsImage name={commons} />}
         {panoramaxUUID && <PanoramaxImage uuid={panoramaxUUID} />}
         {feature.iiif_url && <IIIFImages manifestURL={feature.iiif_url} />}
       </div>
