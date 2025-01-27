@@ -72,7 +72,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                 const osmWikidataDirectText = `OSM wikidata=* > ${wikidataDirectText}`,
                     ohmWikidataDirectText = `OHM wikidata=* > ${wikidataDirectText}`;
                 if (pmtilesURL) {
-                    dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
+                    dropdownItems.push(buildDropdownItem("pmtiles_osm_wd_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
                 }
                 if (preset.osm_wikidata_keys?.length) {
@@ -90,10 +90,10 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                 dropdownItems.push(buildDropdownItem("wd_direct", wikidataDirectText, WDQS_GROUP_NAME));
                 if (qleverEnabled) {
                     dropdownItems.push(buildDropdownItem("qlever_wd_direct", wikidataDirectText, QLEVER_WD_GROUP_NAME));
-                    dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", osmWikidataDirectText, QLEVER_OSM_GROUP_NAME));
+                    dropdownItems.push(buildDropdownItem("qlever_osm_wd_direct", osmWikidataDirectText, QLEVER_OSM_GROUP_NAME));
                     //dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", `${allKeysText} + ${wikidataDirectText}`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                     if (ohmEnabled) {
-                        dropdownItems.push(buildDropdownItem("qlever_ohm_wikidata_direct", ohmWikidataDirectText, QLEVER_OHM_GROUP_NAME));
+                        dropdownItems.push(buildDropdownItem("qlever_ohm_wd_direct", ohmWikidataDirectText, QLEVER_OHM_GROUP_NAME));
                     }
                 }
                 if(preset.osm_wikidata_properties.length > 1) {
@@ -137,12 +137,12 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                         // dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", `${allKeysText} + ${reverseText}`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                     }
                     // dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", `OSM wikidata=* > ${indirectText}`, QLEVER_GROUP_NAME)); // TODO: implement and enable
-                    dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", `OSM wikidata=* > ${reverseText}`, QLEVER_OSM_GROUP_NAME));
+                    dropdownItems.push(buildDropdownItem("qlever_osm_wd_reverse", `OSM wikidata=* > ${reverseText}`, QLEVER_OSM_GROUP_NAME));
                     // dropdownItems.push(buildDropdownItem("qlever_wd_indirect", indirectText, QLEVER_WD_GROUP_NAME)); // TODO: enable when QLever supports WITH
                     dropdownItems.push(buildDropdownItem("qlever_wd_qualifier", qualifierText, QLEVER_WD_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("qlever_wd_reverse", reverseText, QLEVER_WD_GROUP_NAME));
                     if (ohmEnabled) {
-                        dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", `OSM wikidata=* > ${reverseText}`, QLEVER_OHM_GROUP_NAME));
+                        dropdownItems.push(buildDropdownItem("qlever_osm_wd_reverse", `OSM wikidata=* > ${reverseText}`, QLEVER_OHM_GROUP_NAME));
                     }
                 }
             }

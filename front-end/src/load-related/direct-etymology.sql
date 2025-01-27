@@ -9,7 +9,7 @@ INSERT INTO owmf.etymology (
 SELECT
     osm_id,
     to_wd.wd_id,
-    CASE WHEN osm_osm_id IS NULL THEN ARRAY['wd_direct'] ELSE ARRAY['wd_direct','osm_wikidata_direct'] END,
+    CASE WHEN osm_osm_id IS NULL THEN ARRAY['wd_direct'] ELSE ARRAY['wd_direct','osm_wd_direct'] END,
     osm_id,
     from_wd.wd_id,
     REPLACE(value->'from_prop'->>'value', 'http://www.wikidata.org/prop/', '')

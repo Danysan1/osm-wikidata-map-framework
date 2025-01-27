@@ -55,7 +55,12 @@ export class QLeverMapService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)|(ohm_[_a-z]+))$/.test(backEndID);
+        if (!this.preset.wikidata_indirect_property && ["reverse", "qualifier", "indirect"].some(x => backEndID.includes(x)))
+            return false;
+        else if (!this.preset.osm_wikidata_properties && backEndID.includes("_direct"))
+            return false;
+        else
+            return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)|(ohm_[_a-z]+))$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
@@ -108,7 +113,7 @@ export class QLeverMapService implements MapService {
         else
             out.qlever_osm_query = sparqlQuery;
 
-        console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
+        console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`);
         void this.db?.addMap(out);
         return out;
     }
@@ -118,9 +123,9 @@ export class QLeverMapService implements MapService {
             return await this.resolveQuery("osm_wd");
         else if (backEndID.endsWith("m_wd_base")) // qlever_osm_wd_base
             return await this.resolveQuery("osm_wd_base");
-        else if (backEndID.endsWith("m_wikidata_direct")) // qlever_osm_wikidata_direct
+        else if (backEndID.endsWith("m_wd_direct")) // qlever_osm_wd_direct
             return await this.resolveQuery("osm_wd_direct");
-        else if (backEndID.endsWith("m_wikidata_reverse")) // qlever_osm_wikidata_reverse
+        else if (backEndID.endsWith("m_wd_reverse")) // qlever_osm_wd_reverse
             return await this.resolveQuery("osm_wd_reverse");
         else if (/^qlever_o[sh]m_[^w]/.test(backEndID)) // qlever_osm_architect
             return await this.resolveQuery("osm_all");
@@ -341,7 +346,6 @@ export class QLeverMapService implements MapService {
         const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
-        console.debug("createFeature", { row, geometry, osm_instance, osm_id, osm_type, commons, picture });
 
         let render_height;
         if (row.height?.value)

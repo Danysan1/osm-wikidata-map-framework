@@ -6,7 +6,7 @@ export class WikidataStatementService {
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
         this.api = new StatementsApi(new Configuration({
             basePath,
-            // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+            // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // Must be set: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
         }));
     }
 

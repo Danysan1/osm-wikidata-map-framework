@@ -17,8 +17,8 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      *  - pmtiles_all
      *  - pmtiles_osm_name_etymology
      *  - pmtiles_ohm_name_etymology
-     *  - pmtiles_osm_wikidata_direct
-     *  - pmtiles_osm_wikidata_reverse
+     *  - pmtiles_osm_wd_direct
+     *  - pmtiles_osm_wd_reverse
      *  - pmtiles_propagated
      *  - overpass_osm_wd
      *  - overpass_osm_all
@@ -38,8 +38,8 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      *  - qlever_wd_qualifier
      *  - qlever_wd_reverse
      *  - qlever_osm_wd_base
-     *  - qlever_osm_wikidata_direct
-     *  - qlever_osm_wikidata_reverse
+     *  - qlever_osm_wd_direct
+     *  - qlever_osm_wd_reverse
      */
     backEndID?: string;
 

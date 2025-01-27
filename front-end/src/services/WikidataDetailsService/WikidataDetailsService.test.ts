@@ -1,6 +1,6 @@
+import { describe, expect, test } from '@jest/globals';
 import { readFile } from "fs/promises";
 import { WikidataDetailsService } from "./WikidataDetailsService";
-import { describe, expect, test } from '@jest/globals';
 
 const LANGUAGE = "en",
     BAD_QIDS: string[][] = [
@@ -16,7 +16,7 @@ const LANGUAGE = "en",
     resolveQuery = () => readFile(`public/wdqs/entity-details.sparql`).then(b => b.toString()),
     service = new WikidataDetailsService(LANGUAGE, undefined, resolveQuery);
 
-describe("WikidataDetailsService bad Q-IDs", () => {
+describe("fetchEtymologyDetails bad Q-IDs", () => {
     BAD_QIDS.forEach(
         QIDs => test(
             QIDs.reduce((acc, s) => acc + "," + (s || "_"), "") || "<empty>",
@@ -27,7 +27,7 @@ describe("WikidataDetailsService bad Q-IDs", () => {
     );
 });
 
-describe("WikidataDetailsService good Q-IDs", () => {
+describe("fetchEtymologyDetails good Q-IDs", () => {
     GOOD_QIDS.forEach(
         QIDs => test(QIDs.join(","), async () => {
             const ret = await service.fetchEtymologyDetails(QIDs);

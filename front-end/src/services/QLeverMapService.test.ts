@@ -21,6 +21,12 @@ const BASE_PRESET = { id: "base_test" },
         "wd_reverse",
         "wd_qualifier",
         "wd_indirect",
+        "qlever_wd_direct",
+        "qlever_osm_wd_direct",
+        "qlever_wd_reverse",
+        "qlever_wd_qualifier",
+        "qlever_wd_indirect",
+        "qlever_osm_wd_reverse",
     ],
     GOOD_BASE_BACKEND_IDS = [
         "qlever_osm_wd",
@@ -43,11 +49,15 @@ const BASE_PRESET = { id: "base_test" },
         "wd_reverse",
         "wd_qualifier",
         "wd_indirect",
+        "qlever_wd_reverse",
+        "qlever_wd_qualifier",
+        "qlever_wd_indirect",
+        "qlever_osm_wd_reverse",
     ],
     GOOD_DIRECT_BACKEND_IDS = [
         "qlever_wd_direct",
         // "qlever_wd_base", // Checked in base preset
-        "qlever_osm_wd_reverse",
+        "qlever_osm_wd_direct",
         // "qlever_osm_wd_base", // Checked in base preset
         // "qlever_osm_wd", // Checked in base preset
     ],
@@ -66,6 +76,8 @@ const BASE_PRESET = { id: "base_test" },
         "wd_reverse",
         "wd_qualifier",
         "wd_indirect",
+        "qlever_wd_direct",
+        "qlever_osm_wd_direct",
     ],
     GOOD_REVERSE_BACKEND_IDS = [
         "qlever_wd_reverse",
@@ -76,11 +88,11 @@ const BASE_PRESET = { id: "base_test" },
         // "qlever_osm_wd_base", // Checked in base preset
         // "qlever_osm_wd", // Checked in base preset
     ],
-    resolveQuery = (type: string) => readFile(`public/wdqs/${type}.sparql`).then(b => b.toString()),
+    resolveQuery = (type: string) => readFile(`public/qlever/${type}.sparql`).then(b => b.toString()),
     baseService = new QLeverMapService(BASE_PRESET, 8000, 800, undefined, undefined, resolveQuery),
     directService = new QLeverMapService(directPreset as SourcePreset, 8000, 800, undefined, undefined, resolveQuery),
     reverseService = new QLeverMapService(reversePreset as SourcePreset, 8000, 800, undefined, undefined, resolveQuery);
 
-runServiceTests("QLeverMapService base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BOLOGNA_BBOX);
-runServiceTests("QLeverMapService direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BOLOGNA_BBOX);
-runServiceTests("QLeverMapService reverse", reverseService, BAD_REVERSE_BACKEND_IDS, GOOD_REVERSE_BACKEND_IDS, BOLOGNA_BBOX);
+runServiceTests("base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BOLOGNA_BBOX);
+runServiceTests("direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BOLOGNA_BBOX);
+runServiceTests("reverse", reverseService, BAD_REVERSE_BACKEND_IDS, GOOD_REVERSE_BACKEND_IDS, BOLOGNA_BBOX);

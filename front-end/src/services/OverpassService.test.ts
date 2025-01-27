@@ -14,7 +14,15 @@ const BASE_PRESET = { id: "base_test" },
         "overpass_osm_wd+wd_direct",
         "wd_base",
         "wd_direct",
-        "qlever_osm_wd"
+        "qlever_osm_wd",
+        "qlever_wd_base",
+        "qlever_osm_wd_base",
+        "qlever_wd_direct",
+        "qlever_osm_wd_direct",
+        "qlever_wd_reverse",
+        "qlever_wd_qualifier",
+        "qlever_wd_indirect",
+        "qlever_osm_wd_reverse",
     ],
     GOOD_BASE_BACKEND_IDS = [
         "overpass_osm_wd",
@@ -27,7 +35,15 @@ const BASE_PRESET = { id: "base_test" },
         "overpass_osm_wd+wd_direct",
         "wd_base",
         "wd_direct",
-        "qlever_osm_wd"
+        "qlever_osm_wd",
+        "qlever_wd_base",
+        "qlever_osm_wd_base",
+        "qlever_wd_direct",
+        "qlever_osm_wd_direct",
+        "qlever_wd_reverse",
+        "qlever_wd_qualifier",
+        "qlever_wd_indirect",
+        "qlever_osm_wd_reverse",
     ],
     GOOD_DIRECT_BACKEND_IDS = [
         "overpass_osm_name_etymology",
@@ -40,5 +56,5 @@ const BASE_PRESET = { id: "base_test" },
     baseService = new OverpassService(BASE_PRESET, 8000, 800),
     directService = new OverpassService(directPreset as SourcePreset, 8000, 800);
 
-runServiceTests("OverpassService base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BERLIN_BBOX);
-runServiceTests("OverpassService direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BERLIN_BBOX);
+runServiceTests("base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BERLIN_BBOX);
+runServiceTests("direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BERLIN_BBOX);
