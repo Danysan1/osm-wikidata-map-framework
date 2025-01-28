@@ -55,7 +55,7 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
     "owmf_custom_intro_js",
     "owmf_static_export",
     "owmf_base_path",
-    "owmf_deduplicate_data_table",
+    "owmf_deduplicate_by_name",
     "owmf_use_background_color",
   ];
 

@@ -25,7 +25,7 @@ export const DataTableRow: FC<DataTableRowProps> = ({
   const { i18n } = useTranslation(),
     entitiesCellContent = useMemo(() => {
       let uniqueEntities: Etymology[];
-      if (process.env.owmf_deduplicate_data_table !== "true") {
+      if (process.env.owmf_deduplicate_by_name !== "true") {
         uniqueEntities = getFeatureLinkedEntities(feature);
       } else {
         const uniqueMap = getFeatureLinkedEntities(feature).reduce<

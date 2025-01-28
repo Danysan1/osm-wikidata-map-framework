@@ -55,17 +55,26 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
               : old
           );
           const filtered = combined
-            .filter(
-              // Ignore text linked entities that duplicate a Wikidata entity
-              (e) =>
-                !!e.wikidata ||
-                !combined.some(
-                  (other) =>
-                    !!other.wikidata &&
-                    !!e.name &&
-                    other.name?.toLowerCase()?.includes(e.name.replace(/\.$/, "").trim().toLowerCase())
-                )
-            )
+            .filter((e) => {
+              if (e.wikidata) return true; // Always show all Wikidata entities
+
+              if (!e.name) {
+                console.warn("Not showing an entity without name nor Wikidata Q-ID", e);
+                return false;
+              }
+
+              // If deduplication is disabled show all text entities
+              if (process.env.owmf_deduplicate_by_name !== "true") return true;
+
+              // Ignore text entities with the same name as an existing Wikidata entity
+              const normalName = normalizeName(e.name);
+              return !combined.some(
+                (other) =>
+                  !!other.wikidata &&
+                  !!other.name &&
+                  normalizeName(other.name).includes(normalName)
+              );
+            })
             .sort(
               // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
               (a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0)
@@ -106,3 +115,14 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
     </div>
   );
 };
+
+/**
+ * @see https://stackoverflow.com/a/37511463/2347196
+ */
+function normalizeName(str: string) {
+  return str
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f.]/g, "")
+    .trim()
+    .toLowerCase();
+}
