@@ -26,9 +26,9 @@ SELECT
     (false AS ?from_osm)
     (true AS ?from_wikidata)
     (SAMPLE(?_location) AS ?location)
-WITH { 
-    SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_statementEntity
-    WHERE {
+WHERE {
+    {
+        # Qualifier entity links
         ?etymology p:${indirectProperty} ?stmt.
         ?stmt pq:P625 ?_location.
         MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore if the etymology statement has an end date
@@ -55,11 +55,8 @@ WITH {
         OPTIONAL { ?stmt pq:P10689 ?_osm_way. }
         OPTIONAL { ?stmt pq:P402 ?_osm_rel. }
         OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
-    }
-} AS %qualifier
-WITH {
-    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_wikipedia ?_picture ?_osm_node ?_osm_way ?_osm_rel
-    WHERE {
+    } UNION {
+        # Reverse entity links
         ?etymology p:${indirectProperty} ?stmt.
         ?stmt ps:${indirectProperty} ?item.
         ?item p:P625 ?locationStatement;
@@ -97,9 +94,6 @@ WITH {
         OPTIONAL { ?item wdt:P10689 ?_osm_way. }
         OPTIONAL { ?item wdt:P402 ?_osm_rel. }
     }
-} AS %reverse
-WHERE {
-    { INCLUDE %qualifier. } UNION { INCLUDE %reverse. }
 }
 GROUP BY ?item ?etymology
 ${limit}

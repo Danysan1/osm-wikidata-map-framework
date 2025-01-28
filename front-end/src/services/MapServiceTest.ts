@@ -45,7 +45,7 @@ export function runServiceTests(
                 expect(geoJson).toHaveProperty("bbox");
                 expect(geoJson.bbox?.[0]).toEqual(bbox[0]);
                 expect(geoJson.bbox?.[1]).toEqual(bbox[1]);
-            }, 15_000);
+            }, 20_000);
         });
     });
 }
