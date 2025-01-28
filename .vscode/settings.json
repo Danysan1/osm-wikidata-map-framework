@@ -5,14 +5,14 @@
   "prettier.printWidth": 90,
   "cSpell.words": [
     "bbox",
-    "CURLOPT",
     "DAST",
     "dsantini",
     "Geobuf",
     "gitlab",
     "iiif",
     "imposm",
-    "mapboxgl",
+    "mapbox",
+    "mapcomplete",
     "Maplibre",
     "maplibregl",
     "openstreetmap",
@@ -22,16 +22,14 @@
     "pmtiles",
     "qlever",
     "rdfs",
-    "RETURNTRANSFER",
     "SAST",
     "skel",
     "sourcedata",
     "sparql",
-    "VERIFYHOST",
-    "VERIFYPEER",
     "WDQS",
     "wikibase",
     "wikilink",
+    "wikispore",
     "workdir"
   ],
   "python.linting.pylint": true,
@@ -48,5 +46,6 @@
   },
   "i18n-ally.keystyle": "nested",
   "i18n-ally.indent": 4,
-  "jest.runMode": "on-demand"
+  "jest.runMode": "on-demand",
+  "jest.rootPath": "front-end"
 }

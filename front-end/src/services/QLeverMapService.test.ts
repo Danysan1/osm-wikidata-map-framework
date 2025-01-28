@@ -23,15 +23,19 @@ const BASE_PRESET = { id: "base_test" },
         "wd_indirect",
         "qlever_wd_direct",
         "qlever_osm_wd_direct",
+        "qlever_ohm_wd_direct",
         "qlever_wd_reverse",
         "qlever_wd_qualifier",
         "qlever_wd_indirect",
         "qlever_osm_wd_reverse",
+        "qlever_ohm_wd_reverse",
     ],
     GOOD_BASE_BACKEND_IDS = [
         "qlever_osm_wd",
+        // "qlever_ohm_wd", // Currently zero results
         "qlever_wd_base",
         "qlever_osm_wd_base",
+        // "qlever_ohm_wd_base", // Currently zero results
     ],
     BAD_DIRECT_BACKEND_IDS = [
         "",
@@ -53,11 +57,13 @@ const BASE_PRESET = { id: "base_test" },
         "qlever_wd_qualifier",
         "qlever_wd_indirect",
         "qlever_osm_wd_reverse",
+        "qlever_ohm_wd_reverse",
     ],
     GOOD_DIRECT_BACKEND_IDS = [
         "qlever_wd_direct",
         // "qlever_wd_base", // Checked in base preset
         "qlever_osm_wd_direct",
+        // "qlever_ohm_wd_direct", // Currently zero results
         // "qlever_osm_wd_base", // Checked in base preset
         // "qlever_osm_wd", // Checked in base preset
     ],
@@ -78,6 +84,7 @@ const BASE_PRESET = { id: "base_test" },
         "wd_indirect",
         "qlever_wd_direct",
         "qlever_osm_wd_direct",
+        "qlever_ohm_wd_direct",
     ],
     GOOD_REVERSE_BACKEND_IDS = [
         "qlever_wd_reverse",
@@ -85,6 +92,7 @@ const BASE_PRESET = { id: "base_test" },
         "qlever_wd_indirect",
         // "qlever_wd_base", // Checked in base preset
         "qlever_osm_wd_reverse",
+        // "qlever_ohm_wd_reverse", // Currently zero results
         // "qlever_osm_wd_base", // Checked in base preset
         // "qlever_osm_wd", // Checked in base preset
     ],

@@ -1,5 +1,5 @@
 {
-    "background_color": "hsl(150, 100%, 97%)",
+    "background_color": "hsl(150, 100%, 96%)",
     "fetch_parts_of_linked_entities": true,
     "mapcomplete_theme": "etymology",
     "osm_filter_tags": [

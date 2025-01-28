@@ -16,6 +16,7 @@ export function runServiceTests(
     describe("canHandleBackEnd = true", () => {
         goodBackEndIDs.forEach(
             backEndID => test(`${name} "${backEndID}"`, () => {
+                process.env.owmf_enable_open_historical_map = "true";
                 expect(service.canHandleBackEnd(backEndID)).toBeTruthy();
             })
         );
@@ -24,6 +25,7 @@ export function runServiceTests(
     describe("canHandleBackEnd = false", () => {
         badBackEndIDs.forEach(
             backEndID => test(`${name} "${backEndID}"`, () => {
+                process.env.owmf_enable_open_historical_map = "true";
                 expect(service.canHandleBackEnd(backEndID)).toBeFalsy();
             })
         );
@@ -32,6 +34,7 @@ export function runServiceTests(
     describe("fetchMapElements", () => {
         goodBackEndIDs.forEach(backEndID => {
             test(`${name} "${backEndID}" centroids`, async () => {
+                process.env.owmf_enable_open_historical_map = "true";
                 const geoJson = await service.fetchMapElements(
                     backEndID, true, bbox, "it", new Date().getFullYear()
                 );

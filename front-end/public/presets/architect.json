@@ -1,5 +1,5 @@
 {
-    "background_color": "hsl(0, 100%, 97%)",
+    "background_color": "hsl(0, 100%, 96%)",
     "fetch_parts_of_linked_entities": true,
     "osm_filter_tags": [
         "architect:wikidata",

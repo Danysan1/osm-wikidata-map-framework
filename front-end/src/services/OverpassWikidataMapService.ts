@@ -86,7 +86,7 @@ export class OverpassWikidataMapService implements MapService {
             }
         }
 
-        console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
+        console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
         void this.db?.addMap(out);
         return out;
     }

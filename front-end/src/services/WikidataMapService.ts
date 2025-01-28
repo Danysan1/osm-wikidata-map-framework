@@ -89,7 +89,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
 
         console.timeEnd("wikidata_transform");
-        console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
+        console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`);
         void this.db?.addMap(out);
         return out;
     }
