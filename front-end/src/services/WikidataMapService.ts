@@ -1,12 +1,16 @@
-import type { BBox, Point } from "geojson";
+import type { BBox } from "geojson";
+import { LngLat } from "maplibre-gl";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
 import type { Etymology, OsmType } from "../model/Etymology";
+import { OwmfFeatureProperties } from "../model/OwmfFeatureProperties";
 import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
+
+const NEARBY_FEATURE_THRESHOLD = process.env.owmf_nearby_feature_threshold ? parseInt(process.env.owmf_nearby_feature_threshold) : undefined;
 
 export class WikidataMapService extends WikidataService implements MapService {
     private readonly preset: SourcePreset;
@@ -145,104 +149,124 @@ export class WikidataMapService extends WikidataService implements MapService {
         }
 
         const wkt_geometry = row.location.value,
-            geometry = parseWKT(wkt_geometry) as Point | null;
-        if (!geometry) {
-            console.debug("Failed to parse WKT coordinates", { wkt_geometry, row });
+            geometry = parseWKT(wkt_geometry);
+        if (geometry?.type !== "Point") {
+            console.debug("Failed to parse WKT coordinates", { wkt_geometry, geometry, row });
             return acc;
         }
 
         const feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             etymology_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            lngLat = new LngLat(geometry.coordinates[0], geometry.coordinates[1]),
             existingFeature = acc.find(feature => {
-                if (feature_wd_id && feature.properties?.wikidata !== feature_wd_id)
-                    return false; // Not the same feature
+                if (feature_wd_id && feature.properties?.wikidata === feature_wd_id)
+                    return true; // Both features have the same Wikidata ID => They are the same entity
 
-                //console.info("Checking feature for merging", { wd_id: feature.id, feature_wd_id, geom: feature.geometry, geometry });
-                if (feature_wd_id)
-                    return true; // Both features have the same Wikidata ID
+                if (feature_wd_id && feature.properties?.wikidata && feature.properties.wikidata !== feature_wd_id)
+                    return false; // Different Wikidata IDs => Different entities
 
-                // Both features have no Wikidata ID, check if they have the same coordinates
-                return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
+                // One of the features has no Wikidata ID => if they have the same coordinates we consider them as one single entity
+                if (NEARBY_FEATURE_THRESHOLD && feature.geometry.type === "Point" && lngLat.distanceTo(new LngLat(feature.geometry.coordinates[0], feature.geometry.coordinates[1])) < NEARBY_FEATURE_THRESHOLD) {
+                    console.warn("Merging features with the same coordinates", row, feature);
+                    return true;
+                }
+
+                return false; // All equality checks failed => They are different entities              
             });
 
+        let etymology: Etymology | undefined;
         if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
-        } else {
-            const etymology: Etymology | null = etymology_wd_id ? {
-                from_osm_instance: undefined,
+            console.warn("Wikidata: Ignoring duplicate etymology", { etymology_wd_id, existing: existingFeature.properties, new: row });
+        } else if (etymology_wd_id) {
+            etymology = {
                 from_wikidata: true,
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                 propagated: false,
                 statementEntity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 wikidata: etymology_wd_id,
-            } : null;
+            };
+        }
 
-            if (!existingFeature) { // Add the new feature for this item 
-                let osm_id: number | undefined,
-                    osm_type: OsmType | undefined,
-                    ohm_id: number | undefined,
-                    ohm_type: OsmType | undefined;
-                if (row.osm_rel?.value) {
-                    osm_type = "relation";
-                    osm_id = parseInt(row.osm_rel.value);
-                } else if (row.osm_way?.value) {
-                    osm_type = "way";
-                    osm_id = parseInt(row.osm_way.value);
-                } else if (row.osm_node?.value) {
-                    osm_type = "node";
-                    osm_id = parseInt(row.osm_node.value);
-                }
-                if (row.ohm_rel?.value) {
-                    ohm_type = "relation";
-                    ohm_id = parseInt(row.ohm_rel.value);
-                }
+        let osm_id: number | undefined,
+            osm_type: OsmType | undefined,
+            ohm_id: number | undefined,
+            ohm_type: OsmType | undefined;
+        if (row.osm_rel?.value) {
+            osm_type = "relation";
+            osm_id = parseInt(row.osm_rel.value);
+        } else if (row.osm_way?.value) {
+            osm_type = "way";
+            osm_id = parseInt(row.osm_way.value);
+        } else if (row.osm_node?.value) {
+            osm_type = "node";
+            osm_id = parseInt(row.osm_node.value);
+        }
+        if (row.ohm_rel?.value) {
+            ohm_type = "relation";
+            ohm_id = parseInt(row.ohm_rel.value);
+        }
 
-                let render_height;
-                if (row.height?.value)
-                    render_height = parseInt(row.height?.value);
-                else if (row.levels?.value)
-                    render_height = parseInt(row.levels?.value) * 4;
-                else if (row.building?.value)
-                    render_height = 6;
+        let render_height;
+        if (row.height?.value)
+            render_height = parseInt(row.height?.value);
+        else if (row.levels?.value)
+            render_height = parseInt(row.levels?.value) * 4;
+        else if (row.building?.value)
+            render_height = 6;
 
-                const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                    from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
-                    id = `wikidata.org/entity/${from_wikidata_entity}#${from_wikidata_prop}`;
-                acc.push({
-                    type: "Feature",
-                    id: id,
-                    geometry,
-                    properties: {
-                        id: id,
-                        commons: row.commons?.value,
-                        linked_entities: etymology ? [etymology] : undefined,
-                        linked_entity_count: etymology ? 1 : 0,
-                        from_osm_instance: undefined,
-                        from_wikidata: true,
-                        from_wikidata_entity,
-                        from_wikidata_prop,
-                        iiif_url: row.iiif?.value,
-                        osm_id,
-                        osm_type,
-                        ohm_id,
-                        ohm_type,
-                        picture: row.picture?.value,
-                        render_height: render_height,
-                        tags: {
-                            description: row.itemDescription?.value,
-                            name: row.itemLabel?.value,
-                            website: row.website?.value,
-                        },
-                        wikidata: feature_wd_id,
-                        wikidata_alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                        wikipedia: row.wikipedia?.value,
-                        wikispore: row.wikispore?.value,
-                    }
-                });
-            } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                getFeatureLinkedEntities(existingFeature).push(etymology);
+        const feature_alias_wd_id = row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            commonProps: OwmfFeatureProperties = {
+                commons: row.commons?.value,
+                iiif_url: row.iiif?.value,
+                osm_id: osm_id,
+                osm_type: osm_type,
+                ohm_id: ohm_id,
+                ohm_type: ohm_type,
+                picture: row.picture?.value,
+                render_height: render_height,
+                tags: {
+                    description: row.itemDescription?.value,
+                    name: row.itemLabel?.value,
+                    website: row.website?.value,
+                },
+                wikidata: feature_wd_id,
+                wikidata_alias: feature_alias_wd_id,
+                wikipedia: row.wikipedia?.value,
+                wikispore: row.wikispore?.value,
+            };
+
+        const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
+            from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+            id = `wikidata.org/entity/${from_wikidata_entity}#${from_wikidata_prop}`,
+            specificProps: OwmfFeatureProperties = {
+                id: id,
+                from_wikidata: true,
+                from_wikidata_entity: from_wikidata_entity,
+                from_wikidata_prop: from_wikidata_prop,
             }
+
+        if (existingFeature) { // Merge the details (and new etymology, if any) into the existing feature for this entity
+            existingFeature.properties ??= specificProps;
+            Object.assign(existingFeature.properties, Object.fromEntries(
+                Object.entries(commonProps).filter(([, v]) => v !== undefined)
+            )); // Merges the properties objects, overwriting only non-undefined properties ( https://stackoverflow.com/a/56650790/2347196 )
+            if (etymology) {
+                getFeatureLinkedEntities(existingFeature).push(etymology);
+                existingFeature.properties.linked_entity_count = (existingFeature.properties.linked_entity_count ?? 0) + 1;
+            }
+        } else { // Add the new feature for this item 
+            acc.push({
+                type: "Feature",
+                id: id,
+                geometry,
+                properties: {
+                    ...commonProps,
+                    ...specificProps,
+                    linked_entities: etymology ? [etymology] : undefined,
+                    linked_entity_count: etymology ? 1 : 0,
+                }
+            });
         }
         return acc;
     }
