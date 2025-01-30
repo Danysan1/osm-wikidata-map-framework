@@ -119,7 +119,10 @@ export class OverpassWikidataMapService implements MapService {
                 return true; // Same Wikidata => merge
             }
 
-            if (osmFeature.properties?.osm_id !== undefined && osmFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && osmFeature.properties?.osm_type !== undefined && osmFeature.properties?.osm_type === wikidataFeature.properties?.osm_type) {
+            if (osmFeature.properties?.osm_id !== undefined &&
+                osmFeature.properties?.osm_id === wikidataFeature.properties?.osm_id &&
+                osmFeature.properties?.osm_type !== undefined &&
+                osmFeature.properties?.osm_type === wikidataFeature.properties?.osm_type) {
                 const join_field = JOIN_FIELD_MAP[wikidataFeature.properties.osm_type];
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
                 return true; // Same OSM => merge
@@ -140,7 +143,6 @@ export class OverpassWikidataMapService implements MapService {
             osmFeature.properties.from_wikidata = true;
             osmFeature.properties.from_wikidata_entity = wikidataFeature.properties?.from_wikidata_entity;
             osmFeature.properties.from_wikidata_prop = wikidataFeature.properties?.from_wikidata_prop;
-            osmFeature.properties.wikispore ??= wikidataFeature.properties?.wikispore;
 
             // Unlike Overpass, Wikidata returns localized Wikipedia links so it has more priority
             if (wikidataFeature.properties?.wikipedia)
@@ -169,18 +171,18 @@ export class OverpassWikidataMapService implements MapService {
                 osmI18n.alt_name = [osmI18n.alt_name, wdI18n?.name].join(";");
 
             // For other key, give priority to Overpass
-            if (!osmI18n.name && wdI18n?.name)
-                osmI18n.name = wdI18n.name;
-            if (!osmI18n.description && wdI18n?.description)
-                osmI18n.description = wdI18n.description;
-            if (!osmFeature.properties.picture && wikidataFeature.properties?.picture)
-                osmFeature.properties.picture = wikidataFeature.properties?.picture;
-            if (!osmFeature.properties.iiif_url && wikidataFeature.properties?.iiif_url)
-                osmFeature.properties.iiif_url = wikidataFeature.properties?.iiif_url;
-            if (!osmFeature.properties.commons && wikidataFeature.properties?.commons)
-                osmFeature.properties.commons = wikidataFeature.properties?.commons;
-            if (!osmFeature.properties.wikidata && wikidataFeature.properties?.wikidata)
-                osmFeature.properties.wikidata = wikidataFeature.properties?.wikidata;
+            osmI18n.description ??= wdI18n?.description;
+            osmFeature.properties.picture ??= wikidataFeature.properties?.picture;
+            osmFeature.properties.iiif_url ??= wikidataFeature.properties?.iiif_url;
+            osmFeature.properties.commons ??= wikidataFeature.properties?.commons;
+            osmFeature.properties.wikidata ??= wikidataFeature.properties?.wikidata;
+            osmFeature.properties.osm_id ??= wikidataFeature.properties?.osm_id;
+            osmFeature.properties.osm_type ??= wikidataFeature.properties?.osm_type;
+            osmFeature.properties.ohm_id ??= wikidataFeature.properties?.ohm_id;
+            osmFeature.properties.ohm_type ??= wikidataFeature.properties?.ohm_type;
+            osmFeature.properties.render_height ??= wikidataFeature.properties?.render_height;
+            osmFeature.properties.wikidata_alias ??= wikidataFeature.properties?.wikidata_alias;
+            osmFeature.properties.wikispore ??= wikidataFeature.properties?.wikispore;
 
             // Merge Wikidata feature linked entities into OSM feature linked entities
             getFeatureLinkedEntities(wikidataFeature)?.forEach((wdEtymology: Etymology) => {

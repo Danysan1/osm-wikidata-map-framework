@@ -166,7 +166,8 @@ export interface OwmfFeatureProperties {
     relations?: OsmToGeoJsonRelation[];
 
     /**
-     * Unique ID of the feature
+     * Unique ID of the feature.
+     * This is a duplicate of the Feature.id JSON spec property but sometimes Maplibre erases it so we need this backup
      * 
      * @example "openstreetmap.org/way/42"
      * @example "openhistoricalmap.org/way/42"
