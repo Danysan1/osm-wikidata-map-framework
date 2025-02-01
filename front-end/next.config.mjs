@@ -174,14 +174,14 @@ let nextConfig = {
   reactStrictMode: true,
 };
 
-if (process.env.ANALYZE === 'true') {
+if (process.env.ANALYZE === 'true' && process.env.NODE_ENV === "production") {
   console.log("Configuring for bundle analysis");
   nextConfig = nextBundleAnalyzer()(nextConfig);
 }
 
 if (process.env.owmf_sentry_js_dsn) {
   console.log("Configuring for Sentry");
-  nextConfig = withSentryConfig(analyzeConfig, {
+  nextConfig = withSentryConfig(nextConfig, {
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
