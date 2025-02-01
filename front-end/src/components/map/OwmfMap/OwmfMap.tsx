@@ -377,7 +377,7 @@ export const OwmfMap = () => {
         position="top-right"
       />
 
-      <OwmfGeocodingControl position="bottom-left" />
+      {process.env.owmf_maptiler_key && <OwmfGeocodingControl position="bottom-left" />}
 
       <ScaleControl position="bottom-right" />
       {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}

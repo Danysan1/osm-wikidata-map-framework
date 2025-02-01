@@ -1,8 +1,8 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import osmWdMatcherLogo from "@/src/img/osm-wd-matcher.png";
-import { ControlPosition } from 'maplibre-gl';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useMemo } from 'react';
+import { ControlPosition } from 'react-map-gl/maplibre';
 import { LinkControl } from './LinkControl';
 
 interface OsmWikidataMatcherControlProps {

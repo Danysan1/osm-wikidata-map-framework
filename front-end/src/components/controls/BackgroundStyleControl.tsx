@@ -11,14 +11,13 @@ import {
   versaTilesStyle,
 } from "@/src/model/backgroundStyle";
 import type {
-  ControlPosition,
   DataDrivenPropertyValueSpecification,
   ExpressionSpecification,
   StyleSpecification,
 } from "maplibre-gl";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MapStyle } from "react-map-gl/maplibre";
+import { ControlPosition, MapStyle } from "react-map-gl/maplibre";
 import { DropdownControl } from "./DropdownControl/DropdownControl";
 
 function getBackgroundStyles() {
@@ -216,15 +215,15 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
          * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse#Vector_tiles_and_stylesheets
          */
         const startFilter: ExpressionSpecification = [
-            "any",
-            ["!", ["has", "start_date"]],
-            [">=", year, ["get", "start_decdate"]],
-          ],
-          endFilter: ExpressionSpecification = [
-            "any",
-            ["!", ["has", "end_date"]],
-            ["<", year, ["get", "end_decdate"]],
-          ];
+          "any",
+          ["!", ["has", "start_date"]],
+          [">=", year, ["get", "start_decdate"]],
+        ];
+        const endFilter: ExpressionSpecification = [
+          "any",
+          ["!", ["has", "end_date"]],
+          ["<", year, ["get", "end_decdate"]],
+        ];
         styleSpec.layers.forEach((l) => {
           if (l.type !== "raster" && l.type !== "background") {
             if (!l.filter) l.filter = ["all", startFilter, endFilter];

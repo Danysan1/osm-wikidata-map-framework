@@ -1,5 +1,5 @@
 {
-  "version": "4.6.2",
+  "version": "4.6.3",
   "name": "osm-wikidata-map-framework-front-end",
   "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
   "description": "OSM-Wikidata Map Framework - Create interactive maps to show details about map elements based on OpenStreetMap and Wikidata",
@@ -43,7 +43,6 @@
     "@maptiler/geocoding-control": "^2.0.1",
     "@next/third-parties": "^14.2.3",
     "@sentry/nextjs": "^8.7.0",
-    "@stadiamaps/maplibre-search-box": "^1.1.0",
     "axios": "^1.7.9",
     "chart.js": "^4.4.3",
     "dexie": "^4.0.7",
@@ -70,6 +69,7 @@
     "wikibase-rest-api-ts": "^1.0.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.1.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

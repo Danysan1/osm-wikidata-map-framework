@@ -37,7 +37,7 @@ export interface DetailsLayersProps {
 export const DetailsLayers: FC<DetailsLayersProps> = ({
     minZoom, sourceID, keyID, source_layer, color, pointLayerID, pointTapAreaLayerID, lineLayerID, lineTapAreaLayerID, polygonBorderLayerID, polygonFillLayerID, setOpenFeature
 }) => {
-    type Filter = ["all", ...ExpressionSpecification[]];
+    type Filter = ["all", ...(boolean | ExpressionSpecification)[]];
     const createFilter = useCallback((geometryType: Feature["type"]) => {
         const out: Filter = ["all", ["==", ["geometry-type"], geometryType]];
         if (keyID)

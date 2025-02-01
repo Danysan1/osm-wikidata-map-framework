@@ -1,8 +1,8 @@
 import { OsmInstance } from '@/src/model/Etymology';
 import { OwmfResponse } from '@/src/model/OwmfResponse';
-import { ControlPosition, MapSourceDataEvent } from 'maplibre-gl';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useCallback, useState } from 'react';
+import { ControlPosition, MapSourceDataEvent } from 'react-map-gl/maplibre';
 import { LinkControl } from './LinkControl';
 
 interface QueryLinkControlProps {

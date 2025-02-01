@@ -1,6 +1,6 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
-import type { ControlPosition } from "maplibre-gl";
+import type { ControlPosition } from "react-map-gl/maplibre";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { FC, useMemo } from "react";
 import { LinkControl } from "./LinkControl";

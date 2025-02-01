@@ -5,7 +5,7 @@ import { MapDatabase } from "@/src/db/MapDatabase";
 import { StatsDatabase } from "@/src/db/StatsDatabase";
 import { ohmKeyToKeyID, osmKeyToKeyID } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
-import { ControlPosition } from "maplibre-gl";
+import { ControlPosition } from "react-map-gl/maplibre";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../Button/Button";
