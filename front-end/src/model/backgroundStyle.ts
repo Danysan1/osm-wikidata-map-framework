@@ -29,6 +29,8 @@ export function maptilerStyle(id: string, text: string, maptilerId: string, mapt
         id: id,
         vendorText: "Maptiler",
         styleText: text,
+        keyPlaceholder: "{key}",
+        key: maptilerKey,
         styleUrl: `https://api.maptiler.com/maps/${maptilerId}/style.json?key=${maptilerKey}`
     };
 }
@@ -42,7 +44,7 @@ export function versaTilesStyle(id: string, text: string, versaTilesID: string):
         id: id,
         vendorText: "VersaTiles",
         styleText: text,
-        styleUrl: `https://tiles.versatiles.org/assets/styles/${versaTilesID}.json`
+        styleUrl: `https://tiles.versatiles.org/assets/styles/${versaTilesID}/style.json`
     };
 }
 

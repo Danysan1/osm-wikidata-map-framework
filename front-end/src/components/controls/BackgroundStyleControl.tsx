@@ -13,11 +13,10 @@ import {
 import type {
   DataDrivenPropertyValueSpecification,
   ExpressionSpecification,
-  StyleSpecification,
 } from "maplibre-gl";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ControlPosition, MapStyle } from "react-map-gl/maplibre";
+import { ControlPosition, StyleSpecification } from "react-map-gl/maplibre";
 import { DropdownControl } from "./DropdownControl/DropdownControl";
 
 function getBackgroundStyles() {
@@ -137,7 +136,7 @@ function getBackgroundStyles() {
 
 interface BackgroundStyleControlProps {
   position?: ControlPosition;
-  setBackgroundStyle: (style: MapStyle) => void;
+  setBackgroundStyle: (style: StyleSpecification) => void;
 }
 
 /**
@@ -150,6 +149,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
   const { t, i18n } = useTranslation(),
     { backgroundStyleID, setBackgroundStyleID, year } = useUrlFragmentContext(),
     { showSnackbar } = useSnackbarContext(),
+    [globeProjection, setGlobeProjection] = useState<boolean>(false),
     backgroundStyles = useMemo(() => getBackgroundStyles(), []),
     style = useMemo(
       () => backgroundStyles.find((style) => style.id === backgroundStyleID),
@@ -189,26 +189,26 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
     }
   }, [backgroundStyles, setBackgroundStyleID, showSnackbar, style, t]);
 
+  
   /**
-   * Apply the appropriate changes to the style spec and use it for the map
+   * Apply the appropriate changes to the style specification based on the local settings:
+   * - Placeholder (ex. '{key}') replacement
+   * - Filtering by year
+   * - Label selection based on selected language
+   * - Globe projection setting
    */
-  useEffect(() => {
-    if (!style || !jsonStyleSpec) {
-      console.debug("Waiting for background style spec to be fetched");
-      return;
-    }
-
-    try {
-      const styleSpec = JSON.parse(jsonStyleSpec) as StyleSpecification;
-      if (style.keyPlaceholder && style.key) {
+  const updateStyleSpec = useCallback(
+    (styleSpec: StyleSpecification) => {
+      if (style?.keyPlaceholder && style.key) {
         Object.values(styleSpec.sources)
           .filter((src) => src.type === "vector")
-          .forEach(
-            (src) => (src.url = src.url?.replace(style.keyPlaceholder!, style.key!))
-          );
+          .forEach((src) => {
+            if (src.url) src.url = src.url.replace(style.keyPlaceholder!, style.key!);
+            else delete src.url;
+          });
       }
 
-      if (style.canFilterByDate) {
+      if (style?.canFilterByDate) {
         /**
          * Filter the features by date, where applicable
          *
@@ -272,20 +272,51 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
           }
         }
       });
+
       if (styleSpec.projection?.type) {
         styleSpec.projection = { type: styleSpec.projection.type };
       } else {
-        styleSpec.projection = undefined; // Prevent 'Error: name: unknown property "name"' with Mapbox styles
+        styleSpec.projection = globeProjection ? {
+          type: "globe" // Globe view currently suffers horizon plane clipping, the solution to this problem is described at https://maplibre.org/maplibre-gl-js/docs/examples/globe-custom-simple/
+        } : undefined;
       }
-      // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
-      console.debug("Setting json style", { style, styleSpec });
-      setBackgroundStyle(styleSpec as MapStyle);
+      // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
+    },
+    [
+      globeProjection,
+      i18n.language,
+      style?.canFilterByDate,
+      style?.key,
+      style?.keyPlaceholder,
+      year,
+    ]
+  );
+
+  /**
+   * Parse the fetched JSON style specification, update it with local settings and use it for the map
+   */
+  useEffect(() => {
+    if (!jsonStyleSpec) {
+      console.debug("Waiting for background style spec to be fetched");
+      return;
+    }
+
+    try {
+      const styleSpec = JSON.parse(jsonStyleSpec) as StyleSpecification;
+      updateStyleSpec(styleSpec);
+      console.debug("Setting json style", styleSpec);
+      setBackgroundStyle(styleSpec);
     } catch (e) {
-      console.error("Failed parsing and applying json style specification", { jsonStyleSpec, e });
+      console.error("Failed parsing and applying json style specification", {
+        jsonStyleSpec,
+        e,
+      });
       showSnackbar(t("snackbar.map_error"));
     }
-  }, [i18n.language, jsonStyleSpec, setBackgroundStyle, showSnackbar, style, t, year]);
+  }, [jsonStyleSpec, setBackgroundStyle, showSnackbar, t, updateStyleSpec]);
+
+  const toggleGlobeProjection = useCallback(() => setGlobeProjection((old) => !old), []);
 
   return (
     <DropdownControl
@@ -295,7 +326,19 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
       title={t("choose_basemap")}
       position={position}
       className="background-style-ctrl"
-    />
+    >
+      <label>
+        <input
+          type="checkbox"
+          name="globe_projection"
+          checked={globeProjection}
+          onChange={toggleGlobeProjection}
+          alt={t("globe_projection")}
+        />
+        &nbsp;
+        {t("globe_projection", "Globe projection")}
+      </label>
+    </DropdownControl>
   );
 };
 

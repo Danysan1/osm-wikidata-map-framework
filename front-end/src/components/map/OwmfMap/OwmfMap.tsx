@@ -30,9 +30,9 @@ import Map, {
   GeolocateControl,
   MapEvent,
   MapSourceDataEvent,
-  MapStyle,
   NavigationControl,
   ScaleControl,
+  StyleSpecification,
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../../controls/BackEndControl/BackEndControl";
@@ -76,9 +76,7 @@ export const OwmfMap = () => {
     [sourcePreset, setSourcePreset] = useState<SourcePreset>(),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<OwmfFeature | undefined>(undefined),
-    [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(
-      undefined
-    ),
+    [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
@@ -86,12 +84,14 @@ export const OwmfMap = () => {
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
     [pmtilesReady, setPMTilesReady] = useState(false),
-    inlineStyle = useMemo(
+    inlineStyle = useMemo<CSSProperties | undefined>(
       () =>
-        process.env.owmf_use_background_color === "true" ? {
-          backgroundColor: sourcePreset?.background_color ?? "#ffffff",
-          "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
-        } as CSSProperties : undefined,
+        process.env.owmf_use_background_color === "true"
+          ? {
+              backgroundColor: sourcePreset?.background_color ?? "#ffffff",
+              "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
+            }
+          : undefined,
       [sourcePreset?.background_color]
     ),
     pmtilesActive =
