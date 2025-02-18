@@ -59,6 +59,7 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_deduplicate_by_name",
   "owmf_use_background_color",
   "owmf_nearby_feature_threshold",
+  "owmf_enable_projection_control",
 ];
 
 if (process.env.NODE_ENV === "development")
@@ -83,7 +84,7 @@ if (!process.env.owmf_source_presets || process.env.owmf_source_presets === "all
     allPresets = presetFiles
       .filter(fileName => fileName.endsWith(".json"))
       .map(fileName => fileName.replace(/\.json$/, ""));
-  console.info("Using all available presets:", allPresets);
+  console.info("Using all available presets");
   clientEnv.owmf_source_presets = JSON.stringify(allPresets);
 }
 
