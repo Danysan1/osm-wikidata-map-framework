@@ -25,13 +25,13 @@ export class WikimediaCommonsService {
     async fetchAttribution(imgName: string): Promise<string> {
         const metadata = await this.fetchMetadata(imgName),
             license = metadata?.LicenseShortName?.value ?? "?",
-            artist = metadata?.Artist?.value?.replace(/<span style="display: none;">.*<\/span>/, "") ?? "?";
-        return `Wikimedia Commons - ${artist} - ${license}`;
+            artist = metadata?.Attribution?.value ?? metadata?.Artist?.value ?? "?";
+        return `Wikimedia Commons - ${artist.replace(/<span style="display: none;">.*<\/span>/, "")} - ${license}`;
     }
 
     async fetchMetadata(imgName: string) {
         const res: CommonsApiResponse = (await this.api.apiCall(
-            "query", "json", undefined, "Artist|LicenseShortName", "extmetadata", "*", "imageinfo", "File:" + imgName
+            "query", "json", undefined, "Artist|LicenseShortName|Attribution", "extmetadata", "*", "imageinfo", "File:" + imgName
         )).data,
             pages = res.query?.pages;
         if (!pages)

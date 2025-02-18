@@ -1,11 +1,14 @@
 Q31207,health care,Healthcare,#ff3333
 Q11190,medicine,Healthcare,#ff3333
 Q130370967,emergency and relief,Healthcare,#ff3333
+Q133981,first aid,Healthcare,#ff3333
+Q826745,humanitarian aid,Healthcare,#ff3333
 Q3565868,rail transport,Logistics,#ff9933
 Q1311670,rail infrastructure,Logistics,#ff9933
 Q178512,public transport,Logistics,#ff9933
 Q177777,logistics,Logistics,#ff9933
 Q7590,transport,Logistics,#ff9933
+Q2234635,long-distance passenger rail transport,Logistics,#ff9933
 Q2151621,energy industry,Energy,#ffff33
 Q112046,transmission system operator,Energy,#ffff33
 Q862571,petroleum industry,Energy,#ffff33
@@ -22,10 +25,13 @@ Q112165812,parfumerie,Retail,#33ff33
 Q484847,e-commerce,Retail,#33ff33
 Q540912,food industry,Retail,#33ff33
 Q57497035,fast-food industry,Retail,#33ff33
+Q81799,fast food,Retail,#33ff33
+Q41958,foodservice,Retail,#33ff33
 Q837171,financial services,Finance,#33ff99
 Q57774188,financial sector,Finance,#33ff99
 Q806718,economics of banking,Finance,#33ff99
 Q941185,private banking,Finance,#33ff99
+Q2518196,insurance industry,Finance,#33ff99
 Q607081,textile industry,Clothing,#33ffff
 Q11828862,clothing industry,Clothing,#33ffff
 Q12684,fashion,Clothing,#33ffff
@@ -42,10 +48,19 @@ Q413,physics,STEM,#3333ff
 Q333,astronomy,STEM,#3333ff
 Q395,mathematics,STEM,#3333ff
 Q12271,architecture,STEM,#3333ff
+Q243606,industrial design,STEM,#3333ff
+Q252799,industrial design right,STEM,#3333ff
+Q59950,urbanism,STEM,#3333ff
+Q11023,engineering,STEM,#3333ff
+Q56611700,Internet industry,STEM,#3333ff
 Q1495452,hospitality industry,Tourism,#9933ff
 Q1285245,hotel industry,Tourism,#9933ff
 Q27686,hotel,Tourism,#9933ff
 Q49389,tourism,Tourism,#9933ff
+Q735,art,Art,#ff33ff
+Q82604,design,Art,#ff33ff
+Q6189617,jewelry design,Art,#ff33ff
+Q737201,scenography,Art,#ff33ff
 Q11629,painting,Art,#ff33ff
 Q11634,sculpture,Art,#ff33ff
 Q1344,opera,Art,#ff33ff
