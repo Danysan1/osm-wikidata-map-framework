@@ -41,6 +41,7 @@ import { DataTableControl } from "../../controls/DataTableControl";
 import { InfoControl } from "../../controls/InfoControl";
 import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
+import { ProjectionControl } from "../../controls/ProjectionControl";
 import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/QLeverQueryLinkControl";
 import { QueryLinkControl } from "../../controls/QueryLinkControl";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
@@ -328,10 +329,8 @@ export const OwmfMap = () => {
         position="top-right"
       />
       <FullscreenControl position="top-right" style={inlineStyle} />
-      <BackgroundStyleControl
-        setBackgroundStyle={setBackgroundStyle}
-        position="top-right"
-      />
+      <BackgroundStyleControl setBackgroundStyle={setBackgroundStyle} position="top-right" />
+      {process.env.owmf_enable_projection_control === "true" && <ProjectionControl setBackgroundStyle={setBackgroundStyle} position="top-right" />}
       <LanguageControl position="top-right" />
       <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
       <OsmWikidataMatcherControl position="top-right" />

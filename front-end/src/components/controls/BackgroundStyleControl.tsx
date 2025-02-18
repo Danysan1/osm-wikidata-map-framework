@@ -14,7 +14,15 @@ import type {
   DataDrivenPropertyValueSpecification,
   ExpressionSpecification,
 } from "maplibre-gl";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Dispatch,
+  FC,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { ControlPosition, StyleSpecification } from "react-map-gl/maplibre";
 import { DropdownControl } from "./DropdownControl/DropdownControl";
@@ -136,7 +144,7 @@ function getBackgroundStyles() {
 
 interface BackgroundStyleControlProps {
   position?: ControlPosition;
-  setBackgroundStyle: (style: StyleSpecification) => void;
+  setBackgroundStyle: Dispatch<SetStateAction<StyleSpecification | undefined>>;
 }
 
 /**
@@ -149,7 +157,6 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
   const { t, i18n } = useTranslation(),
     { backgroundStyleID, setBackgroundStyleID, year } = useUrlFragmentContext(),
     { showSnackbar } = useSnackbarContext(),
-    [globeProjection, setGlobeProjection] = useState<boolean>(false),
     backgroundStyles = useMemo(() => getBackgroundStyles(), []),
     style = useMemo(
       () => backgroundStyles.find((style) => style.id === backgroundStyleID),
@@ -189,7 +196,6 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
     }
   }, [backgroundStyles, setBackgroundStyleID, showSnackbar, style, t]);
 
-  
   /**
    * Apply the appropriate changes to the style specification based on the local settings:
    * - Placeholder (ex. '{key}') replacement
@@ -272,25 +278,13 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
           }
         }
       });
-
-      if (styleSpec.projection?.type) {
-        styleSpec.projection = { type: styleSpec.projection.type };
-      } else {
-        styleSpec.projection = globeProjection ? {
-          type: "globe" // Globe view currently suffers horizon plane clipping, the solution to this problem is described at https://maplibre.org/maplibre-gl-js/docs/examples/globe-custom-simple/
-        } : undefined;
-      }
+      
+      if(!styleSpec.projection?.type)
+        styleSpec.projection = undefined; // Prevent errors with Mapbox styles
 
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
     },
-    [
-      globeProjection,
-      i18n.language,
-      style?.canFilterByDate,
-      style?.key,
-      style?.keyPlaceholder,
-      year,
-    ]
+    [i18n.language, style?.canFilterByDate, style?.key, style?.keyPlaceholder, year]
   );
 
   /**
@@ -306,7 +300,11 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
       const styleSpec = JSON.parse(jsonStyleSpec) as StyleSpecification;
       updateStyleSpec(styleSpec);
       console.debug("Setting json style", styleSpec);
-      setBackgroundStyle(styleSpec);
+      setBackgroundStyle((old) => {
+        if (old?.projection?.type)
+          return { ...styleSpec, projection: { type: old.projection.type } };
+        else return styleSpec;
+      });
     } catch (e) {
       console.error("Failed parsing and applying json style specification", {
         jsonStyleSpec,
@@ -316,8 +314,6 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
     }
   }, [jsonStyleSpec, setBackgroundStyle, showSnackbar, t, updateStyleSpec]);
 
-  const toggleGlobeProjection = useCallback(() => setGlobeProjection((old) => !old), []);
-
   return (
     <DropdownControl
       buttonContent="🌍"
@@ -326,19 +322,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
       title={t("choose_basemap")}
       position={position}
       className="background-style-ctrl"
-    >
-      <label>
-        <input
-          type="checkbox"
-          name="globe_projection"
-          checked={globeProjection}
-          onChange={toggleGlobeProjection}
-          alt={t("globe_projection")}
-        />
-        &nbsp;
-        {t("globe_projection", "Globe projection")}
-      </label>
-    </DropdownControl>
+    />
   );
 };
 
