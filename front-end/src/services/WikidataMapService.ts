@@ -11,6 +11,10 @@ import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
 
 const NEARBY_FEATURE_THRESHOLD = process.env.owmf_nearby_feature_threshold ? parseInt(process.env.owmf_nearby_feature_threshold) : undefined;
+const fetchSparqlQuery = (type: string) => fetch(`/wdqs/${type}.sparql`).then(r => {
+    if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
+    return r.text();
+});
 
 export class WikidataMapService extends WikidataService implements MapService {
     private readonly preset: SourcePreset;
@@ -21,9 +25,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         super();
         this.preset = preset;
         this.db = db;
-        this.resolveQuery = resolveQuery ?? (
-            (type) => fetch(`/wdqs/${type}.sparql`).then(r => r.text())
-        );
+        this.resolveQuery = resolveQuery ?? fetchSparqlQuery;
     }
 
     public canHandleBackEnd(backEndID: string): boolean {

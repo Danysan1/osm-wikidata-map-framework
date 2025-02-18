@@ -21,7 +21,8 @@ SELECT
     ?location
 WHERE {
     ?osm osm2rdfkey:wikidata ?item;
-         geo:hasGeometry/geo:asWKT ?location.
+         geo:hasGeometry/geo:asWKT ?location;
+		 geo:hasCentroid/geo:asWKT ?centroid.
     ${osmCountryQuery}
 
     # # Filter by location (geo:sfWithin)
@@ -29,8 +30,8 @@ WHERE {
     # ?location geo:sfWithin ?bbox.
     
     # # Filter by location (geof:latitude/longitude)
-    BIND(geof:latitude(?location) AS ?lat)
-    BIND(geof:longitude(?location) AS ?lon)
+    BIND(geof:latitude(?centroid) AS ?lat)
+    BIND(geof:longitude(?centroid) AS ?lon)
     FILTER (?lat > ${southLat} && ?lat < ${northLat} && ?lon > ${westLon} && ?lon < ${eastLon})
     
     # # Filter by location (geof:distance)

@@ -19,6 +19,10 @@ const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 const keyPredicate = (key: string) => key.includes(":") ? "<" + OSMKEY + key + ">" : "osmkey:" + key;
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
+const fetchSparqlQuery = (type: string) => fetch(`/qlever/${type}.sparql`).then(r => {
+    if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
+    return r.text();
+});
 
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
@@ -43,9 +47,7 @@ export class QLeverMapService implements MapService {
         this.maxElements = maxElements;
         this.db = db;
         this.baseBBox = bbox;
-        this.resolveQuery = resolveQuery ?? (
-            (type) => fetch(`/wdqs/${type}.sparql`).then(r => r.text())
-        );
+        this.resolveQuery = resolveQuery ?? fetchSparqlQuery;
         this.api = new SparqlApi(new Configuration({
             basePath,
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }

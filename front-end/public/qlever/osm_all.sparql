@@ -25,15 +25,16 @@ SELECT
 WHERE {
     ${osmEtymologyExpression}
     ${osmCountryQuery}
-    ?osm geo:hasGeometry/geo:asWKT ?location.
+    ?osm geo:hasGeometry/geo:asWKT ?location;
+		 geo:hasCentroid/geo:asWKT ?centroid.
 
     # # Filter by location (geo:sfWithin)
     # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)
     # ?location geo:sfWithin ?bbox.
     
     # # Filter by location (geof:latitude/longitude)
-    BIND(geof:latitude(?location) AS ?lat)
-    BIND(geof:longitude(?location) AS ?lon)
+    BIND(geof:latitude(?centroid) AS ?lat)
+    BIND(geof:longitude(?centroid) AS ?lon)
     FILTER (?lat > ${southLat} && ?lat < ${northLat} && ?lon > ${westLon} && ?lon < ${eastLon})
     
     # # Filter by location (geof:distance)
