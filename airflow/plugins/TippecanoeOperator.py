@@ -16,7 +16,7 @@ class TippecanoeOperator(OsmDockerOperator):
         layer = "" if layer_name is None else f"--layer={layer_name}"
         max_zoom_arg = "-zg" if max_zoom is None else f"-z{max_zoom}"
         super().__init__(
-            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/tippecanoe:2.35.0",
+            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/tippecanoe:2.75.1",
             command = f"tippecanoe '{input_file}' {output} {layer} -Z{min_zoom} {max_zoom_arg} {extra_params}",
             **kwargs
         )

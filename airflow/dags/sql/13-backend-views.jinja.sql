@@ -28,7 +28,6 @@ SELECT
         'from_wikidata_entity', from_wd.wd_wikidata_cod,
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
-        'alias', wd.wd_alias_cod,
         'name', et_name,
         'wikidata', wd.wd_wikidata_cod
     )) END AS linked_entities,
@@ -69,7 +68,6 @@ SELECT
         'from_wikidata_entity', from_wd.wd_wikidata_cod,
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
-        'alias', wd.wd_alias_cod,
         'name', et_name,
         'wikidata', wd.wd_wikidata_cod
     )) END AS linked_entities,
