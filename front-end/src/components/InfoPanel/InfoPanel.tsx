@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./InfoPanel.module.css";
 import liberapayDonate from "./liberapay_donate.svg";
+import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 
 interface InfoPanelProps {
   showInstructions?: boolean;
@@ -32,10 +33,12 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
               <td>📊</td>
               <td>{t("info_box.to_see_statistics")}</td>
             </tr>
-            <tr>
-              <td>🗃️</td>
-              <td>{t("info_box.to_choose_preset")}</td>
-            </tr>
+            {getActiveSourcePresetIDs().length > 1 && (
+              <tr>
+                <td>🗃️</td>
+                <td>{t("info_box.to_choose_preset")}</td>
+              </tr>
+            )}
             <tr>
               <td>⚙️</td>
               <td>{t("info_box.to_choose_backend")}</td>
