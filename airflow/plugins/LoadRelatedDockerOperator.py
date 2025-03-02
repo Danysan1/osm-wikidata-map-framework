@@ -21,7 +21,7 @@ class LoadRelatedDockerOperator(DockerOperator):
             docker_url='unix://var/run/docker.sock',
             image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related",
             environment = {
-                "owmf_db_uri": f'{{{{ conn["{postgres_conn_id}"].get_uri() }}}}',
+                "owmf_db_uri": f'{{{{ conn.get("{postgres_conn_id}").get_uri() }}}}',
                 "owmf_osm_wikidata_keys": '{{ var.value.osm_wikidata_keys }}',
                 "owmf_osm_wikidata_properties": '{{ var.value.osm_wikidata_properties }}',
                 "owmf_wikidata_country": wikidata_country,

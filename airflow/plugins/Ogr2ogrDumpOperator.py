@@ -16,17 +16,13 @@ class Ogr2ogrDumpOperator(OsmDockerOperator):
     """
 
     def __init__(self, postgres_conn_id:str, query:str, dest_path:str, dest_format:str, **kwargs) -> None:
-        postgres_conn = PostgresHook.get_connection(postgres_conn_id)
-        host = postgres_conn.host
-        port = postgres_conn.port
-        user = postgres_conn.login
-        db = postgres_conn.schema
+        command = f'ogr2ogr -f {dest_format} "{dest_path}" -sql "{query}" "PG:$DB_URI?application_name=gdal"'
         super().__init__(
-            #container_name = "osm-wikidata_map_framework-dump_geojson",
-            image = "ghcr.io/osgeo/gdal:alpine-small-3.7.3",
-            command = f'ogr2ogr -f {dest_format} "{dest_path}" -sql "{query}" "PG:host={host} port={port} dbname={db} user={user}"',
+            image = "ghcr.io/osgeo/gdal:alpine-small-3.10.2",
+            command = f"sh -c '{command}'",
             environment = {
-                "PGPASSWORD": f'{{{{ conn["{postgres_conn_id}"].password }}}}'
+                "DB_URI": f'{{{{ conn.get("{postgres_conn_id}").get_uri() }}}}',
+                "PGPASSWORD": f'{{{{ conn.get("{postgres_conn_id}").password }}}}',
             },
             network_mode = environ.get("AIRFLOW_VAR_POSTGIS_BRIDGE"), # The container needs to talk with the local DB
             **kwargs

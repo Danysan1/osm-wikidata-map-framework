@@ -259,7 +259,6 @@ class OwmfDbInitDAG(DAG):
 
     def __init__(self,
             prefix:str,
-            local_db_conn_id:str="local_owmf_postgis_db",
             days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
             wikidata_country:str|None=None,
             **kwargs
@@ -316,11 +315,13 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         For example, for a pipeline with prefix 'planet' the base S3 URI must be configured in the Airflow variable 'planet_base_s3_uri'.
         """
 
-        s3_base_uri = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}"
+        base_s3_uri = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}"
         """Base S3 URI on which the vector tiles and CSV will be uploaded"""
         
         workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
         """Path to the temporary folder where the DAG will store the intermediate files"""
+
+        local_db_conn_id=f"{prefix}_local_postgis_db"
 
         default_params={
             LOAD_ON_DB_METHOD: Param(type="string", enum=["osmium","osm2pgsql","imposm"], default=DEFAULT_LOAD_ON_DB_METHOD),
@@ -443,7 +444,7 @@ Using `imposm`, load the filtered OpenStreetMap data directly from the PBF file.
 
         task_load_ele_osm2pgsql = Osm2pgsqlOperator(
             task_id = "load_elements_with_osm2pgsql",
-            container_name = "osm-wikidata_map_framework-load_elements_with_osm2pgsql",
+            container_name = "airflow-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
             source_path = f"{base_file_path}.pbf",
             dag = self,
@@ -571,7 +572,7 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
 
         task_load_wd_direct = LoadRelatedDockerOperator(
             task_id = "download_wikidata_direct_related",
-            container_name = "osm-wikidata_map_framework-load_direct_related",
+            container_name = "airflow-load_direct_related",
             postgres_conn_id = local_db_conn_id,
             wikidata_country = wikidata_country,
             dag = self,
@@ -793,6 +794,7 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
         details_fgb_file_path = join(workdir,f'{pmtiles_base_name}_details.fgb')
         task_dump_details_fgb = Ogr2ogrDumpOperator(
             task_id = "dump_details_fgb",
+            container_name = "airflow-dump_details",
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
@@ -810,6 +812,7 @@ Dump all the elements from the local DB with their respective linked entities in
         boundaries_fgb_file_path = join(workdir,f'{pmtiles_base_name}_boundaries.fgb')
         task_dump_boundaries_fgb = Ogr2ogrDumpOperator(
             task_id = "dump_boundaries_fgb",
+            container_name = "airflow-dump_boundaries",
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
@@ -839,6 +842,7 @@ Dump all the elements from the local DB with their respective linked entities in
         details_pmtiles_file_path = join(workdir,f'{pmtiles_base_name}_details.pmtiles')
         task_generate_details_pmtiles = TippecanoeOperator(
             task_id = "generate_details_pmtiles",
+            container_name = "airflow-generate_details",
             dag = self,
             task_group = group_vector_tiles,
             input_file = details_fgb_file_path,
@@ -857,6 +861,7 @@ Dump all the elements from the local DB with their respective linked entities in
         boundaries_pmtiles_file_path = join(workdir,f'{pmtiles_base_name}_boundaries.pmtiles')
         task_generate_boundaries_pmtiles = TippecanoeOperator(
             task_id = "generate_boundaries_pmtiles",
+            container_name = "airflow-generate_boundaries",
             dag = self,
             task_group = group_vector_tiles,
             input_file = boundaries_fgb_file_path,
@@ -876,6 +881,7 @@ Dump all the elements from the local DB with their respective linked entities in
         pmtiles_file_path = join(workdir,pmtiles_file_name)
         task_join_pmtiles = TileJoinOperator(
             task_id = "join_pmtiles",
+            container_name = "airflow-join_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
             input_files = [details_pmtiles_file_path, boundaries_pmtiles_file_path],
@@ -922,7 +928,7 @@ Dump all the elements from the local DB with their respective linked entities in
             task_id = "upload_pmtiles_to_s3",
             dag = self,
             filename = pmtiles_file_path,
-            dest_key = f"{s3_base_uri}/{pmtiles_file_name}",
+            dest_key = f"{base_s3_uri}/{pmtiles_file_name}",
             replace = True,
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
@@ -941,7 +947,7 @@ Links:
             task_id = "upload_dataset_to_s3",
             dag = self,
             filename = dataset_path,
-            dest_key = f'{s3_base_uri}/dataset.csv',
+            dest_key = f'{base_s3_uri}/dataset.csv',
             replace = True,
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
@@ -962,7 +968,7 @@ Links:
             task_id = "upload_date_pmtiles_to_s3",
             dag = self,
             filename = "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='date_file_path') }}",
-            dest_key = f'{s3_base_uri}/date.txt',
+            dest_key = f'{base_s3_uri}/date.txt',
             replace = True,
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
@@ -1000,11 +1006,11 @@ Links:
             bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="owmf" --verbose --no-owner --no-privileges --no-tablespaces',
             env= {
                 "backupFilePath": join(workdir,"db.backup"),
-                "host": f'{{{{ conn["{local_db_conn_id}"].host }}}}',
-                "port": f'{{{{ (conn["{local_db_conn_id}"].port)|string }}}}',
-                "user": f'{{{{ conn["{local_db_conn_id}"].login }}}}',
-                "dbname": f'{{{{ conn["{local_db_conn_id}"].schema }}}}',
-                "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
+                "host": f'{{{{ conn.get("{local_db_conn_id}").host }}}}',
+                "port": f'{{{{ (conn.get("{local_db_conn_id}").port)|string }}}}',
+                "user": f'{{{{ conn.get("{local_db_conn_id}").login }}}}',
+                "dbname": f'{{{{ conn.get("{local_db_conn_id}").schema }}}}',
+                "PGPASSWORD": f'{{{{ conn.get("{local_db_conn_id}").password }}}}',
             },
             dag = self,
             task_group=group_upload_db,
@@ -1059,11 +1065,11 @@ Links:
             bash_command='pg_restore --host "$host" --port "$port" --dbname "$dbname" --username "$user" --no-password --role "$user" --schema "owmf" --verbose --no-owner --no-privileges --no-tablespaces "$backupFilePath"',
             env= {
                 "backupFilePath": join(workdir,"db.backup"),
-                "host": f"{{{{ conn['{upload_db_conn_id}'].host }}}}", # "{{ conn[params.upload_db_conn_id].host }}",
-                "port": f"{{{{ (conn['{upload_db_conn_id}'].port)|string }}}}", # "{{ (conn[params.upload_db_conn_id].port)|string }}",
-                "user": f"{{{{ conn['{upload_db_conn_id}'].login }}}}", # "{{ conn[params.upload_db_conn_id].login }}",
-                "dbname": f"{{{{ conn['{upload_db_conn_id}'].schema }}}}", # "{{ conn[params.upload_db_conn_id].schema }}",
-                "PGPASSWORD": f"{{{{ conn['{upload_db_conn_id}'].password }}}}", # "{{ conn[params.upload_db_conn_id].password }}",
+                "host": f'{{{{ conn.get("{upload_db_conn_id}").host }}}}',
+                "port": f'{{{{ (conn.get("{upload_db_conn_id}").port)|string }}}}',
+                "user": f'{{{{ conn.get("{upload_db_conn_id}").login }}}}',
+                "dbname": f'{{{{ conn.get("{upload_db_conn_id}").schema }}}}',
+                "PGPASSWORD": f'{{{{ conn.get("{upload_db_conn_id}").password }}}}',
             },
             dag = self,
             task_group = group_upload_db,

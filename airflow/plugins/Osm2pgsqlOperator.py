@@ -14,16 +14,14 @@ class Osm2pgsqlOperator(OsmDockerOperator):
     * [beyanora/osmtools Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     """
     def __init__(self, postgres_conn_id:str, source_path:str, **kwargs) -> None:
-        postgres_conn = PostgresHook.get_connection(postgres_conn_id)
-        host = postgres_conn.host
-        port = postgres_conn.port
-        user = postgres_conn.login
-        db = postgres_conn.schema
+        cache_options = "--flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0"
+        command = f'osm2pgsql --database="$DB_URI" --hstore-all --proj=4326 --create --slim {cache_options} "{source_path}"'
         super().__init__(
             image = 'beyanora/osmtools:20210401', # TODO: try https://hub.docker.com/r/iboates/osm2pgsql
-            command = f"osm2pgsql --host='{host}' --port='{port}' --database='{db}' --user='{user}' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '{source_path}'",
+            command = f"bash -c '{command}'",
             environment = {
-                "PGPASSWORD": postgres_conn.password,
+                "DB_URI": f'{{{{ conn.get("{postgres_conn_id}").get_uri() }}}}',
+                "PGPASSWORD": f'{{{{ conn.get("{postgres_conn_id}").password }}}}',
             },
             network_mode = environ.get("AIRFLOW_VAR_POSTGIS_BRIDGE"), # The container needs to talk with the local DB
             **kwargs

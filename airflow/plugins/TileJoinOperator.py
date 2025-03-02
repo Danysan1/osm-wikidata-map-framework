@@ -16,8 +16,7 @@ class TileJoinOperator(OsmDockerOperator):
         layer = "" if layer_name is None else f"--layer={layer_name}"
         input_string = ' '.join(map(lambda file: f"'{file}'", input_files))
         super().__init__(
-            container_name = f"osm-wikidata_map_framework-tile-join",
-            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/tippecanoe:2.35.0",
+            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/tippecanoe:2.75.1",
             command = f"tile-join {extra_params} {layer} -o '{output_file}' {input_string}",
             **kwargs
         )

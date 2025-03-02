@@ -40,5 +40,4 @@ db_init_planet = OwmfDbInitDAG(
     dag_id="db-init-planet",
     days_before_cleanup=8,
     prefix="planet",
-    local_db_conn_id="local_owmf_postgis_planet_db",
 )

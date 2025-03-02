@@ -88,8 +88,7 @@ x-airflow-common:
     # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_db_database} # connection to the configured OWMF PostGIS DB
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/planet # connection to the configured OWMF PostGIS DB
+    AIRFLOW_CONN_PLANET_LOCAL_POSTGIS_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_planet_db_database:-planet} # connection to the configured OWMF PostGIS DB
     AIRFLOW_CONN_WIKIDATA_API: ${owmf_wikidata_endpoint}
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_SOURCE_PRESETS: ${owmf_source_presets:-}
@@ -103,6 +102,7 @@ x-airflow-common:
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
     AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
     AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network
+    AIRFLOW_VAR_PLANET_BASE_S3_URI: ${owmf_planet_base_s3_uri:-}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -377,7 +377,7 @@ services:
     environment:
       - POSTGRES_USER=${owmf_db_user}
       - POSTGRES_PASSWORD=${owmf_db_password}
-      - POSTGRES_DB=${owmf_db_database}
+      - POSTGRES_DB=${owmf_planet_db_database:-planet}
     ports:
       - "5432:5432"
     volumes:
