@@ -19,12 +19,14 @@ export const MapCompleteControl: FC<MapCompleteControlProps> = (props) => {
   const { lon, lat, zoom, backEndID } = useUrlFragmentContext();
   const url = useMemo(
     () =>
-      `https://mapcomplete.org/${props.mapComplete_theme}?z=${zoom}&lat=${lat}&lon=${lon}`,
-    [lat, lon, props.mapComplete_theme, zoom]
+      backEndID.includes("osm") || backEndID.includes("pmtiles")
+        ? `https://mapcomplete.org/${props.mapComplete_theme}?z=${zoom}&lat=${lat}&lon=${lon}`
+        : undefined,
+    [backEndID, lat, lon, props.mapComplete_theme, zoom]
   );
 
   return (
-    backEndID.includes("osm") && (
+    url && (
       <LinkControl
         linkURL={url}
         icon={mapcompleteLogo as StaticImport}

@@ -1,8 +1,8 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
-import type { ControlPosition } from "react-map-gl/maplibre";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { FC, useMemo } from "react";
+import type { ControlPosition } from "react-map-gl/maplibre";
 import { LinkControl } from "./LinkControl";
 
 interface IDEditorControlProps {
@@ -17,7 +17,7 @@ interface IDEditorControlProps {
 export const IDEditorControl: FC<IDEditorControlProps> = (props) => {
   const { lon, lat, zoom, backEndID } = useUrlFragmentContext(),
     url = useMemo(() => {
-      if (backEndID.includes("osm"))
+      if (backEndID.includes("osm") || backEndID.includes("pmtiles"))
         return `https://www.openstreetmap.org/edit?editor=id#map=${zoom.toFixed()}/${lat}/${lon}`;
       else if (process.env.enable_open_historical_map === "true" && backEndID.includes("ohm"))
         return `https://openhistoricalmap.org/edit?editor=id#map=${zoom.toFixed()}/${lat}/${lon}`;
