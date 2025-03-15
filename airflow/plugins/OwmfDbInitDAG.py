@@ -81,7 +81,14 @@ def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, ta
                 #cursor.copy_to(file, table, separator)
                 cursor.execute(f"SELECT * FROM {schema}.{table}")
                 writer = csv.writer(file, delimiter=separator)
-                writer.writerow(['wikidata_id', 'element_name', 'count_osm', 'count_osm_wikidata', 'count_wikidata', 'count_propagation'])
+                writer.writerow([
+                    'Linked Wikidata entity',
+                    'Element name',
+                    'Total count',
+                    'Count from OSM',
+                    'Count from OSM+Wikidata',
+                    'Count from Wikidata',
+                    'Count from propagation'])
                 for row in cursor:
                     writer.writerow(row)
             print("Dumped row count:", cursor.rowcount)
