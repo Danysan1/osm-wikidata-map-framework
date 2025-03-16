@@ -16,7 +16,7 @@ INSERT INTO owmf.element (
     COALESCE(wd_pseudo_tags||osm_tags, osm_tags, wd_pseudo_tags), -- https://stackoverflow.com/a/44038002/2347196
     osm_osm_type = 'relation' AND osm_tags IS NOT NULL AND (
         osm_tags ? 'boundary' OR
-        (osm_tags ? 'place' AND (osm_tags->>'place' = 'region' OR osm_tags->>'place' = 'sea' OR osm_tags->>'place' = 'island'))
+        (osm_tags ? 'place' AND (osm_tags->>'place' = 'region' OR osm_tags->>'place' = 'sea' OR osm_tags->>'place' = 'island' OR osm_tags->>'place' = 'archipelago'))
     ),
     wd_wikidata_cod,
     COALESCE(

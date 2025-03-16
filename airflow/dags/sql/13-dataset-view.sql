@@ -4,8 +4,8 @@ SELECT
     ele.el_tags->>'name' AS element_name,
     COUNT(*) AS count_total,
     COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_osm_wikidata_wd_id IS NULL) AS count_osm,
-    COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_osm_wikidata_wd_id IS NOT NULL AND el.el_osm_id IS NOT NULL) AS count_osm_wikidata,
-    COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_osm_wikidata_wd_id IS NOT NULL AND el.el_osm_id IS NULL) AS count_wikidata,
+    COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_osm_wikidata_wd_id IS NOT NULL AND ele.el_osm_id IS NOT NULL) AS count_osm_wikidata,
+    COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_osm_wikidata_wd_id IS NOT NULL AND ele.el_osm_id IS NULL) AS count_wikidata,
     COUNT(*) FILTER (WHERE ety.et_recursion_depth != 0) AS count_propagation
 FROM owmf.etymology AS ety
 JOIN owmf.wikidata AS wd ON wd.wd_id = ety.et_wd_id

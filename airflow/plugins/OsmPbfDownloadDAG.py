@@ -1,3 +1,4 @@
+from os.path import join
 from textwrap import dedent
 from pendulum import datetime, now
 from airflow import DAG, Dataset
@@ -18,7 +19,7 @@ DEFAULT_SKIP_IF_ALREADY_DOWNLOADED = True
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 15
 
-def get_source_url(ti:TaskInstance, **context):
+def get_source_url(work_dir:str, ti:TaskInstance, **context):
     """
         # Get PBF file URL
 
@@ -41,7 +42,6 @@ def get_source_url(ti:TaskInstance, **context):
 
     params = context["params"]
     
-    work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
     if not path.exists(work_dir):
         makedirs(work_dir)
     
@@ -60,7 +60,6 @@ def get_source_url(ti:TaskInstance, **context):
     last_data_update = get_pbf_date(source_basename)
     md5_url = f'{source_url}.md5' if params["verify_md5"] else None
     
-    ti.xcom_push(key='work_dir', value=work_dir)
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='md5_url', value=md5_url)
     ti.xcom_push(key='source_basename', value=source_basename)
@@ -70,7 +69,7 @@ def get_source_url(ti:TaskInstance, **context):
     ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{source_basename}.md5")
     ti.xcom_push(key='last_data_update', value=last_data_update)
 
-def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
+def check_whether_to_procede(date_path:str, ti:TaskInstance, **context) -> bool:
     """
         # Check whether to procede
 
@@ -144,6 +143,9 @@ class OsmPbfDownloadDAG(DAG):
         pbf_path = f'{dest_folder}/{prefix}.osm.pbf'
         pbf_date_path = f'{dest_folder}/{prefix}.osm.pbf.date.txt'
         pbf_dataset = Dataset(f'file://{pbf_path}')
+        
+        workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
+        """Path to the temporary folder where the DAG will store the intermediate files"""
 
         default_params = {
             "pbf_url": pbf_url,
@@ -174,6 +176,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         task_get_source_url = PythonOperator(
             task_id = "get_source_url",
             python_callable = get_source_url,
+            op_kwargs = { "work_dir": workdir },
             do_xcom_push = True,
             dag = self,
             doc_md = dedent(get_source_url.__doc__)
@@ -237,7 +240,7 @@ Links:
         task_download_torrent = TransmissionStartTorrentOperator(
             task_id = "download_torrent",
             torrent_url = "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
-            download_dir = "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}",
+            download_dir = workdir,
             torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
             doc_md="""
@@ -266,7 +269,7 @@ Check the torrent daemon until the torrent download has completed.
             task_id = "join_post_download",
             bash_command = 'ls -l "$workdir"',
             env = {
-                "workdir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}"
+                "workdir": workdir
             },
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag=self,
@@ -330,7 +333,7 @@ Remove the torrent from the DAG run folder and from the torrent daemon
             task_id = "cleanup_pbf",
             bash_command = 'rm -r "$workDir"',
             env = {
-                "workDir": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}",
+                "workDir": workdir,
             },
             dag = self,
             doc_md = """

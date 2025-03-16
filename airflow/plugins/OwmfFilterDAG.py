@@ -59,29 +59,28 @@ class OwmfFilterDAG(DAG):
         if not prefix or prefix=="":
             raise Exception("Prefix must be specified")
         
-        pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
-        pbf_date_path = f'/workdir/{prefix}/{prefix}.osm.pbf.date.txt'
+        base_file_path = join('/workdir',prefix,prefix) # .osm.pbf / .osm.pbf.date.txt / ...
+        
+        pbf_path = f'{base_file_path}.osm.pbf'
+        pbf_date_path = f'{base_file_path}.osm.pbf.date.txt'
         pbf_dataset = Dataset(f'file://{pbf_path}')
 
-        filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
-        filtered_pbf_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf.date.txt'
+        filtered_pbf_path = f'{base_file_path}.filtered.osm.pbf'
+        filtered_pbf_date_path = f'{base_file_path}.filtered.osm.pbf.date.txt'
         filtered_pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
 
-        pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
-        pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
+        pg_path = f'{base_file_path}.filtered.osm.pg'
+        pg_date_path = f'{base_file_path}.filtered.osm.pg.date.txt'
         pg_dataset = Dataset(f'file://{pg_path}')
-
-        default_params={
-            "prefix": prefix,
-            "pg_path": pg_path,
-        }
+        
+        workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
+        """Path to the temporary folder where the DAG will store the intermediate files"""
 
         super().__init__(
             start_date=start_date,
             catchup=False,
             schedule = [pbf_dataset],
             tags=['owmf', f'owmf-{prefix}', 'owmf-filter', 'consumes', 'produces'],
-            params=default_params,
             doc_md = """
                 # OSM-Wikidata Map Framework OSM data filtering
 
@@ -96,7 +95,7 @@ class OwmfFilterDAG(DAG):
         task_create_work_dir = BashOperator(
             task_id = "create_work_dir",
             bash_command = 'mkdir -p "$workDir"',
-            env = { "workDir": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}", },
+            env = { "workDir": workdir, },
             dag = self,
         )
 
@@ -104,7 +103,7 @@ class OwmfFilterDAG(DAG):
             task_id = "keep_elements_with_name",
             container_name = "airflow-keep_elements_with_name",
             source_path= pbf_path,
-            dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/with_name.osm.pbf",
+            dest_path = join(workdir,"with_name.osm.pbf"),
             tags='{{ var.json.osm_filter_tags|join(" ") }}',
             remove_tags= True,
             dag = self,
@@ -121,8 +120,8 @@ class OwmfFilterDAG(DAG):
         task_keep_possible_ety = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_possible_etymology",
             container_name = "airflow-keep_elements_with_possible_etymology",
-            source_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/with_name.osm.pbf",
-            dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/possible_etymology.osm.pbf",
+            source_path = join(workdir,"with_name.osm.pbf"),
+            dest_path = join(workdir,"possible_etymology.osm.pbf"),
             tags=[
                 'w/highway=residential',
                 'w/highway=unclassified',
@@ -156,8 +155,8 @@ class OwmfFilterDAG(DAG):
         task_remove_non_interesting = OsmiumTagsFilterOperator(
             task_id = "remove_non_interesting_elements",
             container_name = "airflow-remove_non_interesting_elements",
-            source_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/possible_etymology.osm.pbf",
-            dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
+            source_path = join(workdir,"possible_etymology.osm.pbf"),
+            dest_path = join(workdir,"filtered.osm.pbf"),
             tags=[
                 'man_made=flagpole', # Flag poles
                 'end_date=*', 'boundary=historic', 'boundary=disused', 'route=historic', # Items that don't exist anymore (troll tags)
@@ -181,7 +180,7 @@ class OwmfFilterDAG(DAG):
             task_id = "save_filtered_pbf_dataset",
             bash_command = 'cp "$sourceFilePath" "$filteredPbfPath" && cp "$pbfDatePath" "$filteredPbfDatePath"',
             env = {
-                "sourceFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
+                "sourceFilePath": join(workdir,"filtered.osm.pbf"),
                 "filteredPbfPath": filtered_pbf_path,
                 "pbfDatePath": pbf_date_path,
                 "filteredPbfDatePath": filtered_pbf_date_path,
@@ -196,7 +195,7 @@ class OwmfFilterDAG(DAG):
             python_callable = do_copy_file,
             op_kwargs = {
                 "source_path": get_absolute_path("osmium.json"),
-                "dest_path": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/osmium.json",
+                "dest_path": join(workdir,"osmium.json"),
             },
             dag = self,
             doc_md="""
@@ -214,10 +213,10 @@ class OwmfFilterDAG(DAG):
         task_export_to_pg = OsmiumExportOperator(
             task_id = "osmium_export_pbf_to_pg",
             container_name = "airflow-osmium_export_pbf_to_pg",
-            source_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
-            dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pg",
-            cache_path = "/tmp/osmium_{{ params.prefix }}_{{ ti.job_id }}",
-            config_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/osmium.json",
+            source_path = join(workdir,"filtered.osm.pbf"),
+            dest_path = join(workdir,"filtered.osm.pg"),
+            cache_path = f"/tmp/osmium_{prefix}_{{{{ ti.job_id }}}}",
+            config_path = join(workdir,"osmium.json"),
             dag = self,
             doc_md=dedent("""
                 # Export OSM data from PBF to PG
@@ -233,7 +232,7 @@ class OwmfFilterDAG(DAG):
             task_id = "save_pg_dataset",
             bash_command = 'mv "$sourceFilePath" "$pgPath" && cp "$filteredPbfDatePath" "$pgDatePath"',
             env = {
-                "sourceFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pg",
+                "sourceFilePath": join(workdir,"filtered.osm.pg"),
                 "pgPath": pg_path,
                 "filteredPbfDatePath": filtered_pbf_date_path,
                 "pgDatePath": pg_date_path,
@@ -264,7 +263,7 @@ class OwmfFilterDAG(DAG):
             task_id = "cleanup",
             bash_command = 'rm -r "$workDir"',
             env = {
-                "workDir": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}",
+                "workDir": workdir,
             },
             dag = self,
             doc_md = """
