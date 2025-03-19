@@ -8,7 +8,7 @@ import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
 const COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/,
-    COMMONS_FILE_REGEX = /(File:[^;]+)/,
+    COMMONS_FILE_REGEX = /(Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/)/,
     WIKIDATA_QID_REGEX = /^Q[0-9]+/,
     OVERPASS_ENDPOINTS: Record<OsmInstance, string> = {
         [OsmInstance.OpenHistoricalMap]: "https://overpass-api.openhistoricalmap.org/api/interpreter",
@@ -253,10 +253,10 @@ export class OverpassService implements MapService {
         if (tags.wikimedia_commons)
             feature.properties.commons = COMMONS_CATEGORY_REGEX.exec(tags.wikimedia_commons)?.at(1);
 
-        if (tags.wikimedia_commons)
-            feature.properties.picture = COMMONS_FILE_REGEX.exec(tags.wikimedia_commons)?.at(1);
-        else if (tags.image)
-            feature.properties.picture = COMMONS_FILE_REGEX.exec(tags.image)?.at(1);
+        if (tags.wikimedia_commons && COMMONS_FILE_REGEX.test(tags.wikimedia_commons))
+            feature.properties.picture = tags.wikimedia_commons;
+        else if (tags.image && COMMONS_FILE_REGEX.test(tags.image))
+            feature.properties.picture = tags.image;
 
         const linkedEntities: Etymology[] = [];
         if (!!this.preset?.osm_text_key || !!this.preset.osm_description_key) {

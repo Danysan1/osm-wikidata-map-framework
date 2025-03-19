@@ -12,6 +12,8 @@ interface FeatureImagesProps {
   className?: string;
 }
 
+const COMMONS_FILE_REGEX = /(Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/)/;
+
 export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) => {
   const tags = getPropTags(feature),
     panoramaxUUID = tags?.panoramax
@@ -20,10 +22,10 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
 
   const [commons, setCommons] = useState<string>();
   useEffect(() => {
-    if (feature.commons?.includes("File:")) {
+    if (feature.commons && COMMONS_FILE_REGEX.test(feature.commons)) {
       console.debug("FeatureImages: Found Commons image in commons", feature);
       setCommons(feature.commons);
-    } else if (!!feature.picture?.includes("File:") || !!feature.picture?.includes("Special:FilePath")) {
+    } else if (feature.picture && COMMONS_FILE_REGEX.test(feature.picture)) {
       console.debug("FeatureImages: Found Commons image in picture", feature);
       setCommons(feature.picture);
     } else if (feature.wikidata) {
