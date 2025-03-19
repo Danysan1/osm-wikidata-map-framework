@@ -1,5 +1,4 @@
 import { t } from "i18next";
-import { Map } from "maplibre-gl";
 import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { ControlPosition, IControl, MapInstance, useControl } from "react-map-gl/maplibre";
@@ -65,7 +64,7 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
         </button>
         {isPopupOpen && map && (
           <InfoPopup
-            position={(map as Map).getBounds().getSouthWest()}
+            position={map.getBounds().getSouthWest()}
             onClose={closePopup}
             showInstructions={showInstructions} />
         )}

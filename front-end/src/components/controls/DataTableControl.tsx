@@ -1,8 +1,7 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import dataTableIcon from "@/src/img/Simple_icon_table.svg";
-import { OwmfFeature } from "@/src/model/OwmfResponse";
-import { Map } from "maplibre-gl";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import type { OwmfFeature } from "@/src/model/OwmfResponse";
+import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import { FC, cloneElement, useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -70,7 +69,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
     dataLoaded && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
     [tableFeatures, setTableFeatures] = useState<OwmfFeature[] | undefined>(),
     openTable = useCallback(() => {
-      setPopupPosition((map as Map)?.getBounds()?.getNorthWest());
+      setPopupPosition(map?.getBounds()?.getNorthWest());
       setTableFeatures(map?.queryRenderedFeatures({ layers: props.dataLayerIDs }));
     }, [map, props.dataLayerIDs]),
     closeTable = useCallback(() => {
