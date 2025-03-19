@@ -4,31 +4,21 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "command": "docker-compose --profile dev up",
-            "name": "Docker",
-            "request": "launch",
-            "type": "node-terminal"
-        },
-        {
-            "name": "NPM",
-            "request": "launch",
-            "runtimeArgs": [
-                "run-script",
-                "watch"
-            ],
-            "runtimeExecutable": "npm",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
-        },
-    ],
-    "compounds": [
       {
-        "name": "All",
-        "configurations": ["Docker", "NPM"],
-        "stopAll": true
-      }
+          "command": "npm run dev",
+          "name": "Dev FE",
+          "cwd": "${workspaceFolder}/front-end",
+          "localRoot": "${workspaceFolder}/front-end",
+          "request": "launch",
+          "type": "node-terminal"
+      },
+      {
+          "command": "npm run build",
+          "name": "Build FE",
+          "cwd": "${workspaceFolder}/front-end",
+          "localRoot": "${workspaceFolder}/front-end",
+          "request": "launch",
+          "type": "node-terminal"
+      },
     ]
 }
