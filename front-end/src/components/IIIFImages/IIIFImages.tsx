@@ -51,8 +51,14 @@ export const IIIFImages: FC<IIIFImageProps> = ({ manifestURL, className }) => {
  */
 async function fetchManifest(manifestURL: string): Promise<CollectionItems> {
   const res = await fetch(manifestURL),
-    rawManifest = (await res.json()) as unknown;
-  if (!rawManifest || typeof rawManifest !== "object" || !("type" in rawManifest))
-    throw new Error("Invalid IIIF manifest");
-  return rawManifest as Manifest;
+    manifest = (await res.json()) as unknown;
+  console.debug("IIIF manifest fetched", { manifestURL, manifest });
+  if (!manifest || typeof manifest !== "object")
+    throw new Error("Manifest response is not a valid JSON object");
+  if ("@type" in manifest)
+    throw new Error("Received IIIF v2.0 manifest, only v3.0+ is supported");
+  if (!("type" in manifest)) throw new Error("Invalid IIIF manifest (missing type)");
+  if (manifest.type !== "Collection" && manifest.type !== "Manifest")
+    throw new Error("Invalid IIIF manifest type");
+  return manifest as Manifest;
 }
