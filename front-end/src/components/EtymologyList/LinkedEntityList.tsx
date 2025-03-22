@@ -110,7 +110,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
       )}
 
       {entityDetails?.map((ety, i) => (
-        <EtymologyView key={i} etymology={ety} />
+        <EtymologyView key={i} entity={ety} />
       ))}
     </div>
   );

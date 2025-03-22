@@ -3,6 +3,7 @@ import { getPropLinkedEntities } from "@/src/model/OwmfFeatureProperties";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
+import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
@@ -19,6 +20,7 @@ interface FeatureViewProps {
 export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
   const { t, i18n } = useTranslation(),
     { sourcePresetID } = useUrlFragmentContext(),
+    [wikipediaExtract, setWikipediaExtract] = useState<string>(),
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
     [mainName, setMainName] = useState<string>(),
@@ -97,6 +99,30 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [featureI18n?.description, i18n.language, props]);
 
+  useEffect(() => {
+    if (feature.properties?.wikipedia) {
+      new WikipediaService()
+        .fetchExtract(feature.properties?.wikipedia)
+        .then((res) => {
+          console.debug(
+            "Fetched feature Wikipedia extract: ",
+            feature.properties?.wikipedia
+          );
+          setWikipediaExtract(res);
+        })
+        .catch((e) => {
+          console.error(
+            "Failed fetching feature Wikipedia extract: ",
+            feature.properties?.wikipedia,
+            e
+          );
+          setWikipediaExtract(undefined);
+        });
+    } else {
+      setWikipediaExtract(undefined);
+    }
+  }, [feature.properties?.wikipedia]);
+
   return (
     <div className={styles.detail_container}>
       {!!mainName && <h3 className={styles.element_name}>📍 {mainName}</h3>}
@@ -109,6 +135,9 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       <div className={styles.feature_buttons_container}>
         <FeatureButtonRow feature={feature} />
       </div>
+      {wikipediaExtract && (
+        <p className={styles.wikipedia_extract}>📖 {wikipediaExtract}</p>
+      )}
       {props && <FeatureImages feature={props} />}
 
       {props?.linked_entities && (

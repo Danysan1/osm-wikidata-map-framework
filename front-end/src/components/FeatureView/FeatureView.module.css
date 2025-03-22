@@ -16,3 +16,7 @@ div.detail_container .feature_buttons_container {
     margin-left: auto;
     margin-right: auto;
 }
+
+.wikipedia_extract {
+  max-width: 75em;
+}
