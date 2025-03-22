@@ -856,9 +856,8 @@ Dump all the elements from the local DB with their respective linked entities in
             output_file = details_pmtiles_file_path,
             layer_name = PMTILES_LAYER_NAME,
             min_zoom = 12,
-            # When changing the max zoom, change also the vector tile source max zoom in the frontend
-            # See https://gis.stackexchange.com/a/330575/196469
-            # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
+            # When changing the max zoom, change also the vector tile layers CITY_MAX_ZOOM in the frontend
+            # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/front-end/src/components/map/DetailsLayers.tsx
             max_zoom = 12,
             extra_params = "--force",
             doc_md = dedent(TippecanoeOperator.__doc__)
@@ -875,9 +874,8 @@ Dump all the elements from the local DB with their respective linked entities in
             output_file = boundaries_pmtiles_file_path,
             layer_name = PMTILES_LAYER_NAME,
             min_zoom = 1,
-            # When changing the max zoom, change also the vector tile source max zoom in the frontend
-            # See https://gis.stackexchange.com/a/330575/196469
-            # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
+            # When changing the max zoom, change also the vector tile layers CITY_MAX_ZOOM in the frontend
+            # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/front-end/src/components/map/DetailsLayers.tsx
             max_zoom = 11,
             extra_params = "--force", # Not using --drop-densest-as-needed as it causes some countries to be dropped
             doc_md = dedent(TippecanoeOperator.__doc__)

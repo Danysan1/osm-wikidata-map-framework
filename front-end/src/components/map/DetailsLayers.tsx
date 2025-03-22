@@ -1,6 +1,6 @@
 import { DataDrivenPropertyValueSpecification, ExpressionSpecification, Feature } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo } from "react";
-import { Layer, MapGeoJSONFeature, MapLayerMouseEvent, useMap } from "react-map-gl/maplibre";
+import { Layer, LayerProps, MapGeoJSONFeature, MapLayerMouseEvent, useMap } from "react-map-gl/maplibre";
 
 const LOW_ZOOM_POINT_RADIUS = 2,
     MID_ZOOM_POINT_RADIUS = 8,
@@ -16,7 +16,18 @@ const LOW_ZOOM_POINT_RADIUS = 2,
     STATE_ADMIN_LEVEL = 4,
     PROVINCE_MAX_ZOOM = 9,
     PROVINCE_ADMIN_LEVEL = 6,
-    CITY_MAX_ZOOM = 13;
+    CITY_MAX_ZOOM = 12;
+
+type Filter = ["all", ...(boolean | ExpressionSpecification)[]];
+const createFilter = (geometryType: Feature["type"], keyID?: string, extraFilter?:ExpressionSpecification) => {
+    const out: Filter = ["all", ["==", ["geometry-type"], geometryType]];
+    if (keyID)
+        out.push(["in", keyID, ["get", "from_key_ids"]]);
+    if(extraFilter)
+        out.push(extraFilter);
+    console.debug("createFilter", geometryType, out);
+    return out;
+};
 
 export interface DetailsLayersProps {
     minZoom?: number;
@@ -37,14 +48,6 @@ export interface DetailsLayersProps {
 export const DetailsLayers: FC<DetailsLayersProps> = ({
     minZoom, sourceID, keyID, source_layer, color, pointLayerID, pointTapAreaLayerID, lineLayerID, lineTapAreaLayerID, polygonBorderLayerID, polygonFillLayerID, setOpenFeature
 }) => {
-    type Filter = ["all", ...(boolean | ExpressionSpecification)[]];
-    const createFilter = useCallback((geometryType: Feature["type"]) => {
-        const out: Filter = ["all", ["==", ["geometry-type"], geometryType]];
-        if (keyID)
-            out.push(["in", keyID, ["get", "from_key_ids"]]);
-        return out;
-    }, [keyID]);
-
     /**
      * Open the feature details popup when a feature on a detail layer is clicked.
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
@@ -73,20 +76,28 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
      */
     const onMouseLeave = useCallback((ev: MapLayerMouseEvent) => { ev.target.getCanvas().style.cursor = ''; }, []);
 
-    const pointFilter = useMemo(() => createFilter("Point"), [createFilter]),
-        lineStringFilter = useMemo(() => createFilter("LineString"), [createFilter]),
-        polygonFilter = useMemo(() => {
-            const filter = createFilter("Polygon"),
-                boundaryFilter: ExpressionSpecification = ["case",
-                    ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], COUNTRY_MAX_ZOOM], // Show country boundaries only below COUNTRY_MAX_ZOOM
-                    ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], COUNTRY_MAX_ZOOM], ["<", ["zoom"], STATE_MAX_ZOOM]], // Show state boundaries only between COUNTRY_MAX_ZOOM and STATE_MAX_ZOOM
-                    ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], STATE_MAX_ZOOM], ["<", ["zoom"], PROVINCE_MAX_ZOOM]], // Show province boundaries only between STATE_MAX_ZOOM and PROVINCE_MAX_ZOOM
-                    ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], PROVINCE_MAX_ZOOM], ["<", ["zoom"], CITY_MAX_ZOOM]], // Show city boundaries only between PROVINCE_MAX_ZOOM and CITY_MAX_ZOOM
-                    [">=", ["zoom"], CITY_MAX_ZOOM], // Show non-boundaries only above thresholdZoomLevel
-                ];
-            filter.push(boundaryFilter);
-            return filter;
-        }, [createFilter]),
+    const minNonBoundaryZoom = minZoom ?? CITY_MAX_ZOOM,
+        pointFilter = useMemo<Filter>(
+            () => createFilter("Point", keyID, [">=", ["zoom"], minNonBoundaryZoom]),
+            [keyID, minNonBoundaryZoom]),
+        lineStringFilter = useMemo<Filter>(
+            () => createFilter("LineString", keyID, [">=", ["zoom"], minNonBoundaryZoom]),
+            [keyID, minNonBoundaryZoom]),
+        polygonFilter = useMemo<Filter>(() => createFilter(
+            "Polygon",
+            keyID,
+            ["case", // https://maplibre.org/maplibre-style-spec/expressions/#case
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], // Country boundaries
+                ["<", ["zoom"], COUNTRY_MAX_ZOOM], // Show country boundaries only below COUNTRY_MAX_ZOOM
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], // State boundaries
+                ["all", [">=", ["zoom"], COUNTRY_MAX_ZOOM], ["<", ["zoom"], STATE_MAX_ZOOM]], // Show state boundaries only between COUNTRY_MAX_ZOOM and STATE_MAX_ZOOM
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], // Province boundaries
+                ["all", [">=", ["zoom"], STATE_MAX_ZOOM], ["<", ["zoom"], PROVINCE_MAX_ZOOM]], // Show province boundaries only between STATE_MAX_ZOOM and PROVINCE_MAX_ZOOM
+                ["to-boolean", ["get", "boundary"]], // City (or other local) boundaries
+                ["all", [">=", ["zoom"], PROVINCE_MAX_ZOOM], ["<", ["zoom"], CITY_MAX_ZOOM]], // Show city boundaries only between PROVINCE_MAX_ZOOM and CITY_MAX_ZOOM
+                [">=", ["zoom"], minNonBoundaryZoom], // Show non-boundaries only above minNonBoundaryZoom
+            ]),
+            [keyID, minNonBoundaryZoom]),
         { current: map } = useMap();
 
     useEffect(() => {
@@ -114,15 +125,15 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
         return () => void map?.off("click", polygonFillLayerID, onLayerClick);
     }, [map, onLayerClick, onMouseEnter, onMouseLeave, polygonFillLayerID]);
 
-    const commonProps: { 'source': string, 'minzoom'?: number, 'source-layer'?: string } = {
+    const commonLayerProps: Partial<LayerProps> = {
         source: sourceID
     };
-    if (minZoom) commonProps.minzoom = minZoom;
-    if (source_layer) commonProps["source-layer"] = source_layer;
+    if (minZoom) commonLayerProps.minzoom = minZoom;
+    if (source_layer) commonLayerProps["source-layer"] = source_layer;
 
     return <>
         <Layer id={pointTapAreaLayerID}
-            {...commonProps}
+            {...commonLayerProps}
             type="circle"
             filter={pointFilter}
             paint={{
@@ -137,7 +148,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
             }} />
 
         <Layer id={pointLayerID}
-            {...commonProps}
+            {...commonLayerProps}
             type="circle"
             filter={pointFilter}
             paint={{
@@ -155,7 +166,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
 
         <Layer id={lineTapAreaLayerID}
             beforeId={pointLayerID} // Lines are shown below points but on top of polygons
-            {...commonProps}
+            {...commonLayerProps}
             type="line"
             filter={lineStringFilter}
             paint={{
@@ -171,7 +182,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
 
         <Layer id={lineLayerID}
             beforeId={pointLayerID} // Lines are shown below points but on top of polygons
-            {...commonProps}
+            {...commonLayerProps}
             type="line"
             filter={lineStringFilter}
             paint={{
@@ -187,7 +198,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
 
         <Layer id={polygonBorderLayerID}
             beforeId={lineLayerID} // Polygon borders are shown below lines and points but on top of polygon fill
-            {...commonProps}
+            {...commonLayerProps}
             type="line"
             filter={polygonFilter}
             paint={{
@@ -199,7 +210,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
 
         <Layer id={polygonFillLayerID}
             beforeId={polygonBorderLayerID} // Polygon fill is shown below everything else
-            {...commonProps}
+            {...commonLayerProps}
             type="fill-extrusion"
             filter={polygonFilter}
             paint={{ // https://maplibre.org/maplibre-gl-js/docs/examples/3d-buildings/
