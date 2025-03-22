@@ -88,4 +88,9 @@ export interface SourcePreset {
     wikidata_image_property?: string;
 
     background_color?: string;
+
+    /**
+     * Whether to show linked entity count (instead of feature count) in clusters
+     */
+    use_linked_entity_count?: boolean;
 }

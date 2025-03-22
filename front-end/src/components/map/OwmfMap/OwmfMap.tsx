@@ -387,6 +387,7 @@ export const OwmfMap = () => {
           sourceID={ELEMENTS_SOURCE}
           minZoom={minZoomLevel}
           maxZoom={thresholdZoomLevel}
+          useLinkedEntityCount={sourcePreset?.use_linked_entity_count}
         />
       )}
       {detailsActive && (

@@ -10,7 +10,11 @@ import { Layer, LngLatLike, MapMouseEvent, Source, useMap } from "react-map-gl/m
 
 const CLUSTER_LAYER = "_layer_cluster",
   COUNT_LAYER = "_layer_count",
-  UNCLUSTERED_LAYER = "_layer_unclustered";
+  UNCLUSTERED_LAYER = "_layer_unclustered",
+  /** Threshold number of elements below which clusters are shown as blue (instead of yellow)*/
+  MIN_COUNT_THRESHOLD = 3000,
+  /** Threshold number of elements above which clusters are shown as pink (instead of yellow) */
+  MAX_COUNT_THRESHOLD = 60000;
 
 interface ClusteredSourceAndLayersProps {
   backEndService: MapService;
@@ -24,11 +28,7 @@ interface ClusteredSourceAndLayersProps {
   /** Maximum zoom level to show the layers */
   maxZoom: number;
 
-  /** Threshold below which blue clusters are shown */
-  minCountThreshold?: number;
-
-  /** Threshold above which pink clusters are shown */
-  maxCountThreshold?: number;
+  useLinkedEntityCount?: boolean;
 }
 
 /**
@@ -39,25 +39,14 @@ interface ClusteredSourceAndLayersProps {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
  */
 export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (props) => {
-  const minThreshold = props.minCountThreshold ?? 3000,
-    maxThreshold = props.maxCountThreshold ?? 60000,
-    /** Maplibre GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
-    clusterProperties =
-      process.env.owmf_link_count_cluster === "true"
-        ? {
-            linked_entity_count: ["+", ["get", "linked_entity_count"]],
-          }
-        : undefined,
+  /** Maplibre GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
+  const clusterProperties = props.useLinkedEntityCount ? {
+      linked_entity_count: ["+", ["get", "linked_entity_count"]],
+    } : undefined,
     /** The name of the field to be used as count */
-    countFieldName =
-      process.env.owmf_link_count_cluster === "true"
-        ? "linked_entity_count"
-        : "point_count",
+    countFieldName = props.useLinkedEntityCount ? "linked_entity_count" : "point_count",
     /** The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version) */
-    countShowFieldName =
-      process.env.owmf_link_count_cluster === "true"
-        ? "linked_entity_count"
-        : "point_count_abbreviated",
+    countShowFieldName = props.useLinkedEntityCount ? "linked_entity_count" : "point_count_abbreviated",
     clusterLayerID = useMemo(() => props.sourceID + CLUSTER_LAYER, [props.sourceID]),
     countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
     unclusteredLayerID = useMemo(
@@ -224,10 +213,10 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
               "step",
               ["to-number", ["get", countFieldName]],
               "#51bbd6",
-              minThreshold, // count < minThreshold => Blue circle
+              MIN_COUNT_THRESHOLD, // count < MIN_COUNT_THRESHOLD => Blue circle
               "#f1f075",
-              maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
-              "#f28cb1", // count > maxThreshold => Pink circle
+              MAX_COUNT_THRESHOLD, // MIN_COUNT_THRESHOLD <= count < MAX_COUNT_THRESHOLD => Yellow circle
+              "#f28cb1", // count >= MAX_COUNT_THRESHOLD => Pink circle
             ],
             "circle-opacity": 0.8,
             "circle-radius": [
@@ -236,9 +225,9 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
               ["to-number", ["get", countFieldName]],
               0,
               15,
-              minThreshold,
+              MIN_COUNT_THRESHOLD,
               25,
-              maxThreshold,
+              MAX_COUNT_THRESHOLD,
               45,
             ],
           }}
