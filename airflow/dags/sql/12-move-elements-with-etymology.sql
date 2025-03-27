@@ -20,6 +20,7 @@ INSERT INTO owmf.element (
     ),
     wd_wikidata_cod,
     COALESCE(
+        wd_pseudo_tags->>'wikimedia_commons',
         SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
         SUBSTRING(osm_tags->>'image' FROM '(File:[^;]+)')
     ),

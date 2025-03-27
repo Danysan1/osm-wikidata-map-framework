@@ -9,7 +9,8 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 
 SELECT DISTINCT
     ?item
-    (COALESCE(?label_mul, ?label_en) AS ?itemLabel)
+    ?label_mul
+    ?label_en
     ?commons
     ?location
     ?etymology
