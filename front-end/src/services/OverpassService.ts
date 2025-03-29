@@ -2,7 +2,7 @@ import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { OverpassJson } from "overpass-ts";
 import type { MapDatabase } from "../db/MapDatabase";
-import { DatePrecision, Etymology, OsmInstance, OsmType } from "../model/Etymology";
+import { DatePrecision, LinkedEntity, OsmInstance, OsmType } from "../model/LinkedEntity";
 import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -258,7 +258,7 @@ export class OverpassService implements MapService {
         else if (tags.image && COMMONS_FILE_REGEX.test(tags.image))
             feature.properties.picture = tags.image;
 
-        const linkedEntities: Etymology[] = [];
+        const linkedEntities: LinkedEntity[] = [];
         if (!!this.preset?.osm_text_key || !!this.preset.osm_description_key) {
             const linkedNames = this.preset.osm_text_key ? tags[this.preset.osm_text_key]?.split(";") : undefined,
                 linkedDescriptions = this.preset.osm_description_key ? tags[this.preset.osm_description_key]?.split(";") : undefined;
@@ -290,7 +290,7 @@ export class OverpassService implements MapService {
                 ...tags[key]
                     ?.split(";")
                     ?.filter(value => WIKIDATA_QID_REGEX.test(value))
-                    ?.map<Etymology>(value => ({
+                    ?.map<LinkedEntity>(value => ({
                         from_osm_instance: site,
                         from_osm_id: osm_id,
                         from_osm_type: osm_type,
@@ -309,7 +309,7 @@ export class OverpassService implements MapService {
                             ...rel.reltags[key]
                                 .split(";")
                                 .filter(value => WIKIDATA_QID_REGEX.test(value))
-                                .map<Etymology>(value => ({
+                                .map<LinkedEntity>(value => ({
                                     from_osm_instance: site,
                                     from_osm_id: rel.rel,
                                     from_osm_type: "relation",
@@ -359,7 +359,7 @@ export class OverpassService implements MapService {
         feature.properties.linked_entity_count = linkedEntities.length;
     }
 
-    private textLinkedEntities(site: OsmInstance, names: string[], descriptions?: string[], osm_type?: OsmType, osm_id?: number): Etymology[] {
+    private textLinkedEntities(site: OsmInstance, names: string[], descriptions?: string[], osm_type?: OsmType, osm_id?: number): LinkedEntity[] {
         return names.map((name, i) => ({
             name: name,
             description: descriptions?.[i],

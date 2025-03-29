@@ -1,8 +1,8 @@
-import { EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { FC } from "react";
 
 interface LinkedEntityLinkProps {
-  linkedEntity: EtymologyDetails;
+  linkedEntity: LinkedEntityDetails;
 }
 
 export const LinkedEntityLink: FC<LinkedEntityLinkProps> = ({ linkedEntity }) => {

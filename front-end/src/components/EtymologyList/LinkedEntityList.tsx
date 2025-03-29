@@ -1,7 +1,7 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
-import { Etymology } from "@/src/model/Etymology";
-import { EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { LinkedEntity } from "@/src/model/LinkedEntity";
+import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { CachedDetailsService } from "@/src/services/WikidataDetailsService/CachedDetailsService";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,17 +9,17 @@ import { EtymologyView } from "../EtymologyView/EtymologyView";
 import styles from "./LinkedEntityList.module.css";
 
 interface LinkedEntityListProps {
-  linkedEntities: Etymology[];
+  linkedEntities: LinkedEntity[];
 }
 
 export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) => {
   const { t, i18n } = useTranslation(),
     [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
-    [entityDetails, setEntityDetails] = useState<EtymologyDetails[]>(),
+    [entityDetails, setEntityDetails] = useState<LinkedEntityDetails[]>(),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     downloadEntityDetails = useCallback(
-      async (entities?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
+      async (entities?: LinkedEntity[], maxItems = 100): Promise<LinkedEntityDetails[]> => {
         if (!entities?.length) return [];
 
         // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
@@ -49,7 +49,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
         try {
           const detailsService = new CachedDetailsService(i18n.language),
             fetched = await detailsService.fetchEtymologyDetails(etymologyIDs);
-          const combined = entities.map<EtymologyDetails>((old) =>
+          const combined = entities.map<LinkedEntityDetails>((old) =>
             old.wikidata && fetched[old.wikidata]
               ? { ...old, ...fetched[old.wikidata] }
               : old

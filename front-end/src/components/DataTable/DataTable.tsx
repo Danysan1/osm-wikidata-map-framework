@@ -1,4 +1,4 @@
-import { EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { getFeatureLinkedEntities, OwmfFeature } from "@/src/model/OwmfResponse";
 import { CachedDetailsService } from "@/src/services/WikidataDetailsService/CachedDetailsService";
 import { FC, useEffect, useState } from "react";
@@ -13,7 +13,7 @@ interface DataTableProps {
 
 export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
   const { t, i18n } = useTranslation(),
-    [entityDetails, setEtymologyDetails] = useState<Record<string, EtymologyDetails>>();
+    [entityDetails, setEtymologyDetails] = useState<Record<string, LinkedEntityDetails>>();
 
   useEffect(() => {
     const wikidataIdArray = features.flatMap((f) =>

@@ -1,4 +1,4 @@
-import { OsmInstance } from "@/src/model/Etymology";
+import { OsmInstance } from "@/src/model/LinkedEntity";
 import { OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";

@@ -1,30 +1,30 @@
-import { EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { ButtonRow } from "./ButtonRow";
 import entitreeLogo from "./img/entitree.png";
 
-interface EtymologyButtonRowProps {
-  etymology: EtymologyDetails;
+interface EntityButtonRowProps {
+  entity: LinkedEntityDetails;
 }
 
-export const EtymologyButtonRow: FC<EtymologyButtonRowProps> = ({ etymology }) => {
+export const EntityButtonRow: FC<EntityButtonRowProps> = ({ entity }) => {
   const { i18n } = useTranslation();
   const entitreeURL = useMemo(
     () =>
-      i18n.language && etymology.wikidata && etymology.instanceID == "Q5"
-        ? `https://www.entitree.com/${i18n.language}/family_tree/${etymology.wikidata}`
+      i18n.language && entity.wikidata && entity.instanceID == "Q5"
+        ? `https://www.entitree.com/${i18n.language}/family_tree/${entity.wikidata}`
         : undefined,
-    [etymology.instanceID, etymology.wikidata, i18n.language]
+    [entity.instanceID, entity.wikidata, i18n.language]
   );
 
   return (
     <ButtonRow
-      wikidata={etymology.wikidata}
-      wikipedia={etymology.wikipedia}
-      commons={etymology.commons}
-      wikispore={etymology.wikispore}
+      wikidata={entity.wikidata}
+      wikipedia={entity.wikipedia}
+      commons={entity.commons}
+      wikispore={entity.wikispore}
     >
       {entitreeURL && (
         <Button

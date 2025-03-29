@@ -1,6 +1,6 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
-import { OsmInstance, type Etymology, type OsmType, type OsmWdJoinField } from "../model/Etymology";
+import { OsmInstance, type LinkedEntity, type OsmType, type OsmWdJoinField } from "../model/LinkedEntity";
 import { createFeatureTags, getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -185,7 +185,7 @@ export class OverpassWikidataMapService implements MapService {
             osmFeature.properties.wikispore ??= wikidataFeature.properties?.wikispore;
 
             // Merge Wikidata feature linked entities into OSM feature linked entities
-            getFeatureLinkedEntities(wikidataFeature)?.forEach((wdEtymology: Etymology) => {
+            getFeatureLinkedEntities(wikidataFeature)?.forEach((wdEtymology: LinkedEntity) => {
                 const osmEtymologies = getFeatureLinkedEntities(osmFeature) ?? [],
                     osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
                 if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {

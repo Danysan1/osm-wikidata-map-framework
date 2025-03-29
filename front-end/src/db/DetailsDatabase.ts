@@ -1,11 +1,11 @@
 import Dexie, { Table } from "dexie";
-import type { EtymologyDetails } from "../model/EtymologyDetails";
+import type { LinkedEntityDetails } from "../model/LinkedEntityDetails";
 
 interface DetailsRow {
     id?: number;
     language?: string;
     wikidataIDs: Set<string>;
-    details: Record<string, EtymologyDetails>;
+    details: Record<string, LinkedEntityDetails>;
     timestamp: string;
 }
 
@@ -32,7 +32,7 @@ export class DetailsDatabase extends Dexie {
         });
     }
 
-    public async getDetails(wikidataIDs: Set<string>, language?: string): Promise<Record<string, EtymologyDetails> | undefined> {
+    public async getDetails(wikidataIDs: Set<string>, language?: string): Promise<Record<string, LinkedEntityDetails> | undefined> {
         try {
             const row = await this.transaction('r', this.details, async () => {
                 return await this.details
@@ -47,7 +47,7 @@ export class DetailsDatabase extends Dexie {
         }
     }
 
-    public async addDetails(details: Record<string, EtymologyDetails>, wikidataIDs: Set<string>, language?: string) {
+    public async addDetails(details: Record<string, LinkedEntityDetails>, wikidataIDs: Set<string>, language?: string) {
         try {
             await this.transaction('rw', this.details, async () => {
                 await this.details.add({ details, wikidataIDs, language, timestamp: new Date().toISOString() });

@@ -3,7 +3,7 @@ import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
 import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
 import { Configuration } from "../generated/sparql/configuration";
-import { Etymology, OsmInstance, OsmType } from "../model/Etymology";
+import { LinkedEntity, OsmInstance, OsmType } from "../model/LinkedEntity";
 import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -309,7 +309,7 @@ export class QLeverMapService implements MapService {
                         }
                     }
 
-                    const etymology: Etymology | undefined = etymology_wd_id ? {
+                    const etymology: LinkedEntity | undefined = etymology_wd_id ? {
                         from_osm_instance,
                         from_osm_type: osm_type,
                         from_osm_id: osm_id,
@@ -317,7 +317,7 @@ export class QLeverMapService implements MapService {
                         from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                         propagated: false,
-                        statementEntity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                        statement_entity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikidata: etymology_wd_id,
                     } : undefined;
 
@@ -342,7 +342,7 @@ export class QLeverMapService implements MapService {
         osm_instance?: OsmInstance,
         osm_id?: number,
         osm_type?: OsmType,
-        linkedEntity?: Etymology
+        linkedEntity?: LinkedEntity
     ): OwmfFeature {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
@@ -367,7 +367,7 @@ export class QLeverMapService implements MapService {
         else
             id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
 
-        const linkedEntities: Etymology[] = linkedEntity ? [linkedEntity] : [],
+        const linkedEntities: LinkedEntity[] = linkedEntity ? [linkedEntity] : [],
             linkedName = row.etymology_text?.value,
             linkedDescription = row.etymology_description?.value;
         if (!!linkedName || !!linkedDescription) {

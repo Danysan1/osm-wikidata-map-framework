@@ -1,9 +1,9 @@
-import { Etymology } from "@/src/model/Etymology";
-import { EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { LinkedEntity } from "@/src/model/LinkedEntity";
+import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import {
-  getFeatureLinkedEntities,
-  getFeatureTags,
-  OwmfFeature,
+    getFeatureLinkedEntities,
+    getFeatureTags,
+    OwmfFeature,
 } from "@/src/model/OwmfResponse";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,7 @@ import { LinkedEntityLink } from "./LinkedEntityLink";
 
 interface DataTableRowProps {
   feature: OwmfFeature;
-  details?: Record<string, EtymologyDetails>;
+  details?: Record<string, LinkedEntityDetails>;
   openFeatureDetails: () => void;
 }
 
@@ -24,12 +24,12 @@ export const DataTableRow: FC<DataTableRowProps> = ({
 }) => {
   const { i18n } = useTranslation(),
     entitiesCellContent = useMemo(() => {
-      let uniqueEntities: Etymology[];
+      let uniqueEntities: LinkedEntity[];
       if (process.env.owmf_deduplicate_by_name !== "true") {
         uniqueEntities = getFeatureLinkedEntities(feature);
       } else {
         const uniqueMap = getFeatureLinkedEntities(feature).reduce<
-          Record<string, Etymology>
+          Record<string, LinkedEntity>
         >((acc, entity, i) => {
           const wdQID = entity?.wikidata,
             entityDetails = wdQID ? details?.[wdQID] : undefined,

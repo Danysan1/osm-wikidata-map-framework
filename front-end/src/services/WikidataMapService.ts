@@ -3,7 +3,7 @@ import { LngLat } from "maplibre-gl";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
-import type { Etymology, OsmType } from "../model/Etymology";
+import type { LinkedEntity, OsmType } from "../model/LinkedEntity";
 import { OwmfFeatureProperties } from "../model/OwmfFeatureProperties";
 import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
@@ -176,7 +176,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 return false; // All equality checks failed => They are different entities              
             });
 
-        let etymology: Etymology | undefined;
+        let etymology: LinkedEntity | undefined;
         if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             console.warn("Wikidata: Ignoring duplicate etymology", { etymology_wd_id, existing: existingFeature.properties, new: row });
         } else if (etymology_wd_id) {
@@ -185,7 +185,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                 propagated: false,
-                statementEntity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                statement_entity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 wikidata: etymology_wd_id,
             };
         }

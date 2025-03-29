@@ -1,4 +1,4 @@
-import { OsmInstance } from '@/src/model/Etymology';
+import { OsmInstance } from '@/src/model/LinkedEntity';
 import { OwmfResponse } from '@/src/model/OwmfResponse';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useCallback, useState } from 'react';

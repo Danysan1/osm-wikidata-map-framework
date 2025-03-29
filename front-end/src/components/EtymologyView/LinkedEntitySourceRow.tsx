@@ -1,10 +1,10 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { Etymology, OsmInstance } from "@/src/model/Etymology";
+import { LinkedEntity, OsmInstance } from "@/src/model/LinkedEntity";
 import Link from "next/link";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-export const LinkedEntitySourceRow: FC<Etymology> = ({
+export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
     from_osm_instance,
     from_osm_type,
     from_osm_id,

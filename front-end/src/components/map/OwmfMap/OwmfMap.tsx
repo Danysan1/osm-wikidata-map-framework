@@ -8,15 +8,15 @@ import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
-import { OsmInstance } from "@/src/model/Etymology";
+import { OsmInstance } from "@/src/model/LinkedEntity";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
 import {
-  DataDrivenPropertyValueSpecification,
-  RequestTransformFunction,
-  addProtocol,
+    DataDrivenPropertyValueSpecification,
+    RequestTransformFunction,
+    addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
@@ -25,15 +25,15 @@ import { Protocol } from "pmtiles";
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Map, {
-  ErrorEvent,
-  FullscreenControl,
-  GeolocateControl,
-  MapEvent,
-  MapSourceDataEvent,
-  NavigationControl,
-  ScaleControl,
-  StyleSpecification,
-  ViewStateChangeEvent,
+    ErrorEvent,
+    FullscreenControl,
+    GeolocateControl,
+    MapEvent,
+    MapSourceDataEvent,
+    NavigationControl,
+    ScaleControl,
+    StyleSpecification,
+    ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../../controls/BackEndControl/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";

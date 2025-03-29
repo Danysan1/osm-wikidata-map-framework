@@ -1,6 +1,6 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
-import { OsmInstance } from "@/src/model/Etymology";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
+import { OsmInstance } from "@/src/model/LinkedEntity";
 import { getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";

@@ -1,4 +1,4 @@
-import { OsmInstance } from "@/src/model/Etymology";
+import { OsmInstance } from "@/src/model/LinkedEntity";
 import { useTranslation } from "react-i18next";
 import { ControlPosition } from "react-map-gl/maplibre";
 import { QueryLinkControl } from "../QueryLinkControl";

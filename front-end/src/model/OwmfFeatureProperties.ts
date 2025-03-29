@@ -1,4 +1,4 @@
-import type { Etymology, OsmInstance, OsmType } from "./Etymology";
+import type { LinkedEntity, OsmInstance, OsmType } from "./LinkedEntity";
 
 export interface OsmFeatureTags {
     /**
@@ -200,7 +200,7 @@ export interface OwmfFeatureProperties {
      * Typically in GeoJSON backends linked entities are sent as an array of Etymology JS objects.
      * Vector sources however stringify the array to JSON string in some circumstances.
      */
-    linked_entities?: Etymology[] | string;
+    linked_entities?: LinkedEntity[] | string;
 
     /**
      * Whether OpenStreetMap instance is the original source of the geometry and names of this feature.
@@ -280,9 +280,9 @@ export interface OwmfFeatureProperties {
     wikispore?: string;
 }
 
-export function getPropLinkedEntities(props: OwmfFeatureProperties): Etymology[] {
+export function getPropLinkedEntities(props: OwmfFeatureProperties): LinkedEntity[] {
     if (typeof props?.linked_entities === "string") {
-        props.linked_entities = JSON.parse(props.linked_entities) as Etymology[];
+        props.linked_entities = JSON.parse(props.linked_entities) as LinkedEntity[];
         return props.linked_entities;
     } else if (!props.linked_entities) {
         props.linked_entities = [];

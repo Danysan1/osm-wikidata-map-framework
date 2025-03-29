@@ -1,5 +1,5 @@
 import { Feature, FeatureCollection, Geometry } from "geojson";
-import { Etymology, OsmInstance } from "./Etymology";
+import { LinkedEntity, OsmInstance } from "./LinkedEntity";
 import { createPropTags, getPropLinkedEntities, getPropTags, OsmFeatureTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
 
 export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
@@ -82,7 +82,7 @@ export function ohmKeyToKeyID(key: string) {
     return "ohm_" + key.replace(":wikidata", "").replace(":", "_");
 }
 
-export function getFeatureLinkedEntities(f: OwmfFeature): Etymology[] {
+export function getFeatureLinkedEntities(f: OwmfFeature): LinkedEntity[] {
     let props;
     if (f.properties) {
         props = f.properties;

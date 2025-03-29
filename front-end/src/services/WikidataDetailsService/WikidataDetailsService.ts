@@ -1,5 +1,5 @@
 import { DetailsDatabase } from "../../db/DetailsDatabase";
-import type { EtymologyDetails } from "../../model/EtymologyDetails";
+import type { LinkedEntityDetails } from "../../model/LinkedEntityDetails";
 import { WikidataService } from "../WikidataService";
 
 export class WikidataDetailsService extends WikidataService {
@@ -16,7 +16,7 @@ export class WikidataDetailsService extends WikidataService {
         );
     }
 
-    public async fetchEtymologyDetails(wikidataIDs: Set<string> | string[]): Promise<Record<string, EtymologyDetails>> {
+    public async fetchEtymologyDetails(wikidataIDs: Set<string> | string[]): Promise<Record<string, LinkedEntityDetails>> {
         if (Array.isArray(wikidataIDs))
             wikidataIDs = new Set(wikidataIDs);
 
@@ -42,7 +42,7 @@ export class WikidataDetailsService extends WikidataService {
                 return {};
             }
 
-            out = res.results.bindings.reduce((acc: Record<string, EtymologyDetails>, row): Record<string, EtymologyDetails> => {
+            out = res.results.bindings.reduce((acc: Record<string, LinkedEntityDetails>, row): Record<string, LinkedEntityDetails> => {
                 const wdURI = row?.wikidata?.value;
                 if (typeof wdURI !== "string")
                     throw new Error("Bad row (no Wikidata URI): ", row);
@@ -57,7 +57,7 @@ export class WikidataDetailsService extends WikidataService {
                     ?.filter(id => id.length);
 
                 if (!!row.name?.value || !!row.description?.value || !!row.instanceID?.value) {
-                    const details: EtymologyDetails = {
+                    const details: LinkedEntityDetails = {
                         alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         birth_date: row.birth_date?.value,
                         birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,

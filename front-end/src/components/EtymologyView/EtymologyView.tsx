@@ -1,9 +1,9 @@
-import { DatePrecision, Etymology } from "@/src/model/Etymology";
-import { EtymologyDetails } from "@/src/model/EtymologyDetails";
+import { DatePrecision, LinkedEntity } from "@/src/model/LinkedEntity";
+import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
+import { EntityButtonRow } from "../ButtonRow/EntityButtonRow";
 import { LinkedEntityList } from "../EtymologyList/LinkedEntityList";
 import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
@@ -13,7 +13,7 @@ import { LinkedEntitySourceRow } from "./LinkedEntitySourceRow";
 const MAX_IMAGES = 3;
 
 interface EtymologyViewProps {
-  entity: EtymologyDetails;
+  entity: LinkedEntityDetails;
 }
 
 export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
@@ -129,31 +129,40 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
     }
   }, [entity.wikipedia]);
 
-  const parts = useMemo((): Etymology[] | undefined => {
+  const parts = useMemo((): LinkedEntity[] | undefined => {
+    if (!entity.parts) return undefined;
+
     if (entity.from_parts_of_wikidata_cod) {
       console.debug("Not fetching parts of parts", entity);
       return undefined;
     }
 
-    if (entity.statementEntity) {
-      return [
-        {
-          ...entity,
-          wikidata: entity.statementEntity,
-          from_statement_of_wikidata_cod: entity.wikidata,
-          statementEntity: undefined,
-        },
-      ];
-    }
-
-    return entity.parts?.map(
-      (qid): Etymology => ({
+    return entity.parts.map(
+      (qid): LinkedEntity => ({
         ...entity,
         wikidata: qid,
         from_parts_of_wikidata_cod: entity.wikidata,
         parts: undefined,
       })
     );
+  }, [entity]);
+
+  const statement = useMemo((): LinkedEntity[] | undefined => {
+    if (!entity.statement_entity) return undefined;
+
+    if (entity.from_parts_of_wikidata_cod) {
+      console.debug("Not fetching statement entity of parts", entity);
+      return undefined;
+    }
+
+    return [
+      {
+        ...entity,
+        wikidata: entity.statement_entity,
+        from_statement_of_wikidata_cod: entity.wikidata,
+        statement_entity: undefined,
+      },
+    ];
   }, [entity]);
 
   if (!entity.name && !entity.description && !entity.wikidata) return null;
@@ -167,7 +176,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
             <h3 className="etymology_description">{entity.description}</h3>
           </div>
           <div className="info column">
-            <EtymologyButtonRow etymology={entity} />
+            <EntityButtonRow entity={entity} />
 
             {wikipediaExtract && (
               <p className="wikipedia_extract">📖 {wikipediaExtract}</p>
@@ -193,6 +202,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
 
       <LinkedEntitySourceRow {...entity} />
       <div className="etymology_parts_container">
+        {!!statement?.length && <LinkedEntityList linkedEntities={statement} />}
         {!!parts?.length && <LinkedEntityList linkedEntities={parts} />}
       </div>
     </div>

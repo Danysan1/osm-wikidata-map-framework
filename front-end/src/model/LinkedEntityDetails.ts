@@ -1,9 +1,9 @@
-import type { DatePrecision, Etymology } from "./Etymology";
+import type { DatePrecision, LinkedEntity } from "./LinkedEntity";
 
 /**
- * Extended details for the subject of an etymology.
+ * Extended details for a linked entity.
  */
-export interface EtymologyDetails extends Etymology {
+export interface LinkedEntityDetails extends LinkedEntity {
     /**
      * Localized name of the country of citizenship
      */

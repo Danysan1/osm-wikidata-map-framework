@@ -23,9 +23,9 @@ export const enum DatePrecision {
     billion_years = 0,
 }
 
-export interface Etymology {
+export interface LinkedEntity {
     /**
-     * Which OpenStreetMap instance is the original source of this etymology
+     * Which OpenStreetMap instance is the original source of the link to this entity
      */
     from_osm_instance?: OsmInstance;
 
@@ -40,7 +40,7 @@ export interface Etymology {
     from_osm_id?: number;
 
     /**
-     * Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
+     * Q-ID of the linked Wikidata entity that contained this entity, leading to the inclusion of this entity as well
      */
     from_parts_of_wikidata_cod?: string;
 
@@ -50,17 +50,17 @@ export interface Etymology {
     from_statement_of_wikidata_cod?: string;
 
     /**
-     * Whether Wikidata is the original source of this etymology
+     * Whether Wikidata is the original source of the link to this entity
      */
     from_wikidata?: boolean;
 
     /**
-     * Q-ID of the source Wikidata entity this etymology has been extracted from
+     * Q-ID of the source Wikidata entity from which the link to this entity has been extracted
      */
     from_wikidata_entity?: string;
 
     /**
-     * P-ID of the Wikidata property that links from the source Wikidata entity to this etymology entity
+     * P-ID of the Wikidata property that links from the source Wikidata entity to this entity
      */
     from_wikidata_prop?: string;
 
@@ -70,32 +70,37 @@ export interface Etymology {
     name?: string;
 
     /**
-     * If this etymology's feature has both an OSM element and Wikidata entity, this field specifies the clause used to join them. In theory the OSM-WD link should be biunivocal and this field should be on the feature (not on the etymology), however in practice this is not always the case (ex. https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/18) so to debug the etymology source it's necessary to specify it for each etymology.
+     * If the feature has both an OSM element and Wikidata entity, this field specifies the clause used to join them.
+     * In theory the OSM-WD feature link should be bi-univocal and this field should be on the feature;
+     * however in practice this is not always the case (ex. https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/18);
+     * so to debug the linked entity source it's necessary to specify it for each linked entity.
      */
     osm_wd_join_field?: OsmWdJoinField;
 
     /**
-     * Whether this etymology has been obtained through propagation
+     * Whether this entity link has been obtained through propagation
      */
     propagated?: boolean;
 
     /**
-     * Q-ID of the Wikidata entity that this statement is subject of (for example, the article describing the etymology represented by this statement)
+     * Q-ID of the Wikidata entity that the link to this entity is subject of.
+     * For example, the article describing the etymology represented by this statement.
+     * @see https://www.wikidata.org/wiki/Property:P805
      */
-    statementEntity?: string;
+    statement_entity?: string;
 
     /**
-     * Q-ID of this etymology Wikidata item
+     * Q-ID of this Wikidata entity
      */
     wikidata?: string;
 
     /**
-     * List of Wikidata Q-IDs of entities that are part of this etymology
+     * List of Q-IDs of Wikidata entities that are part of this linked entity
      */
     parts?: string[];
 
     /**
-     * Localized description of the subject
+     * Localized description of this linked entity
      */
     description?: string;
 
