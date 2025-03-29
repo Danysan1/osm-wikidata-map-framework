@@ -28,6 +28,7 @@ SELECT
         'from_wikidata_entity', from_wd.wd_wikidata_cod,
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
+        'statement_entity', stmt_wd.wd_wikidata_cod,
         'name', et_name,
         'wikidata', wd.wd_wikidata_cod
     )) END AS linked_entities,
@@ -37,6 +38,7 @@ LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
 LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd_id
 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
+LEFT JOIN owmf.wikidata AS stmt_wd ON stmt_wd.wd_id = et.et_statement_entity
 WHERE el.el_is_boundary
 GROUP BY el.el_id;
 
@@ -68,6 +70,7 @@ SELECT
         'from_wikidata_entity', from_wd.wd_wikidata_cod,
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
+        'statement_entity', stmt_wd.wd_wikidata_cod,
         'name', et_name,
         'wikidata', wd.wd_wikidata_cod
     )) END AS linked_entities,
@@ -77,6 +80,7 @@ LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
 LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd_id
 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
+LEFT JOIN owmf.wikidata AS stmt_wd ON stmt_wd.wd_id = et.et_statement_entity
 WHERE NOT el.el_is_boundary
 GROUP BY el.el_id;
 
