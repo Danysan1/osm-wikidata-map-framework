@@ -308,20 +308,25 @@ export class OverpassService implements MapService {
                         WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
                         if (!rel.reltags[key]) return;
-                        console.debug("Overpass transformFeature propagating linked entity from relation", feature);
-                        linkedEntities.push(
-                            ...rel.reltags[key]
-                                .split(";")
-                                .filter(value => WIKIDATA_QID_REGEX.test(value))
-                                .map<LinkedEntity>(value => ({
-                                    from_osm_instance: site,
-                                    from_osm_id: rel.rel,
-                                    from_osm_type: "relation",
-                                    from_wikidata: false,
-                                    propagated: false,
-                                    wikidata: value
-                                }))
-                        );
+                        console.debug("Overpass transformFeature propagating linked entity from relation", { feature, rel });
+                        rel.reltags[key]
+                            .split(";")
+                            .filter(value => WIKIDATA_QID_REGEX.test(value))
+                            .reduce((acc, value) => {
+                                if (acc.some(e => e.wikidata === value)) {
+                                    console.debug("Skipping duplicate linked entity from relation:", { value, feature });
+                                } else {
+                                    acc.push({
+                                        from_osm_instance: site,
+                                        from_osm_id: rel.rel,
+                                        from_osm_type: "relation",
+                                        from_wikidata: false,
+                                        propagated: false,
+                                        wikidata: value,
+                                    });
+                                }
+                                return acc;
+                            }, linkedEntities);
                         Object.keys(rel.reltags)
                             .filter(key => key.startsWith("name"))
                             .forEach(key => tags[key] ??= rel.reltags[key]);
