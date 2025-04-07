@@ -94,7 +94,7 @@ export class OverpassService implements MapService {
         if (area < 0.0000001 || area > 1.5)
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
-        let site: OsmInstance,
+        let osmInstance: OsmInstance,
             osm_wikidata_keys: string[] = [],
             use_wikidata = false,
             relation_member_role: string | undefined,
@@ -102,12 +102,12 @@ export class OverpassService implements MapService {
 
         if (backEndID.includes("overpass_osm_wd")) {
             // Search only elements with wikidata=*
-            site = OsmInstance.OpenStreetMap;
+            osmInstance = OsmInstance.OpenStreetMap;
             osm_wikidata_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
         } else if (process.env.owmf_enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
-            site = OsmInstance.OpenHistoricalMap
+            osmInstance = OsmInstance.OpenHistoricalMap
             osm_wikidata_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
@@ -121,7 +121,7 @@ export class OverpassService implements MapService {
             if (!keyCode)
                 throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
 
-            site = keyCode.startsWith("ohm_") ? OsmInstance.OpenHistoricalMap : OsmInstance.OpenStreetMap;
+            osmInstance = keyCode.startsWith("ohm_") ? OsmInstance.OpenHistoricalMap : OsmInstance.OpenStreetMap;
             if (keyCode.endsWith("_all_wd")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
                 osm_wikidata_keys = this.preset.osm_wikidata_keys;
@@ -158,7 +158,7 @@ export class OverpassService implements MapService {
         console.time(`overpass_query_${timerID}`);
         const query = this.buildOverpassQuery(osm_wikidata_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
-            res = await overpassJson(query, { endpoint: OVERPASS_ENDPOINTS[site] });
+            res = await overpassJson(query, { endpoint: OVERPASS_ENDPOINTS[osmInstance] });
         console.timeEnd(`overpass_query_${timerID}`);
         console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 
@@ -168,15 +168,15 @@ export class OverpassService implements MapService {
             throw new Error("No elements in Overpass response");
 
         if (process.env.owmf_propagate_site_relations === "true")
-            this.propagateSiteRelations(res, osm_wikidata_keys);
+            this.prepareSiteRelationAreas(res);
 
         console.time(`overpass_transform_${timerID}`);
         const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
         console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES`);
         // console.table(out.features);
 
-        out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys, site));
-        out.site = site;
+        out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys, osmInstance));
+        out.site = osmInstance;
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;
@@ -196,7 +196,7 @@ export class OverpassService implements MapService {
      * 
      * @see https://github.com/tyrasd/osmtogeojson/issues/75
      */
-    private propagateSiteRelations(res: OverpassJson, osm_wikidata_keys: string[]) {
+    private prepareSiteRelationAreas(res: OverpassJson) {
         res.elements.forEach(rel => {
             if (rel.type !== "relation" || rel.tags?.type !== "site") return;
 
@@ -204,10 +204,11 @@ export class OverpassService implements MapService {
                 const ele = res.elements?.find(ele => ele.id === member.ref && ele.type === member.type);
                 if (ele?.type !== "node" && ele?.type !== "way" && ele?.type !== "relation") return;
                 ele.tags ??= {};
-                ele.tags.wikidata ??= rel.tags!.wikidata;
-                osm_wikidata_keys.forEach(key => ele.tags![key] ??= rel.tags![key]);
 
-                // Little dirty trick to show correctly areas (that would otherwise be shown as lines because tags are not sent for member ways)
+                /*
+                Little dirty trick to show correctly areas.
+                They would otherwise be shown as lines because tags are not sent for member ways
+                */
                 if (ele.type === "way") ele.tags.area ??= "yes";
             });
         });
@@ -299,12 +300,15 @@ export class OverpassService implements MapService {
                         wikidata: value
                     })) ?? []);
 
-            if (this.preset?.relation_propagation_role) {
+            if (!!this.preset?.relation_propagation_role || process.env.owmf_propagate_site_relations === "true") {
                 feature.properties?.relations
-                    ?.filter(rel => rel.role && this.preset.relation_propagation_role === rel.role && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
+                    ?.filter(rel =>
+                        ((process.env.owmf_propagate_site_relations === "true" && rel.reltags?.type === "site") || (rel.role && this.preset.relation_propagation_role === rel.role)) &&
+                        rel.reltags[key] &&
+                        WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
                         if (!rel.reltags[key]) return;
-                        console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
+                        console.debug("Overpass transformFeature propagating linked entity from relation", feature);
                         linkedEntities.push(
                             ...rel.reltags[key]
                                 .split(";")

@@ -188,9 +188,9 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                     {(!!sourcePreset.osm_wikidata_properties || !!sourcePreset.wikidata_indirect_property) && <>
                         <tr>
                             <td>Wikidata</td>
-                            <td><code>P402</code> (OpenStreetMap relation ID )</td>
-                            <td><a href="https://www.wikidata.org/wiki/Property:P402">Wikidata</a></td>
-                            <td rowSpan={2 + (sourcePreset.osm_wikidata_properties ? sourcePreset.osm_wikidata_properties.length : 1)}>
+                            <td><code>P11693</code> (OpenStreetMap node ID)</td>
+                            <td><a href="https://www.wikidata.org/wiki/Property:P11693">Wikidata</a></td>
+                            <td rowSpan={4 + (sourcePreset.osm_wikidata_properties ? sourcePreset.osm_wikidata_properties.length : 1)}>
                                 The link is inferred by combining a OSM-Wikidata same-entity tag/property with an intra-Wikidata link property:<br />
                                 <Image
                                     alt={"OSM+Wikidata diagram"}
@@ -198,6 +198,16 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                                     width={400}
                                     height={sourcePreset.osm_wikidata_properties ? 250 : 420}/>
                             </td>
+                        </tr>
+                        <tr>
+                            <td>Wikidata</td>
+                            <td><code>P10689</code> (OpenStreetMap way ID)</td>
+                            <td><a href="https://www.wikidata.org/wiki/Property:P10689">Wikidata</a></td>
+                        </tr>
+                        <tr>
+                            <td>Wikidata</td>
+                            <td><code>P402</code> (OpenStreetMap relation ID)</td>
+                            <td><a href="https://www.wikidata.org/wiki/Property:P402">Wikidata</a></td>
                         </tr>
                         <tr>
                             <td>OpenStreetMap</td>
