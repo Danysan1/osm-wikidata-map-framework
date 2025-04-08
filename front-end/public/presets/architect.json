@@ -8,6 +8,7 @@
         "tourism",
         "historic",
         "bridge",
+        "site",
         "place=square"
     ],
     "osm_text_key": "architect",

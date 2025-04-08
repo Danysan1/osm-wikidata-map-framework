@@ -11,12 +11,9 @@ div.detail_container h3 {
 div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,
+div.detail_container .wikipedia_extract,
 div.detail_container .feature_buttons_container {
-    /*max-width: 40em;*/
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.wikipedia_extract {
   max-width: 75em;
+  margin-left: auto;
+  margin-right: auto;
 }
