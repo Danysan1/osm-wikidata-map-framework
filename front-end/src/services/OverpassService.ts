@@ -74,14 +74,16 @@ export class OverpassService implements MapService {
         console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, year);
         if (onlyCentroids) {
-            console.debug(`Overpass fetchMapElements found ${out.features.length} centroids`);
+            console.debug(`Overpass found ${out.features.length} centroids`);
         } else {
+            console.debug(`Overpass found ${out.features.length} features before filtering`);
             out.features = out.features.filter(
-                (feature: OwmfFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
-                    || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
-            );
+                (feature: OwmfFeature) => !!feature.properties?.linked_entity_count || ( // Any linked entity is available or ...
+                    backEndID.endsWith("_wd") && // ... this back-end allows features that just have wikidata=* and ...
+                    (!!feature.properties?.wikidata || feature.properties?.relations?.some(rel => rel.reltags?.wikidata)) // ... wikidata=* is available on the feature or on a containing relation     
+                ));
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
-            console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
+            console.debug(`Overpass found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
         }
         out.language = language;
 

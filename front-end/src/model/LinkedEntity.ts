@@ -31,11 +31,15 @@ export interface LinkedEntity {
 
     /**
      * Type of the source OpenStreetMap element
+     * 
+     * @example node => https://www.openstreetmap.org/node/...
      */
     from_osm_type?: OsmType;
 
     /**
      * ID (unique only within its osm_type) of the source OpenStreetMap element
+     * 
+     * @example 42 => https://www.openstreetmap.org/.../42
      */
     from_osm_id?: number;
 

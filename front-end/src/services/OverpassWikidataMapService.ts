@@ -99,22 +99,31 @@ export class OverpassWikidataMapService implements MapService {
             if (osmFeature.properties?.from_wikidata === true)
                 return false; // Already merged with another Wikidata feature => ignore
 
+            const fromOHM = osmFeature.properties?.from_osm_instance === OsmInstance.OpenHistoricalMap;
+            let wikidataMatchOsmType: OsmType | undefined,
+                wikidataMatchOsmId: number | undefined;
             if (osmFeature.properties?.wikidata !== undefined && (
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata ||
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
+                // The OSM feature itself is represented by this Wikidata entity
+                wikidataMatchOsmType = fromOHM ? osmFeature.properties?.ohm_type : osmFeature.properties?.osm_type;
+                wikidataMatchOsmId = fromOHM ? osmFeature.properties?.ohm_id : osmFeature.properties?.osm_id;
+            } else {
+                // Search whether any relation containing this OSM feature is represented by this Wikidata entity
+                wikidataMatchOsmId = osmFeature.properties?.relations?.find(rel =>
+                    rel.reltags.wikidata !== undefined && (
+                        rel.reltags.wikidata === wikidataFeature.properties?.wikidata ||
+                        rel.reltags.wikidata === wikidataFeature.properties?.wikidata_alias
+                    ))?.rel;
+                wikidataMatchOsmType = wikidataMatchOsmId ? "relation" : undefined;
+            }
+
+            if (wikidataMatchOsmId && wikidataMatchOsmType) {
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => {
-                    if (osmFeature.properties?.from_osm_instance === OsmInstance.OpenStreetMap) {
-                        ety.osm_wd_join_field = "OSM";
-                        ety.from_osm_id = osmFeature.properties?.osm_id;
-                        ety.from_osm_type = osmFeature.properties?.osm_type;
-                    } else if (osmFeature.properties?.from_osm_instance === OsmInstance.OpenHistoricalMap) {
-                        ety.osm_wd_join_field = "OHM";
-                        ety.from_osm_id = osmFeature.properties?.ohm_id;
-                        ety.from_osm_type = osmFeature.properties?.ohm_type;
-                    } else {
-                        console.warn("Overpass element not from OSM nor from OHM, likely an error", osmFeature.properties);
-                    }
+                    ety.osm_wd_join_field = fromOHM ? "OHM" : "OSM";
+                    ety.from_osm_id = wikidataMatchOsmId;
+                    ety.from_osm_type = wikidataMatchOsmType;
                 });
                 return true; // Same Wikidata => merge
             }
