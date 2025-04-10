@@ -169,8 +169,7 @@ export class OverpassService implements MapService {
         if (!res.elements)
             throw new Error("No elements in Overpass response");
 
-        if (process.env.owmf_propagate_site_relations === "true")
-            this.prepareSiteRelationAreas(res);
+        this.prepareRelationMemberAreas(res);
 
         console.time(`overpass_transform_${timerID}`);
         const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
@@ -193,14 +192,16 @@ export class OverpassService implements MapService {
     }
 
     /**
-     * Site relations are not supported by osmtogeojson and would be lost
-     * To avoid losing information, propagate osm_wikidata_keys to their members
+     * Non-multi-polygon OSM relations like type=site are not supported by osmtogeojson and would be lost
+     * To avoid losing information, propagate tags to their members
      * 
      * @see https://github.com/tyrasd/osmtogeojson/issues/75
      */
-    private prepareSiteRelationAreas(res: OverpassJson) {
+    private prepareRelationMemberAreas(res: OverpassJson) {
+        if (!this.preset.relation_propagation_type) return;
+
         res.elements.forEach(rel => {
-            if (rel.type !== "relation" || rel.tags?.type !== "site") return;
+            if (rel.type !== "relation" || rel.tags?.type !== this.preset.relation_propagation_type) return;
 
             rel.members.forEach(member => {
                 const ele = res.elements?.find(ele => ele.id === member.ref && ele.type === member.type);
@@ -302,16 +303,20 @@ export class OverpassService implements MapService {
                         wikidata: value
                     })) ?? []);
 
-            if (!!this.preset?.relation_propagation_role || process.env.owmf_propagate_site_relations === "true") {
-                feature.properties?.relations
-                    ?.filter(rel =>
-                        ((process.env.owmf_propagate_site_relations === "true" && rel.reltags?.type === "site") || (rel.role && this.preset.relation_propagation_role === rel.role)) &&
-                        rel.reltags[key] &&
-                        WIKIDATA_QID_REGEX.test(rel.reltags[key]))
+            if (!!this.preset.relation_propagation_role || !!this.preset.relation_propagation_type) {
+                feature.properties
+                    ?.relations
                     ?.forEach(rel => {
-                        if (!rel.reltags[key]) return;
+                        const propagateByType = !!rel.reltags?.type && this.preset.relation_propagation_type === rel.reltags?.type,
+                            propagateByRole = !!rel.role && this.preset.relation_propagation_role === rel.role;
+                        if (!propagateByType && !propagateByRole) return; // No need to propagate anything
+
+                        const linkedEntityQIDs = rel.reltags[key],
+                            validLinkedQIDs = !!linkedEntityQIDs && WIKIDATA_QID_REGEX.test(linkedEntityQIDs);
+                        if (!validLinkedQIDs) return; // Secondary wikidata tag not available on the relation or invalid => No linked entity to propagate
+
                         console.debug("Overpass transformFeature propagating linked entity from relation", { feature, rel });
-                        rel.reltags[key]
+                        linkedEntityQIDs
                             .split(";")
                             .filter(value => WIKIDATA_QID_REGEX.test(value))
                             .reduce((acc, value) => {
@@ -329,10 +334,14 @@ export class OverpassService implements MapService {
                                 }
                                 return acc;
                             }, linkedEntities);
+
+                        // Propagate names
                         Object.keys(rel.reltags)
-                            .filter(key => key.startsWith("name"))
-                            .forEach(key => tags[key] ??= rel.reltags[key]);
+                            .filter(nameKey => nameKey.startsWith("name"))
+                            .forEach(nameKey => tags[nameKey] ??= rel.reltags[nameKey]);
                         tags.description ??= rel.reltags.description;
+
+                        // Propagate primary wikidata tag
                         if (rel.reltags.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata))
                             feature.properties!.wikidata ??= rel.reltags.wikidata;
                     });

@@ -60,7 +60,6 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_use_background_color",
   "owmf_nearby_feature_threshold",
   "owmf_enable_projection_control",
-  "owmf_propagate_site_relations",
 ];
 
 if (process.env.NODE_ENV === "development")

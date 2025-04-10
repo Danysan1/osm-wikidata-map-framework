@@ -11,6 +11,7 @@
         "site",
         "place=square"
     ],
+    "relation_propagation_type": "site",
     "osm_text_key": "architect",
     "osm_wikidata_keys": [
         "architect:wikidata"

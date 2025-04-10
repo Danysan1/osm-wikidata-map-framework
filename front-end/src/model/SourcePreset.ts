@@ -53,7 +53,14 @@ export interface SourcePreset {
     osm_wikidata_properties?: string[];
 
     /**
-     * OSM relation role to consider when propagating linked entities from relations to their members
+     * OSM relation type to consider when propagating linked entities from relations to their members
+     * 
+     * @example "site" => If a relation with type=site has a linked entity it will be propagated to all members
+     */
+    relation_propagation_type?: string;
+
+    /**
+     * OSM relation member role to consider when propagating linked entities from relations to their members
      * 
      * @example "street" => If a relation has a linked entity it will be propagated to all members with the role "street", for example members of https://overpass-turbo.eu/s/1XdC
      */
@@ -87,6 +94,9 @@ export interface SourcePreset {
      */
     wikidata_image_property?: string;
 
+    /**
+     * Background color for control buttons and popups
+     */
     background_color?: string;
 
     /**
