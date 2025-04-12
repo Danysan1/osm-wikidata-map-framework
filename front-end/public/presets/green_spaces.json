@@ -1,6 +1,7 @@
 {
     "background_color": "hsl(120, 100%, 96%)",
     "osm_filter_tags": [
+        "landuse=village_green",
         "leisure=park",
         "leisure=garden"
     ],

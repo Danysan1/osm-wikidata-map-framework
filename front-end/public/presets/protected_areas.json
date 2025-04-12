@@ -5,6 +5,7 @@
         "boundary=national_park",
         "leisure=nature_reserve"
     ],
+    "relation_propagation_type": "site",
     "wikidata_filter_classes": [
         "Q473972", "Q179049", "Q46169"
     ]
