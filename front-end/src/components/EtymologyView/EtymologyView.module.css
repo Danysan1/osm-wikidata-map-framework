@@ -1,4 +1,4 @@
-.entity_grid {
+.entity>.entity_grid {
   display: grid;
   grid-template-rows: auto;
   align-content: center;
@@ -7,7 +7,7 @@
   justify-items: center;
   grid-row-gap: 0.5em;
   grid-column-gap: 0.5em;
-  grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(21em, 1fr));
 }
 
 .entity {
@@ -21,7 +21,7 @@
   max-width: 75em;
 }
 
-.entity_pictures:empty {
+.entity_pictures_column:empty {
   display: none;
 }
 

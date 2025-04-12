@@ -63,7 +63,11 @@ function readZoomFromFragment(splitFragment: string[]) {
 }
 function readColorSchemeIdFromFragment(splitFragment: string[]) {
   const rawID = splitFragment[COLOR_SCHEME_POSITION];
-  if (rawID && Object.values(ColorSchemeID).includes(rawID as ColorSchemeID)) {
+  if (rawID === "etymology_source") { // Backwards compatibility
+    return ColorSchemeID.entity_source;
+  } else if (rawID === "etymology_link_count") { // Backwards compatibility
+    return ColorSchemeID.entity_link_count;
+  } else if (rawID && Object.values(ColorSchemeID).includes(rawID as ColorSchemeID)) {
     return rawID as ColorSchemeID;
   } else {
     console.warn("Invalid color scheme in URL fragment", rawID);

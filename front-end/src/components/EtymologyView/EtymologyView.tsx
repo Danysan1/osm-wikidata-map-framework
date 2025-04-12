@@ -170,7 +170,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
   return (
     <div className={styles.entity}>
       <div className={styles.entity_grid}>
-        <div className="column">
+        <div className={styles.entity_info_column}>
           <div>
             <h2 className="etymology_name">{entity.name}</h2>
             <h3 className="etymology_description">{entity.description}</h3>
@@ -190,7 +190,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
           </div>
         </div>
 
-        <div className={styles.entity_pictures}>
+        <div className={styles.entity_pictures_column}>
           {entity.pictures?.slice(0, MAX_IMAGES)?.map((img, i) => (
             <CommonsImage key={i} name={img} className={styles.entity_image} />
           ))}
