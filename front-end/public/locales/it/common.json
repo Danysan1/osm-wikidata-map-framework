@@ -64,7 +64,7 @@
         "start_century": "Per secolo di inizio/nascita",
         "end_century": "Per secolo di fine/morte",
         "entity_link_count": "Per numero di Wikilink delle entità",
-        "feature_link_count": "Per numero di Wikilink degli elementi",
+        "feature_link_count": "feature_link_count",
         "feature_picture": "Per disponibilità di immagini",
         "available": "Disponibile",
         "unavailable": "Non disponibile",
