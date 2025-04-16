@@ -43,10 +43,16 @@ def get_source_url(work_dir:str, ti:TaskInstance, **context):
     params = context["params"]
     
     if not path.exists(work_dir):
-        makedirs(work_dir)
+        print(f"Creating work directory '{work_dir}'")
+        try:
+            makedirs(work_dir)
+        except Exception as e:
+            print("Failed creating folder, did you run airflow-init (e.g. though init.bat) to chown the workdir to the correct user?")
+            raise e
     
     dataset_dir = f'/workdir/{params["prefix"]}'
     if not path.exists(dataset_dir):
+        print(f"Creating dataset directory '{dataset_dir}'")
         makedirs(dataset_dir)
 
     source_url = get_last_pbf_url(

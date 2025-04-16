@@ -34,5 +34,5 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.load-related
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related:${owmf_framework_image_tag:-latest}
 
