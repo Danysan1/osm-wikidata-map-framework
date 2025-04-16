@@ -366,7 +366,7 @@ export const OwmfMap = () => {
         title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="wdqs_query"
-        baseURL="https://query.wikidata.org/#"
+        baseURL="https://query-main.wikidata.org/#"
         minZoomLevel={minZoomLevel}
         position="top-right"
       />

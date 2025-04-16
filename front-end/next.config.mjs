@@ -104,7 +104,7 @@ function generateCspHeaders() {
     matomoConnect = process.env.owmf_matomo_domain ? 'https://' + process.env.owmf_matomo_domain : "",
     matomoScript = process.env.owmf_matomo_domain ? 'https://cdn.matomo.cloud/' : "",
     wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org",
-    wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/",
+    wikimediaConnect = "https://query-main.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/",
     ohmConnect = process.env.owmf_enable_open_historical_map === "true" ? "https://overpass-api.openhistoricalmap.org/api/ https://www.openhistoricalmap.org/map-styles/" : "",
     osmConnect = "https://overpass-api.de/api/",
     payPalForm = process.env.owmf_paypal_id ? 'https://www.paypal.com/donate' : "",

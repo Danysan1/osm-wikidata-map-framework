@@ -17,7 +17,7 @@ export class WikidataBulkService {
     constructor(useQLever = true) {
         this.backend = useQLever ? "wikidata" : "sparql";
         this.api = new SparqlApi(new Configuration({
-            basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query.wikidata.org",
+            basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query-main.wikidata.org",
             baseOptions: {
                 headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // Must be set: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
             }
@@ -95,7 +95,7 @@ export class WikidataBulkService {
         // if (json.includes("java.util.concurrent.TimeoutException"))
         //     throw new Error("Timeout while fetching data");
         const json = JSON.stringify(response.data);
-        console.debug(`Fetched data, loading Wikidata entities...`);
+        console.debug("Fetched ", response.data?.results?.bindings?.length," rows, loading Wikidata entities...");
 
         try {
             console.time("wikidataLoad");

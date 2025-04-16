@@ -6,7 +6,9 @@ externalDocs:
   url: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service
 
 servers:
-  - url: https://query.wikidata.org
+  - url: https://query-main.wikidata.org
+    description: Official Wikidata Query Service (WDQS) endpoint
+  - url: https://query-scholarly.wikidata.org
     description: Official Wikidata Query Service (WDQS) endpoint
   - url: https://qlever.cs.uni-freiburg.de/api
     description: Official QLever endpoint

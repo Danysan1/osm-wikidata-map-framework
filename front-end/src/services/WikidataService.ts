@@ -9,7 +9,7 @@ export class WikidataService {
 
     public constructor(basePath = process.env.owmf_wikidata_endpoint) {
         this.api = new SparqlApi(new Configuration({
-            basePath: basePath?.length ? basePath : 'https://query.wikidata.org',
+            basePath: basePath?.length ? basePath : 'https://query-main.wikidata.org',
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // In theory it should be set (https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy) but in practice it causes a CORS error
         }));
     }
