@@ -2,56 +2,56 @@
     "title": "OSM-Wikidata Map Framework",
     "description": "Framework zur Erstellung interaktiver Karten, die Details über Entitäten, die mit geografischen Merkmalen aus OpenStreetMap und Wikidata verbunden sind, kombinieren und anzeigen",
     "info_box": {
-        "open_popup": "Öffnen Sie das Info-Popup",
-        "click_anywhere": "Klicken Sie auf eine beliebige Stelle der Karte, um sie zu erkunden.",
-        "use_controls": "Verwenden Sie die Steuerelemente an den Seiten, um weitere Daten anzuzeigen:",
-        "to_see_statistics": "um Statistiken über Elemente zu sehen (nur bei hohem zoom)",
-        "to_choose_preset": "um die zu verwendende Voreinstellung auszuwählen",
-        "to_choose_backend": "um die zu verwendende Datenquelle auszuwählen",
-        "to_overpass_query": "um die Quell-OverpassQL-Abfrage anzuzeigen (nur mit der Overpass-Quelle)",
-        "to_wikidata_query": "um die Quell-SPARQL-Abfrage anzuzeigen (nur mit der Wikidata-Quelle)",
-        "to_view_data_table": "um Daten in einer Tabelle anzuzeigen (nur bei hohem zoom)",
+        "open_popup": "Info-Popup öffnen",
+        "click_anywhere": "Klicke auf eine beliebige Stelle der Karte, um sie zu erkunden.",
+        "use_controls": "Nutze die Steuerelemente an den Seiten, um weitere Daten anzuzeigen:",
+        "to_see_statistics": "um Statistiken über Elemente zu sehen (nur bei hohem Zoom)",
+        "to_choose_preset": "um auszuwählen, welche Quellen-Voreinstellung genutzt werden soll",
+        "to_choose_backend": "um auszuwählen, welche Datenquelle genutzt werden soll",
+        "to_overpass_query": "um die Quell-OverpassQL-Abfrage anzuzeigen (nur bei Overpass-Quellen)",
+        "to_wikidata_query": "um die Quell-SPARQL-Abfrage anzuzeigen (nur bei Wikidata-Quellen)",
+        "to_view_data_table": "um Daten in einer Tabelle anzuzeigen (nur bei hohem Zoom)",
         "to_change_background": "um den Stil der Hintergrundkarte zu ändern",
         "to_open_again": "um dieses Popup erneut zu öffnen",
         "contribute": "Zur Karte beitragen",
         "download_dataset": "Download als Datensatz",
         "last_db_update": "Letzte Aktualisierung der Datenbank:",
         "based_on": "Basierend auf",
-        "report_issue": "Ein Problem melden",
-        "report_issue_title": "Melden Sie ein Problem oder einen Fehler in dieser Anwendung",
+        "report_issue": "Probleme melden",
+        "report_issue_title": "Melde Probleme oder Fehler in dieser Anwendung",
         "about_me": "Über mich",
-        "about_me_title": "Persönliche Website des Autors von OSM-Wikidata Map Framework"
+        "about_me_title": "Persönliche Webseite des Autors des OSM-Wikidata Map Framework"
     },
     "snackbar": {
-        "zoom_in": "Bitte zoomen, um die Daten zu sehen",
+        "zoom_in": "Bitte zoom hinein, um Daten zu sehen",
         "fetch_error": "Beim Abrufen der Daten ist ein Fehler aufgetreten",
-        "map_error": "Ein Kartenfehler ist aufgetreten",
+        "map_error": "Es ist ein Kartenfehler aufgetreten",
         "data_loaded": "Daten geladen",
         "no_data_in_this_area": "Keine Daten in diesem Gebiet",
-        "data_loaded_instructions": "Daten geladen, klicken Sie auf ein hervorgehobenes Element, um dessen Details anzuzeigen"
+        "data_loaded_instructions": "Daten geladen, klicke auf ein hervorgehobenes Element, um seine Details anzuzeigen"
     },
     "preset": {
-        "choose_preset": "Wählen Sie Voreinstellung",
-        "architect": "Bauarchitekten",
-        "artist": "Autoren von Kunstwerken",
+        "choose_preset": "Voreinstellung wählen",
+        "architect": "Architekt*innen von Gebäuden",
+        "artist": "Autor*innen von Kunstwerken",
         "base": "OSM + Wikidata",
         "brand": "Marken",
         "burial": "Grabstätten",
-        "etymology": "Etymologien (Herkunft der Namen)",
+        "etymology": "Etymologien (Namensherkünfte)",
         "green_spaces": "Grünflächen",
         "holy_wells": "Heilige Quellen",
-        "holy_well_etymology": "Etymologie der heiligen Quellen",
+        "holy_well_etymology": "Etymologie heiliger Quellen",
         "protected_areas": "Schutzgebiete"
     },
     "source": {
         "choose_source": "Datenquelle wählen",
         "db_all": "Alle Quellen der DB",
-        "db_osm_wikidata_reverse": "Wikidata-Entitäten, die mit OSM wikidata=* referenziert werden und {{indirectWdProperty}}",
+        "db_osm_wikidata_reverse": "Wikidata-Entitäten, die mit OSM wikidata=* und {{indirectWdProperty}} referenziert werden",
         "propagated": "propagiert",
         "all_keys": "Alle Schlüssel",
-        "wd_reverse": "Wikidata-Entitäten, auf die mit {{indirectWdProperty}}",
+        "wd_reverse": "Wikidata-Entitäten, die mit {{indirectWdProperty}} referenziert werden",
         "wd_qualifier": "P625-Qualifikatoren am {{indirectWdProperty}}",
-        "wd_indirect": "P625-Qualifikatoren am {{indirectWdProperty}} und Wikidata-Entitäten, auf die mit {{indirectWdProperty}}"
+        "wd_indirect": "P625-Qualifikatoren am {{indirectWdProperty}} und Wikidata-Entitäten, die mit {{indirectWdProperty}} referenziert werden"
     },
     "color_scheme": {
         "choose_scheme": "Farbschema und Statistiken auswählen",
@@ -59,12 +59,12 @@
         "feature_source": "Nach Quelle der Elemente",
         "gender": "Nach Geschlecht",
         "type": "Nach Typ",
-        "country": "Nach Ländern",
+        "country": "Nach Land",
         "occupation": "Nach Tätigkeit",
         "start_century": "Nach Gründungs-/Geburtsjahrhundert",
         "end_century": "Nach Jahrhundert des Endes/Todes",
-        "entity_link_count": "Nach Wikilink-Zählung",
-        "feature_link_count": "Nach Wikilink-Zählung",
+        "entity_link_count": "Nach Zahl der Wikilinks der Entität",
+        "feature_link_count": "Nach Zahl der Wikilinks des Elements",
         "feature_picture": "Nach Bildverfügbarkeit",
         "available": "Verfügbar",
         "unavailable": "Nicht verfügbar",
@@ -75,23 +75,23 @@
         "black": "Schwarz",
         "red": "Rot",
         "orange": "Orange",
-        "entity_source": "Nach Quelle der verknüpften Entitäten"
+        "entity_source": "Nach Quelle der verknüpften Entität"
     },
     "feature_details": {
-        "source": "Elementquelle:",
-        "loading_first_n_items": "Nur die ersten {{partial}} Entitäten von {{total}} werden geladen...",
+        "source": "Quelle des Features:",
+        "loading_first_n_items": "Nur die ersten {{partial}} von insgesamt {{total}} Entitäten werden geladen...",
         "location": "Standort",
         "picture_via_commons": "Bild von Wikimedia Commons",
         "loading": "Entitäten werden geladen...",
-        "report_problem": "Ein Problem mit diesem Element melden"
+        "report_problem": "Melde ein Problem mit diesem Element"
     },
     "etymology_details": {
-        "source": "Entitätsquelle:",
-        "propagation": "vermehrung",
-        "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
+        "source": "Quelle der Entität:",
+        "propagation": "Propagierung",
+        "propagation_title": "Beschreibung des Propagierungsmechanismus"
     },
     "data_table": {
-        "view_data_table": "Sehen Sie sich die Daten in einer Tabelle an",
+        "view_data_table": "Daten in Tabellenform anzeigen",
         "names": "Namen",
         "actions": "Aktionen",
         "linked_entities": "Verknüpften Entitäten"
@@ -99,9 +99,10 @@
     "translate": "Übersetzen",
     "change_language": "Sprache ändern",
     "choose_basemap": "Hintergrundstil auswählen",
-    "choose_projection": "Wählen Sie Kartenprojektion",
-    "overpass_turbo_query": "Quell-OverpassQL-Abfrage auf Overpass Turbo",
-    "wdqs_query": "Quell-SPARQL-Abfrage im Wikidata Query Service",
-    "qlever_query": "Quell-SPARQL-Abfrage im QLever UI",
+    "choose_projection": "Kartenprojektion wählen",
+    "choose_year": "Jahr wählen:",
+    "overpass_turbo_query": "Quell-OverpassQL-Abfrage an Overpass Turbo",
+    "wdqs_query": "Quell-SPARQL-Abfrage an Wikidata Query Service",
+    "qlever_query": "Quell-SPARQL-Abfrage an QLever UI",
     "clear_cache": "Cache leeren"
 }
