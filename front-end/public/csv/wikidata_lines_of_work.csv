@@ -3,6 +3,7 @@ Q11190,medicine,Healthcare,#ff3333
 Q130370967,emergency and relief,Healthcare,#ff3333
 Q133981,first aid,Healthcare,#ff3333
 Q826745,humanitarian aid,Healthcare,#ff3333
+Q1063076,voluntary sector,Healthcare,#ff3333
 Q3565868,rail transport,Logistics,#ff9933
 Q1311670,rail infrastructure,Logistics,#ff9933
 Q178512,public transport,Logistics,#ff9933
@@ -23,10 +24,13 @@ Q57262277,jewelry industry,Retail,#33ff33
 Q12752882,cosmetics industry,Retail,#33ff33
 Q112165812,parfumerie,Retail,#33ff33
 Q484847,e-commerce,Retail,#33ff33
-Q540912,food industry,Retail,#33ff33
-Q57497035,fast-food industry,Retail,#33ff33
-Q81799,fast food,Retail,#33ff33
-Q41958,foodservice,Retail,#33ff33
+Q76214980,electronics store chain,Retail,#33ff33
+Q540912,food industry,Retail,#33ffcc
+Q57497035,fast-food industry,Retail,#33ffcc
+Q81799,fast food,Retail,#33ffcc
+Q1442415,quick service restaurant sector,Retail,#33ffcc
+Q41958,foodservice,Retail,#33ffcc
+Q1751445,system catering,Retail,#33ffcc
 Q837171,financial services,Finance,#33ff99
 Q57774188,financial sector,Finance,#33ff99
 Q806718,economics of banking,Finance,#33ff99
@@ -53,6 +57,7 @@ Q252799,industrial design right,STEM,#3333ff
 Q59950,urbanism,STEM,#3333ff
 Q11023,engineering,STEM,#3333ff
 Q56611700,Internet industry,STEM,#3333ff
+Q5358497,electronics industry,STEM,#3333ff
 Q1495452,hospitality industry,Tourism,#9933ff
 Q1285245,hotel industry,Tourism,#9933ff
 Q27686,hotel,Tourism,#9933ff
@@ -71,6 +76,8 @@ Q482,poetry,Humanities,#ff3399
 Q8242,literature,Humanities,#ff3399
 Q9174,religion,Humanities,#ff3399
 Q34178,theology,Humanities,#ff3399
+Q63348704,employment services industry,Humanities,#ff3399
+Q131766571,staffing industry,Humanities,#ff3399
 Q7163,politics,Politics,#ff33cc
 Q1791716,military affairs,Politics,#ff33cc
 Q1889,diplomacy,Politics,#ff33cc

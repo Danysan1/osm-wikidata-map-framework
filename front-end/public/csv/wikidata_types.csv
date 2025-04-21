@@ -324,6 +324,7 @@ Q13220204,second-level administrative division,Human settlements,#3366ff
 Q11618417,local administrative unit of 2nd level,Human settlements,#3366ff
 Q1852859,cadastral populated place in the Netherlands,Human settlements,#3366ff
 Q1392581,cycling city,Human settlements,#3366ff
+Q14770218,cantonal capital of Switzerland,Human settlements,#3366ff
 Q43229,organization,Organization,#9933ff
 Q4830453,business,Organization,#9933ff
 Q6881511,enterprise,Organization,#9933ff
@@ -342,6 +343,9 @@ Q79913,non-governmental organization,Organization,#9933ff
 Q1194093,international non-governmental organization,Organization,#9933ff
 Q178706,institution,Organization,#9933ff
 Q507619,retail chain,Organization,#9933ff
+Q64027599,gas station chain,Organization,#9933ff
+Q18043413,supermarket chain,Organization,#9933ff
+Q132777643,grocery store chain,Organization,#9933ff
 Q18509232,fast food restaurant chain,Organization,#9933ff
 Q76213285,clothing store chain,Organization,#9933ff
 Q18534542,restaurant chain,Organization,#9933ff
