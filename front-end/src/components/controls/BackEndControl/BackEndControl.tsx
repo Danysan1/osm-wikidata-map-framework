@@ -1,8 +1,5 @@
 import { parseStringArrayConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { DetailsDatabase } from "@/src/db/DetailsDatabase";
-import { MapDatabase } from "@/src/db/MapDatabase";
-import { StatsDatabase } from "@/src/db/StatsDatabase";
 import { ohmKeyToKeyID, osmKeyToKeyID } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "react-map-gl/maplibre";
@@ -12,6 +9,10 @@ import { Button } from "../../Button/Button";
 import { LastDbUpdate } from "../../LastDbUpdate/LastDbUpdate";
 import { DropdownControl, DropdownItem } from "../DropdownControl/DropdownControl";
 import { DateSelector } from "./DateSelector";
+import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
+import { EntityLinkNotesDatabase } from "@/src/db/EntityLinkNotesDatabase";
+import { MapDatabase } from "@/src/db/MapDatabase";
+import { StatsDatabase } from "@/src/db/StatsDatabase";
 
 interface BackEndControlProps {
     preset: SourcePreset;
@@ -35,9 +36,9 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
     const { t } = useTranslation(),
         { backEndID, setBackEndID } = useUrlFragmentContext(),
         dropdownItems = useMemo(() => {
-            const qleverEnabled = process.env.owmf_qlever_enable === "true",
-                ohmEnabled = process.env.owmf_enable_open_historical_map === "true",
-                pmtilesURL = process.env.owmf_pmtiles_preset === preset.id ? process.env.owmf_pmtiles_base_url : undefined,
+            const qleverEnabled = process.env.NEXT_PUBLIC_OWMF_qlever_enable === "true",
+                ohmEnabled = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true",
+                pmtilesURL = process.env.NEXT_PUBLIC_OWMF_pmtiles_preset === preset.id ? process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url : undefined,
                 dropdownItems: DropdownItem[] = [],
                 buildDropdownItem = (backEndID: string, text: string, category?: string): DropdownItem => ({
                     id: backEndID,
@@ -96,7 +97,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                         dropdownItems.push(buildDropdownItem("qlever_ohm_wd_direct", ohmWikidataDirectText, QLEVER_OHM_GROUP_NAME));
                     }
                 }
-                if(preset.osm_wikidata_properties.length > 1) {
+                if (preset.osm_wikidata_properties.length > 1) {
                     for (const prop of preset.osm_wikidata_properties) {
                         dropdownItems.push(buildDropdownItem("wd_direct_" + prop, "Wikidata " + prop, WDQS_GROUP_NAME));
                         //dropdownItems.push(buildDropdownItem("qlever_wd_direct_" + prop, `Wikidata ${prop}`, QLEVER_GROUP_NAME)); // TODO: Implement and enable
@@ -189,7 +190,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                 }
             }
 
-            if (!!process.env.owmf_propagate_data && pmtilesURL)
+            if (pmtilesURL)
                 dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
 
             return dropdownItems;
@@ -208,10 +209,10 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
 
     useEffect(() => {
         if (!dropdownItems.find(i => i.id === backEndID)) {
-            const preferredBackends = process.env.owmf_preferred_backends ? parseStringArrayConfig(process.env.owmf_preferred_backends) : [],
+            const preferredBackends = process.env.NEXT_PUBLIC_OWMF_preferred_backends ? parseStringArrayConfig(process.env.NEXT_PUBLIC_OWMF_preferred_backends) : [],
                 preferredBackend = preferredBackends.find(backend => !!dropdownItems.find(item => item.id === backend)),
                 newItem = dropdownItems.find(item => item.id === preferredBackend) ?? dropdownItems[0];
-            if(!newItem) {
+            if (!newItem) {
                 console.error("No back-end available");
             } else {
                 console.debug(
@@ -223,11 +224,15 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         }
     }, [backEndID, dropdownItems]);
 
-    const clearCache = useCallback(() => {
-        new MapDatabase().clearMaps().catch(e => console.error("Failed clearing map cache", e));
-        new DetailsDatabase().clearDetails().catch(e => console.error("Failed clearing details cache", e));
-        new StatsDatabase().clearStats().catch(e => console.error("Failed clearing stats cache", e));
-    }, []);
+    const clearCache = useCallback(
+        () => void Promise.all([
+            new EntityDetailsDatabase().clear(),
+            new EntityLinkNotesDatabase().clear(),
+            new MapDatabase().clear(),
+            new StatsDatabase().clear(),
+        ]).catch(e => console.error("Failed clearing cache", e)),
+        []
+    );
 
     return <DropdownControl
         buttonContent="⚙️"
@@ -241,7 +246,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         {backEndID.startsWith("pmtiles") && (
             <Button
                 className="dataset_button"
-                href={process.env.owmf_pmtiles_base_url + "dataset.csv"}
+                href={process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url + "dataset.csv"}
                 iconText="💾"
                 iconAlt="Dataset symbol"
                 showText

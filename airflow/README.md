@@ -37,7 +37,7 @@ Please note that this diagram is not up-to-date with the latest changes, for an 
 To run the database initialization:
 
 1. make sure [Docker Compose is installed](https://docs.docker.com/compose/install/)
-2. initialize `.env` from [`.env.example`](../.env.example) (owmf_source_presets is not yet supported, currently tags and properties for the preset must be specified directly)
+2. initialize `.env` from [`.env.example`](../.env.example) (`NEXT_PUBLIC_OWMF_source_presets` is not yet supported, currently tags and properties for the preset must be specified directly)
 3. the first time run `docker compose --profile airflow-init up`, then for each sequent time start Apache Airflow with `docker compose up -d`
 4. If you want to upload the tiles to an S3 bucket, [create an access key on AWS IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html), configure it [in an Airflow AWS connection](http://localhost:8080/variable/list/) called `aws_s3` and configure the URI of the S3 bucket [in an Airflow variable](http://localhost:8080/connection/list/) called `<PREFIX>_base_s3_uri` (for example `planet_base_s3_uri`)
 5. Enable the three DAG pipelines for the area you are interested in (for example `download-planet-from-rss`+`filter-planet`+`db-init-planet`)

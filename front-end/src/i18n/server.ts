@@ -14,7 +14,7 @@ export async function loadServerI18n(lang?: string) {
     const commonBackendPath = join(process.cwd(), "public", "locales", language, FALLBACK_NAMESPACE + '.json'),
         rawCommonBackend = existsSync(commonBackendPath) ? JSON.parse(readFileSync(commonBackendPath, 'utf8')) as unknown : undefined,
         commonBackend = rawCommonBackend && typeof rawCommonBackend === 'object' ? { [language]: { [FALLBACK_NAMESPACE]: rawCommonBackend } } as Resource : undefined,
-        rawI18nOverride = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined,
+        rawI18nOverride = process.env.NEXT_PUBLIC_OWMF_i18n_override ? JSON.parse(process.env.NEXT_PUBLIC_OWMF_i18n_override) as unknown : undefined,
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [],
         backendOptions: object[] = [];

@@ -1,12 +1,13 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
-import { LinkedEntity } from "@/src/model/LinkedEntity";
-import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
-import { CachedDetailsService } from "@/src/services/WikidataDetailsService/CachedDetailsService";
+import type { LinkedEntity } from "@/src/model/LinkedEntity";
+import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
 import styles from "./LinkedEntityList.module.css";
+import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
+import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 
 interface LinkedEntityListProps {
   linkedEntities: LinkedEntity[];
@@ -47,7 +48,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
         }
 
         try {
-          const detailsService = new CachedDetailsService(i18n.language),
+          const detailsService = new WikidataDetailsService(i18n.language, new EntityDetailsDatabase()),
             fetched = await detailsService.fetchEtymologyDetails(etymologyIDs);
           const combined = entities.map<LinkedEntityDetails>((old) =>
             old.wikidata && fetched[old.wikidata]
@@ -55,26 +56,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
               : old
           );
           const filtered = combined
-            .filter((e) => {
-              if (e.wikidata) return true; // Always show all Wikidata entities
-
-              if (!e.name) {
-                console.warn("Not showing an entity without name nor Wikidata Q-ID", e);
-                return false;
-              }
-
-              // If deduplication is disabled show all text entities
-              if (process.env.owmf_deduplicate_by_name !== "true") return true;
-
-              // Ignore text entities with the same name as an existing Wikidata entity
-              const normalName = normalizeName(e.name);
-              return !combined.some(
-                (other) =>
-                  !!other.wikidata &&
-                  !!other.name &&
-                  normalizeName(other.name).includes(normalName)
-              );
-            })
+            .filter(deduplicateByName)
             .sort(
               // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
               (a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0)
@@ -115,6 +97,28 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
     </div>
   );
 };
+
+function deduplicateByName(entity: LinkedEntityDetails, index: number, all: LinkedEntityDetails[]) {
+  // If deduplication is disabled show all text entities
+  if (process.env.NEXT_PUBLIC_OWMF_deduplicate_by_name !== "true") return true;
+
+  if (entity.wikidata) return true; // Always show all Wikidata entities
+
+  if (!entity.name) {
+    console.warn("Not showing an entity without name nor Wikidata Q-ID", entity);
+    return false;
+  }
+
+  // Ignore text entities with the same name as an existing Wikidata entity
+  const normalName = normalizeName(entity.name)
+  return !all.some((other) =>
+    !!other.wikidata &&
+    !!other.name && (
+      normalizeName(other.name).includes(normalName) ||
+      (other.description && normalizeName(other.description).includes(normalName))
+    )
+  );
+}
 
 /**
  * @see https://stackoverflow.com/a/37511463/2347196

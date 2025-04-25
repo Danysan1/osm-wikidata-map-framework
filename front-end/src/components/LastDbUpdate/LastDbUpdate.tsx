@@ -6,8 +6,8 @@ export const LastDbUpdate: FC = () => {
     [lastUpdateDate, setLastUpdateDate] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (process.env.owmf_pmtiles_base_url) {
-      fetch(process.env.owmf_pmtiles_base_url + "date.txt")
+    if (process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url) {
+      fetch(process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url + "date.txt")
         .then((res) => {
           if (!res.ok) {
             console.error("Failed to fetch last update date: ", res);

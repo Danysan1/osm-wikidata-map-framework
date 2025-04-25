@@ -9,7 +9,7 @@ interface LanguageLayoutProps {
 export default function LanguageLayout({ children, params: { lang } }: LanguageLayoutProps) {
   return (
     <html lang={lang} dir={dir(lang)}>
-      {process.env.owmf_google_analytics_id && <GoogleTagManager gtmId={process.env.owmf_google_analytics_id} />}
+      {process.env.NEXT_PUBLIC_OWMF_google_analytics_id && <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_OWMF_google_analytics_id} />}
       <body style={{ margin: 0 }}>{children}</body>
     </html>
   )

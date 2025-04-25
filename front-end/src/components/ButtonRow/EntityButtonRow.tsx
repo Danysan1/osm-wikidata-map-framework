@@ -1,5 +1,5 @@
 import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { ButtonRow } from "./ButtonRow";
@@ -10,14 +10,11 @@ interface EntityButtonRowProps {
 }
 
 export const EntityButtonRow: FC<EntityButtonRowProps> = ({ entity }) => {
-  const { i18n } = useTranslation();
-  const entitreeURL = useMemo(
-    () =>
-      i18n.language && entity.wikidata && entity.instanceID == "Q5"
-        ? `https://www.entitree.com/${i18n.language}/family_tree/${entity.wikidata}`
-        : undefined,
-    [entity.instanceID, entity.wikidata, i18n.language]
-  );
+  const { i18n } = useTranslation(),
+    language = i18n.language.split("_")[0]; // Ignore country
+  const entitreeURL = language && entity.wikidata && entity.instanceID == "Q5"
+    ? `https://www.entitree.com/${language}/family_tree/${entity.wikidata}`
+    : undefined;
 
   return (
     <ButtonRow

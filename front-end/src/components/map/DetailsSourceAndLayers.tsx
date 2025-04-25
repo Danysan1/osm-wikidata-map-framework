@@ -30,13 +30,15 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
       return;
     }
 
-    const bounds = map?.getBounds().toArray(),
+    if (!props.backEndService?.canHandleBackEnd(backEndID)) {
+      console.warn("Unsupported back-end ID, NOT fetching map clusters:", backEndID);
+      return;
+    }
+
+    const bounds = map?.getBounds()?.toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (!bbox || !props.backEndService?.canHandleBackEnd(backEndID)) {
-      console.warn("Unsupported back-end ID or missing bbox, NOT fetching map details", {
-        bbox,
-        backEndID,
-      });
+    if (!bbox) {
+      console.warn("Missing bbox, NOT fetching map clusters");
       return;
     }
 
@@ -49,11 +51,11 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
       return;
     }
 
-    console.debug("DetailsSourceAndLayers fetching data");
+    console.debug("DetailsSourceAndLayers fetching data:", backEndID);
     showLoadingSpinner(true);
     props.backEndService
       .fetchMapElements(backEndID, false, bbox, i18n.language, year)
-      .then((data) => setDetailsData(data))
+      .then(setDetailsData)
       .catch((e) => {
         console.error("Failed fetching map details", e);
         showSnackbar(t("snackbar.map_error"));

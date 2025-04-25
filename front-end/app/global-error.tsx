@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import NextError from "next/error";
 import { useEffect } from "react";
 
@@ -9,11 +10,7 @@ export default function GlobalError({
   error: Error & { digest?: string };
 }) {
   useEffect(() => {
-    if (process.env.owmf_sentry_js_dsn) {
-      import("@sentry/nextjs")
-        .then(Sentry => Sentry.captureException(error))
-        .catch(console.error);
-    }
+    Sentry.captureException(error);
   }, [error]);
 
   return (

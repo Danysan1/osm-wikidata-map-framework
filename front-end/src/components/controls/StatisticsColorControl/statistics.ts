@@ -2,6 +2,7 @@ import { ColorSchemeID } from "@/src/model/colorScheme";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
 import { OsmInstance } from "@/src/model/LinkedEntity";
 import { getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
+import { StatsDatabase } from "@/src/db/StatsDatabase";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
@@ -85,7 +86,7 @@ export async function downloadChartDataForWikidataIDs(
   console.debug("downloadChartDataForWikidataIDs: Fetching and updating stats", { colorSchemeID, idSet });
 
   try {
-    const statsService = new WikidataStatsService(language);
+    const statsService = new WikidataStatsService(language, new StatsDatabase());
     const stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
     if (!stats.length) {

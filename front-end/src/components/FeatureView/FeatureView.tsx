@@ -1,4 +1,3 @@
-import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { getPropLinkedEntities } from "@/src/model/OwmfFeatureProperties";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
@@ -12,14 +11,15 @@ import { LinkedEntityList } from "../EtymologyList/LinkedEntityList";
 import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
 import { FeatureSourceRow } from "./FeatureSourceRow";
 import styles from "./FeatureView.module.css";
+import { SourcePreset } from "@/src/model/SourcePreset";
 
 interface FeatureViewProps {
   feature: OwmfFeature;
+  preset: SourcePreset;
 }
 
-export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
+export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
   const { t, i18n } = useTranslation(),
-    { sourcePresetID } = useUrlFragmentContext(),
     [wikipediaExtract, setWikipediaExtract] = useState<string>(),
     props = feature.properties,
     featureI18n = getFeatureTags(feature),
@@ -133,7 +133,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       )}
       {description && <p className={styles.element_description}>{description}</p>}
       <div className={styles.feature_buttons_container}>
-        <FeatureButtonRow feature={feature} />
+        <FeatureButtonRow feature={feature} preset={preset} />
       </div>
       {wikipediaExtract && (
         <p className={styles.wikipedia_extract}>📖 {wikipediaExtract}</p>
@@ -147,7 +147,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
       <Button
         title={t("feature_details.report_problem")}
         className="ety_error_button"
-        href={`/${i18n.language}/contributing/${sourcePresetID}`}
+        href={`/${i18n.language}/contributing/${preset.id}`}
         iconText="⚠️"
         iconAlt="Problem symbol"
         showText

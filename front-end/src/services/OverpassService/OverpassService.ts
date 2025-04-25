@@ -1,11 +1,11 @@
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { OverpassJson } from "overpass-ts";
-import type { MapDatabase } from "../db/MapDatabase";
-import { DatePrecision, LinkedEntity, OsmInstance, OsmType } from "../model/LinkedEntity";
-import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
-import { SourcePreset } from "../model/SourcePreset";
-import type { MapService } from "./MapService";
+import type { MapDatabase } from "../../db/MapDatabase";
+import { DatePrecision, LinkedEntity, OsmInstance, OsmType } from "../../model/LinkedEntity";
+import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
+import type { SourcePreset } from "../../model/SourcePreset";
+import type { MapService } from "../MapService";
 
 const COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/,
     COMMONS_FILE_REGEX = /(Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/)/,
@@ -50,7 +50,7 @@ export class OverpassService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        if (process.env.owmf_enable_open_historical_map !== "true" && backEndID.includes("ohm"))
+        if (process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" && backEndID.includes("ohm"))
             return false;
         else if (this.preset?.osm_wikidata_keys)
             return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
@@ -108,7 +108,7 @@ export class OverpassService implements MapService {
             osm_wikidata_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
-        } else if (process.env.owmf_enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
+        } else if (process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
             osmInstance = OsmInstance.OpenHistoricalMap
             osm_wikidata_keys = [];
             search_text_key = undefined;
@@ -403,7 +403,7 @@ export class OverpassService implements MapService {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
             notTooBig = `[!"sqkm"][!"boundary"]["type"!="boundary"]${maxMembersFilter}`,
-            dateFilters = process.env.owmf_enable_open_historical_map !== "true" || year === new Date().getFullYear() ? [
+            dateFilters = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ? [
                 // Filter for openstreetmap.org or openhistoricalmap.org in the current year
                 '[!"end_date"]["route"!="historic"]'
             ] : [
@@ -459,7 +459,7 @@ export class OverpassService implements MapService {
                 query += `nwr${notTooBig}${dateFilter}(if:count_by_role("${relation_member_role}") > 0); // relation as linked entity \n`;
         });
 
-        const outClause = onlyCentroids ? `out ids center ${this.maxElements};` : `out body ${this.maxElements}; >; out skel qt;`;
+        const outClause = onlyCentroids ? `out ids center ${this.maxElements ?? ""};` : `out body ${this.maxElements ?? ""}; >; out skel qt;`;
         query += `);
 // Max elements: ${this.maxElements ?? "NONE"}
 ${outClause}

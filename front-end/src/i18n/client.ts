@@ -13,10 +13,10 @@ import { DEFAULT_LANGUAGE, FALLBACK_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from 
  * @see https://react.i18next.com/
  */
 export async function loadClientI18n() {
-    const rawI18nOverride = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined,
+    const rawI18nOverride = process.env.NEXT_PUBLIC_OWMF_i18n_override ? JSON.parse(process.env.NEXT_PUBLIC_OWMF_i18n_override) as unknown : undefined,
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [HttpBackend],
-        backendOptions: object[] = [{ loadPath: `${process.env.owmf_base_path ?? ""}/locales/{{lng}}/{{ns}}.json` }];
+        backendOptions: object[] = [{ loadPath: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/locales/{{lng}}/{{ns}}.json` }];
     if (i18nOverride) {
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});

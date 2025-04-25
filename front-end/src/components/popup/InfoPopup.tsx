@@ -17,14 +17,14 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
   useEffect(() => {
     console.debug(
       "InfoPopup fetching custom intro",
-      process.env.owmf_custom_intro_html
+      process.env.NEXT_PUBLIC_OWMF_custom_intro_html
     );
-    if (process.env.owmf_custom_intro_html) {
-      fetch(process.env.owmf_custom_intro_html)
+    if (process.env.NEXT_PUBLIC_OWMF_custom_intro_html) {
+      fetch(process.env.NEXT_PUBLIC_OWMF_custom_intro_html)
         .then((response) => response.text())
         .then((text) => {
           setCustomIntroHTML(text);
-          setCustomIntroJS(process.env.owmf_custom_intro_js);
+          setCustomIntroJS(process.env.NEXT_PUBLIC_OWMF_custom_intro_js);
         })
         .catch((error) => console.error("Failed to load custom intro HTML", error));
     }

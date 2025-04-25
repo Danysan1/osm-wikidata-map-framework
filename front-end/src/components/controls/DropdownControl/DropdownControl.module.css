@@ -1,7 +1,8 @@
 .control .dropdown_select {
   display: inline-block;
   margin: 5px;
-  min-width: 95%;
+  width: 93%;
+  max-width: 95%;
 }
 
 .control .title {

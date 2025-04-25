@@ -87,13 +87,6 @@ export interface LinkedEntity {
     propagated?: boolean;
 
     /**
-     * Q-ID of the Wikidata entity that the link to this entity is subject of.
-     * For example, the article describing the etymology represented by this statement.
-     * @see https://www.wikidata.org/wiki/Property:P805
-     */
-    statement_entity?: string;
-
-    /**
      * Q-ID of this Wikidata entity
      */
     wikidata?: string;
@@ -130,3 +123,16 @@ export interface LinkedEntity {
     death_place?: string;
 }
 
+export interface EntityLinkNotes {
+    /**
+     * Q-ID of the Wikidata entity that this entity link is subject of.
+     * For example, the article describing the etymology represented by this statement.
+     * @see https://www.wikidata.org/wiki/Property:P805
+     */
+    entityQID?: string;
+    
+    /**
+     * Human readable list of languages in which the statement applies
+     */
+    languages?: string;
+}

@@ -2,7 +2,7 @@ import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import { OsmInstance, type LinkedEntity, type OsmType, type OsmWdJoinField } from "../model/LinkedEntity";
 import { createFeatureTags, getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
-import { SourcePreset } from "../model/SourcePreset";
+import type { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
@@ -198,7 +198,7 @@ export class OverpassWikidataMapService implements MapService {
                 const osmEtymologies = getFeatureLinkedEntities(osmFeature) ?? [],
                     osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
                 if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {
-                    // Wikidata etymology has priority over the Overpass one as it can have more details, like statementEntity
+                    // Wikidata etymology has priority over the Overpass one as it can have more details
                     console.warn("Overpass+Wikidata: Duplicate etymology, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmFeature.properties, wd: wikidataFeature.properties });
                     osmEtymologies[osmEtymologyIndex] = wdEtymology;
                 } else {
