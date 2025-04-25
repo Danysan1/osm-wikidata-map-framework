@@ -1,13 +1,13 @@
 import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
-import type { MapDatabase } from "../db/MapDatabase";
-import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
-import { Configuration } from "../generated/sparql/configuration";
-import { LinkedEntity, OsmInstance, OsmType } from "../model/LinkedEntity";
-import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
-import { SourcePreset } from "../model/SourcePreset";
-import type { MapService } from "./MapService";
-import { WikidataService } from "./WikidataService";
+import type { MapDatabase } from "../../db/MapDatabase";
+import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../../generated/sparql/api";
+import { Configuration } from "../../generated/sparql/configuration";
+import { LinkedEntity, OsmInstance, OsmType } from "../../model/LinkedEntity";
+import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
+import type { SourcePreset } from "../../model/SourcePreset";
+import type { MapService } from "../MapService";
+import { WikidataService } from "../WikidataService";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -66,6 +66,8 @@ export class QLeverMapService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+        language = language.split("_")[0]; // Ignore country
+        
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
             console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
             return { type: "FeatureCollection", features: [] };
@@ -234,9 +236,9 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "));
         }
 
-        const wikidataCountry = process.env.owmf_wikidata_country,
+        const wikidataCountry = process.env.NEXT_PUBLIC_OWMF_wikidata_country,
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-            osmCountry = process.env.owmf_osm_country,
+            osmCountry = process.env.NEXT_PUBLIC_OWMF_osm_country,
             osmCountryQuery = osmCountry ? `osmrel:${osmCountry} ogc:sfContains ?osm.` : '';
 
         return sparqlQuery
@@ -317,7 +319,6 @@ export class QLeverMapService implements MapService {
                         from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                         propagated: false,
-                        statement_entity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikidata: etymology_wd_id,
                     } : undefined;
 

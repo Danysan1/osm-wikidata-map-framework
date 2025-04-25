@@ -24,10 +24,10 @@ export async function generateOwmfMetadata(lang?: string): Promise<Metadata> {
     },
     icons: {
       icon: [
-        `${process.env.owmf_base_path ?? ""}/favicon.svg`,
-        `${process.env.owmf_base_path ?? ""}/favicon.ico`
+        `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/favicon.svg`,
+        `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/favicon.ico`
       ],
-      apple: `${process.env.owmf_base_path ?? ""}/apple-touch-icon.png`,
+      apple: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/apple-touch-icon.png`,
     },
     authors: [{ name: "Daniele Santini", url: "https://www.dsantini.it" }],
     keywords: process.env.owmf_keywords,

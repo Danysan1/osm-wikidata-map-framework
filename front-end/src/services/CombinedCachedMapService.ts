@@ -1,12 +1,12 @@
-import { BBox } from "geojson";
+import type { BBox } from "geojson";
 import { MapDatabase } from "../db/MapDatabase";
-import { OwmfResponse } from "../model/OwmfResponse";
-import { SourcePreset } from "../model/SourcePreset";
-import { MapService } from "./MapService";
-import { OverpassService } from "./OverpassService";
+import type { OwmfResponse } from "../model/OwmfResponse";
+import type { SourcePreset } from "../model/SourcePreset";
+import type { MapService } from "./MapService";
+import { OverpassService } from "./OverpassService/OverpassService";
 import { OverpassWikidataMapService } from "./OverpassWikidataMapService";
-import { QLeverMapService } from "./QLeverMapService";
-import { WikidataMapService } from "./WikidataMapService";
+import { QLeverMapService } from "./QLeverMapService/QLeverMapService";
+import { WikidataMapService } from "./WikidataMapService/WikidataMapService";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];
@@ -14,15 +14,15 @@ export class CombinedCachedMapService implements MapService {
 
     constructor(sourcePreset: SourcePreset) {
         this.services = [];
-        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24"),
-            rawMaxElements = process.env.owmf_max_map_elements,
+        const maxHours = parseInt(process.env.NEXT_PUBLIC_OWMF_cache_timeout_hours ?? "24"),
+            rawMaxElements = process.env.NEXT_PUBLIC_OWMF_max_map_elements,
             maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
-            rawMaxRelationMembers = process.env.owmf_max_relation_members,
+            rawMaxRelationMembers = process.env.NEXT_PUBLIC_OWMF_max_relation_members,
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
-            westLon = process.env.owmf_min_lon ? parseFloat(process.env.owmf_min_lon) : undefined,
-            southLat = process.env.owmf_min_lat ? parseFloat(process.env.owmf_min_lat) : undefined,
-            eastLon = process.env.owmf_max_lon ? parseFloat(process.env.owmf_max_lon) : undefined,
-            northLat = process.env.owmf_max_lat ? parseFloat(process.env.owmf_max_lat) : undefined,
+            westLon = process.env.NEXT_PUBLIC_OWMF_min_lon ? parseFloat(process.env.NEXT_PUBLIC_OWMF_min_lon) : undefined,
+            southLat = process.env.NEXT_PUBLIC_OWMF_min_lat ? parseFloat(process.env.NEXT_PUBLIC_OWMF_min_lat) : undefined,
+            eastLon = process.env.NEXT_PUBLIC_OWMF_max_lon ? parseFloat(process.env.NEXT_PUBLIC_OWMF_max_lon) : undefined,
+            northLat = process.env.NEXT_PUBLIC_OWMF_max_lat ? parseFloat(process.env.NEXT_PUBLIC_OWMF_max_lat) : undefined,
             bbox: BBox | undefined = westLon && southLat && eastLon && northLat ? [westLon, southLat, eastLon, northLat] : undefined;
         console.debug(
             "CombinedCachedMapService: initializing map services",
@@ -30,16 +30,16 @@ export class CombinedCachedMapService implements MapService {
         );
         const db = new MapDatabase(),
             overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox),
-            wikidataService = new WikidataMapService(sourcePreset, db);
+            wikidataService = new WikidataMapService(sourcePreset, maxElements, db);
         this.services.push(
             wikidataService,
             overpassService,
             new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db)
         )
-        if (process.env.owmf_qlever_enable === "true")
+        if (process.env.NEXT_PUBLIC_OWMF_qlever_enable === "true")
             this.services.push(new QLeverMapService(sourcePreset, maxElements, maxRelationMembers, db, bbox));
 
-        setTimeout(() => void db.clearMaps(maxHours), 10_000);
+        setTimeout(() => void db.clear(maxHours), 10_000);
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -47,7 +47,7 @@ export class CombinedCachedMapService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
-        if(this.alreadyFetchingPromise !== undefined) {
+        if (this.alreadyFetchingPromise !== undefined) {
             console.debug("fetchMapElements: Already fetching data from back-end, skipping another fetch");
             return this.alreadyFetchingPromise;
         }

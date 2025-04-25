@@ -119,13 +119,13 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
             OSM-Wikidata Map Framework
           </a>
           &nbsp;
-          {process.env.owmf_version}
+          {process.env.NEXT_PUBLIC_OWMF_version}
         </p>
         <div className={styles.last_info_row}>
-          {process.env.owmf_liberapay_id && (
+          {process.env.NEXT_PUBLIC_OWMF_liberapay_id && (
             <>
               <a
-                href={`https://liberapay.com/${process.env.owmf_liberapay_id}/donate`}
+                href={`https://liberapay.com/${process.env.NEXT_PUBLIC_OWMF_liberapay_id}/donate`}
                 className={styles.liberapay_donate}
               >
                 <Image
@@ -139,7 +139,7 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
             </>
           )}
 
-          {process.env.owmf_paypal_id && (
+          {process.env.NEXT_PUBLIC_OWMF_paypal_id && (
             <>
               <form
                 action="https://www.paypal.com/donate"
@@ -148,7 +148,7 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
                 id="paypal_donate"
                 className={styles.paypal_donate}
               >
-                <input type="hidden" name="business" value={process.env.owmf_paypal_id} />
+                <input type="hidden" name="business" value={process.env.NEXT_PUBLIC_OWMF_paypal_id} />
                 <input type="hidden" name="no_recurring" value="0" />
                 <input
                   type="hidden"
@@ -176,12 +176,12 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
           >
             {t("info_box.about_me")}
           </a>
-          {process.env.owmf_issues_url && (
+          {process.env.NEXT_PUBLIC_OWMF_issues_url && (
             <>
               &nbsp;|&nbsp;
               <a
                 title={t("info_box.report_issue_title")}
-                href={process.env.owmf_issues_url}
+                href={process.env.NEXT_PUBLIC_OWMF_issues_url}
                 target="_blank"
                 rel="noopener noreferrer"
               >

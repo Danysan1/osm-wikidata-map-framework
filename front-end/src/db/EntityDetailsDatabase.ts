@@ -1,7 +1,7 @@
 import Dexie, { Table } from "dexie";
 import type { LinkedEntityDetails } from "../model/LinkedEntityDetails";
 
-interface DetailsRow {
+interface EntityDetailsRow {
     id?: number;
     language?: string;
     wikidataIDs: Set<string>;
@@ -9,26 +9,21 @@ interface DetailsRow {
     timestamp: string;
 }
 
-export class DetailsDatabase extends Dexie {
-    public details!: Table<DetailsRow, number>;
+export class EntityDetailsDatabase extends Dexie {
+    public details!: Table<EntityDetailsRow, number>;
 
     public constructor() {
-        super("DetailsDatabase");
-        this.version(1).stores({
-            details: "++id, language"
+        super("EntityDetailsDatabase");
+        this.version(3).stores({
+            details: "++id, language",
         });
     }
 
-    public async clearDetails(maxHours?: number) {
+    public async clear(maxHours?: number) {
+        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : new Date(0);
         await this.transaction('rw', this.details, async () => {
-            if (maxHours) {
-                const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
-                    count = await this.details.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                console.debug("Evicted old details from indexedDB", { maxHours, count, threshold });
-            } else {
-                await this.details.clear();
-                console.debug("Cleared all details from indexedDB");
-            }
+            const count = await this.details.filter(row => !row.timestamp || new Date(row.timestamp) < threshold).delete();
+            console.debug("Evicted old details from indexedDB", { count, threshold });
         });
     }
 
@@ -57,3 +52,4 @@ export class DetailsDatabase extends Dexie {
         }
     }
 }
+

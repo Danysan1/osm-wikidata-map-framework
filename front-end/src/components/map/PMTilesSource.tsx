@@ -15,12 +15,12 @@ interface PMTilesSourceProps extends PropsWithChildren {
 export const PMTilesSource: FC<PMTilesSourceProps> = ({ id, children }) => {
   const { sourcePresetID } = useUrlFragmentContext();
 
-  if (!process.env.owmf_pmtiles_base_url) {
-    console.warn("PMTilesSource: owmf_pmtiles_base_url is not defined");
+  if (!process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url) {
+    console.warn("PMTilesSource: NEXT_PUBLIC_OWMF_pmtiles_base_url is not defined");
     return null;
   }
 
-  const fullPMTilesURL = `pmtiles://${process.env.owmf_pmtiles_base_url}${sourcePresetID}.pmtiles`; // Example: pmtiles://https://etymology.dsantini.it/etymology.pmtiles
+  const fullPMTilesURL = `pmtiles://${process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url}${sourcePresetID}.pmtiles`; // Example: pmtiles://https://etymology.dsantini.it/etymology.pmtiles
 
   return (
     <Source id={id} type="vector" url={fullPMTilesURL}>

@@ -1,8 +1,8 @@
 import { readFile } from "fs/promises";
-import reversePreset from "../../public/presets/burial.json";
-import directPreset from "../../public/presets/etymology.json";
-import { SourcePreset } from '../model/SourcePreset';
-import { BOLOGNA_BBOX, runServiceTests } from './MapServiceTest';
+import reversePreset from "../../../public/presets/burial.json";
+import directPreset from "../../../public/presets/etymology.json";
+import { SourcePreset } from '../../model/SourcePreset';
+import { BOLOGNA_BBOX, runServiceTests } from '../MapServiceTest';
 import { QLeverMapService } from "./QLeverMapService";
 
 const BASE_PRESET = { id: "base_test" },

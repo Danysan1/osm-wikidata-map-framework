@@ -6,7 +6,7 @@ p.pic_attr {
   overflow: hidden;
   max-height: 2em;
   transition: height 0.5s, width 0.5s, opacity 0.5s;
-  margin-top: -5px;
+  margin-top: -8px;
   font-size: x-small;
   text-align: center;
 }

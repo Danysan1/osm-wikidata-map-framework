@@ -1,8 +1,8 @@
 import { readFile } from "fs/promises";
-import reversePreset from "../../public/presets/burial.json";
-import directPreset from "../../public/presets/etymology.json";
-import { SourcePreset } from '../model/SourcePreset';
-import { BOLOGNA_BBOX, runServiceTests } from './MapServiceTest';
+import reversePreset from "../../../public/presets/burial.json";
+import directPreset from "../../../public/presets/etymology.json";
+import { SourcePreset } from '../../model/SourcePreset';
+import { BOLOGNA_BBOX, runServiceTests } from '../MapServiceTest';
 import { WikidataMapService } from "./WikidataMapService";
 
 const BASE_PRESET = { id: "base_test" },
@@ -88,10 +88,10 @@ const BASE_PRESET = { id: "base_test" },
         "wd_indirect",
         // "wd_base", // Checked in base preset
     ],
-    resolveQuery = (type: string) => readFile(`public/wdqs/${type}.sparql`).then(b => b.toString()),
-    baseService = new WikidataMapService(BASE_PRESET, undefined, resolveQuery),
-    directService = new WikidataMapService(directPreset as SourcePreset, undefined, resolveQuery),
-    reverseService = new WikidataMapService(reversePreset as SourcePreset, undefined, resolveQuery);
+    resolveQuery = (type: string) => readFile(`public/wdqs/map/${type}.sparql`).then(b => b.toString()),
+    baseService = new WikidataMapService(BASE_PRESET, 1000, undefined, resolveQuery),
+    directService = new WikidataMapService(directPreset as SourcePreset, 1000, undefined, resolveQuery),
+    reverseService = new WikidataMapService(reversePreset as SourcePreset, 1000, undefined, resolveQuery);
 
 runServiceTests("base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BOLOGNA_BBOX);
 runServiceTests("direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BOLOGNA_BBOX);

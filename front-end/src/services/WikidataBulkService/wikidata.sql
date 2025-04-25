@@ -16,9 +16,4 @@ SELECT DISTINCT
     REPLACE(value->'etymology'->>'value', 'http://www.wikidata.org/entity/', ''), NULL, NULL::JSONB
 FROM json_array_elements(($1::JSON)->'results'->'bindings')
 WHERE value->'etymology'->>'value' ^@ 'http://www.wikidata.org/entity/'
-UNION
-SELECT DISTINCT
-    REPLACE(value->'stmtEntity'->>'value', 'http://www.wikidata.org/entity/', ''), NULL, NULL::JSONB
-FROM json_array_elements(($1::JSON)->'results'->'bindings')
-WHERE value->'stmtEntity'->>'value' ^@ 'http://www.wikidata.org/entity/'
 ON CONFLICT (wd_wikidata_cod) DO NOTHING

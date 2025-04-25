@@ -1,16 +1,16 @@
-import { DetailsDatabase } from "../../db/DetailsDatabase";
+import type { EntityDetailsDatabase } from "../../db/EntityDetailsDatabase";
 import type { LinkedEntityDetails } from "../../model/LinkedEntityDetails";
 import { WikidataService } from "../WikidataService";
 
 export class WikidataDetailsService extends WikidataService {
-    private readonly db?: DetailsDatabase;
+    private readonly db?: EntityDetailsDatabase;
     private readonly language: string;
     private readonly resolveQuery: () => Promise<string>;
 
-    public constructor(language: string, db?: DetailsDatabase, resolveQuery?: () => Promise<string>) {
+    public constructor(language: string, db?: EntityDetailsDatabase, resolveQuery?: () => Promise<string>) {
         super();
         this.db = db;
-        this.language = language;
+        this.language = language.split("_")[0]; // Ignore country
         this.resolveQuery = resolveQuery ?? (
             () => fetch(`/wdqs/entity-details.sparql`).then(r => r.text())
         );

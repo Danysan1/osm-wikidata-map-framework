@@ -1,5 +1,4 @@
 import { parse } from "papaparse";
-import { StatsDatabase } from "../../db/StatsDatabase";
 import type { EtymologyStat } from "../../model/EtymologyStat";
 import { ColorSchemeID } from "../../model/colorScheme";
 import { WikidataService } from "../WikidataService";
@@ -12,13 +11,14 @@ import pictureStatsQuery from "./picture.sparql";
 import startCenturyStatsQuery from "./start-century.sparql";
 import typeStatsQuery from "./type.sparql";
 import wikilinkStatsQuery from "./wikilink.sparql";
+import type { StatsDatabase } from "@/src/db/StatsDatabase";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
-    [ColorSchemeID.type]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_types.csv`,
-    [ColorSchemeID.gender]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_genders.csv`,
-    [ColorSchemeID.country]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_countries.csv`,
-    [ColorSchemeID.line_of_work]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_lines_of_work.csv`,
-    [ColorSchemeID.occupation]: `${process.env.owmf_base_path ?? ""}/csv/wikidata_occupations.csv`,
+    [ColorSchemeID.type]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_types.csv`,
+    [ColorSchemeID.gender]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_genders.csv`,
+    [ColorSchemeID.country]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_countries.csv`,
+    [ColorSchemeID.line_of_work]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_lines_of_work.csv`,
+    [ColorSchemeID.occupation]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_occupations.csv`,
 }
 
 export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
@@ -35,20 +35,17 @@ export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
 }
 
 export class WikidataStatsService extends WikidataService {
-    private readonly db: StatsDatabase;
+    private readonly db?: StatsDatabase;
     private readonly language: string;
 
-    public constructor(language: string) {
+    public constructor(language: string, db?: StatsDatabase) {
         super();
-        this.db = new StatsDatabase();
-        this.language = language;
-
-        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
-        setTimeout(() => void this.db.clearStats(maxHours), 10_000);
+        this.db = db;
+        this.language = language.split("_")[0]; // Ignore country
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        let out = await this.db.getStats(colorSchemeID, wikidataIDs, this.language);
+        let out = await this.db?.getStats(colorSchemeID, wikidataIDs, this.language);
         if (out) {
             console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
@@ -84,7 +81,7 @@ export class WikidataStatsService extends WikidataService {
                     color: x.color?.value || csvData?.find(row => row[0] === entityID || row[0] === classID)?.at(3),
                 };
             }) ?? [];
-            void this.db.addStats(out, colorSchemeID, wikidataIDs, this.language);
+            void this.db?.addStats(out, colorSchemeID, wikidataIDs, this.language);
         }
         return out;
     }

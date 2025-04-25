@@ -28,9 +28,9 @@ import { ControlPosition, StyleSpecification } from "react-map-gl/maplibre";
 import { DropdownControl } from "./DropdownControl/DropdownControl";
 
 function getBackgroundStyles() {
-  const maptiler_key = process.env.owmf_maptiler_key,
-    jawg_token = process.env.owmf_jawg_token,
-    mapbox_token = process.env.owmf_mapbox_token,
+  const maptiler_key = process.env.NEXT_PUBLIC_OWMF_maptiler_key,
+    jawg_token = process.env.NEXT_PUBLIC_OWMF_jawg_token,
+    mapbox_token = process.env.NEXT_PUBLIC_OWMF_mapbox_token,
     backgroundStyles: BackgroundStyle[] = [];
 
   if (mapbox_token) {
@@ -49,7 +49,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (process.env.owmf_enable_versatiles) {
+  if (process.env.NEXT_PUBLIC_OWMF_enable_versatiles) {
     backgroundStyles.push(
       versaTilesStyle("versatiles_colorful", "Colorful", "colorful"),
       versaTilesStyle("versatiles_neutrino", "Neutrino", "neutrino"),
@@ -58,7 +58,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (process.env.owmf_enable_stadia_maps) {
+  if (process.env.NEXT_PUBLIC_OWMF_enable_stadia_maps) {
     backgroundStyles.push(
       stadiaStyle("stadia_alidade_dark", "Alidade smooth dark", "alidade_smooth_dark"),
       stadiaStyle("stadia_alidade", "Alidade smooth", "alidade_smooth"),
@@ -119,7 +119,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (process.env.owmf_enable_open_historical_map === "true") {
+  if (process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true") {
     backgroundStyles.push(
       openHistoricalMapStyle("ohm_main", "Historic", "main/main"),
       openHistoricalMapStyle("ohm_rail", "Railway", "rail/rail"),
@@ -178,7 +178,9 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
    * Fetch the Maplibre style specification JSON whenever the selected style is changed
    */
   useEffect(() => {
-    if (!style) {
+    if (!backgroundStyles?.length) {
+      console.error("No background styles available");
+    } else if (!style) {
       console.warn(
         "Empty default background style, using the first available",
         backgroundStyles
@@ -278,8 +280,8 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
           }
         }
       });
-      
-      if(!styleSpec.projection?.type)
+
+      if (!styleSpec.projection?.type)
         styleSpec.projection = undefined; // Prevent errors with Mapbox styles
 
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
@@ -314,7 +316,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
     }
   }, [jsonStyleSpec, setBackgroundStyle, showSnackbar, t, updateStyleSpec]);
 
-  return (
+  return !!dropdownItems.length && (
     <DropdownControl
       buttonContent="🌍"
       dropdownItems={dropdownItems}

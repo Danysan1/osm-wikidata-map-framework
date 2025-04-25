@@ -14,9 +14,9 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
 import {
-    DataDrivenPropertyValueSpecification,
-    RequestTransformFunction,
-    addProtocol,
+  DataDrivenPropertyValueSpecification,
+  RequestTransformFunction,
+  addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
@@ -25,15 +25,15 @@ import { Protocol } from "pmtiles";
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Map, {
-    ErrorEvent,
-    FullscreenControl,
-    GeolocateControl,
-    MapEvent,
-    MapSourceDataEvent,
-    NavigationControl,
-    ScaleControl,
-    StyleSpecification,
-    ViewStateChangeEvent,
+  ErrorEvent,
+  FullscreenControl,
+  GeolocateControl,
+  MapEvent,
+  MapSourceDataEvent,
+  NavigationControl,
+  ScaleControl,
+  StyleSpecification,
+  ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../../controls/BackEndControl/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
@@ -80,25 +80,25 @@ export const OwmfMap = () => {
     [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
-    minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
+    minZoomLevel = useMemo(() => parseInt(process.env.NEXT_PUBLIC_OWMF_min_zoom_level ?? "9"), []),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
-    thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
+    thresholdZoomLevel = parseInt(process.env.NEXT_PUBLIC_OWMF_threshold_zoom_level ?? "14"),
     [pmtilesReady, setPMTilesReady] = useState(false),
     inlineStyle = useMemo<CSSProperties | undefined>(
       () =>
-        process.env.owmf_use_background_color === "true"
+        process.env.NEXT_PUBLIC_OWMF_use_background_color === "true"
           ? {
-              backgroundColor: sourcePreset?.background_color ?? "#ffffff",
-              "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
-            }
+            backgroundColor: sourcePreset?.background_color ?? "#ffffff",
+            "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
+          }
           : undefined,
       [sourcePreset?.background_color]
     ),
     pmtilesActive =
       pmtilesReady &&
-      !!process.env.owmf_pmtiles_base_url &&
-      process.env.owmf_pmtiles_preset === sourcePresetID &&
+      !!process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url &&
+      process.env.NEXT_PUBLIC_OWMF_pmtiles_preset === sourcePresetID &&
       backEndID.startsWith(PMTILES_PREFIX),
     clustersActive =
       !pmtilesActive &&
@@ -137,11 +137,11 @@ export const OwmfMap = () => {
 
   const requestTransformFunction: RequestTransformFunction = useCallback(
     (url, resourceType) => {
-      if (process.env.owmf_mapbox_token && isMapboxURL(url)) {
+      if (process.env.NEXT_PUBLIC_OWMF_mapbox_token && isMapboxURL(url)) {
         return transformMapboxUrl(
           url,
           resourceType as string,
-          process.env.owmf_mapbox_token
+          process.env.NEXT_PUBLIC_OWMF_mapbox_token
         );
       }
 
@@ -153,7 +153,7 @@ export const OwmfMap = () => {
   );
 
   useEffect(() => {
-    if (process.env.owmf_pmtiles_base_url) {
+    if (process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url) {
       const pmtilesProtocol = new Protocol();
       addProtocol("pmtiles", pmtilesProtocol.tile);
       setPMTilesReady(true);
@@ -330,7 +330,7 @@ export const OwmfMap = () => {
       />
       <FullscreenControl position="top-right" style={inlineStyle} />
       <BackgroundStyleControl setBackgroundStyle={setBackgroundStyle} position="top-right" />
-      {process.env.owmf_enable_projection_control === "true" && <ProjectionControl setBackgroundStyle={setBackgroundStyle} position="top-right" />}
+      {process.env.NEXT_PUBLIC_OWMF_enable_projection_control === "true" && <ProjectionControl setBackgroundStyle={setBackgroundStyle} position="top-right" />}
       <LanguageControl position="top-right" />
       <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
       <OsmWikidataMatcherControl position="top-right" />
@@ -376,7 +376,7 @@ export const OwmfMap = () => {
         position="top-right"
       />
 
-      {process.env.owmf_maptiler_key && <OwmfGeocodingControl position="bottom-left" />}
+      {process.env.NEXT_PUBLIC_OWMF_maptiler_key && <OwmfGeocodingControl position="bottom-left" />}
 
       <ScaleControl position="bottom-right" />
       {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
@@ -423,7 +423,7 @@ export const OwmfMap = () => {
         </PMTilesSource>
       )}
 
-      {openFeature && <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />}
+      {openFeature && sourcePreset?.id === sourcePresetID && <FeaturePopup feature={openFeature} preset={sourcePreset} onClose={closeFeaturePopup} />}
     </Map>
   );
 };

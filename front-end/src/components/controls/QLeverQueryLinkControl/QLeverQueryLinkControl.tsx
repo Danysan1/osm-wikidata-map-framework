@@ -12,7 +12,7 @@ interface QLeverQueryLinkControlProps {
 
 export const QLeverQueryLinkControls: React.FC<QLeverQueryLinkControlProps> = (props) => {
     const { t } = useTranslation();
-    return process.env.owmf_qlever_enable === "true" && (<>
+    return process.env.NEXT_PUBLIC_OWMF_qlever_enable === "true" && (<>
         <QueryLinkControl
             icon={qleverLogo}
             title={t("qlever_query", "Source SPARQL query on QLever UI for Wikidata")}

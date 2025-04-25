@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { readFile } from "fs/promises";
 import { WikidataDetailsService } from "./WikidataDetailsService";
 
-const LANGUAGE = "en",
+const LANGUAGE = "en_GB",
     BAD_QIDS: string[][] = [
         [],
         ["Q1", ""],

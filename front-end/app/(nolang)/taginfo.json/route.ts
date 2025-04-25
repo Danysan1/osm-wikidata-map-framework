@@ -88,7 +88,7 @@ export async function GET() {
     });
   }
 
-  if (process.env.owmf_pmtiles_base_url) {
+  if (process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url) {
     tags.push({
       "key": "highway",
       "object_types": ["way"],

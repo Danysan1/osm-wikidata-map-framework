@@ -3,13 +3,15 @@ import { Popup, useMap } from "react-map-gl/maplibre";
 import { OwmfFeature } from "../../model/OwmfResponse";
 import { FeatureView } from "../FeatureView/FeatureView";
 import styles from "./popup.module.css";
+import { SourcePreset } from "@/src/model/SourcePreset";
 
 interface FeaturePopupProps {
   feature: OwmfFeature;
+  preset: SourcePreset;
   onClose: () => void;
 }
 
-export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, onClose }) => {
+export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, preset, onClose }) => {
   const { current: map } = useMap(),
     position = map?.getBounds()?.getNorthWest(); // No useMemo is correct, the coordinates change over time
   console.debug(
@@ -29,7 +31,7 @@ export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, onClose }) => {
         onClose={onClose}
         anchor="top-left"
       >
-        <FeatureView feature={feature} />
+        <FeatureView feature={feature} preset={preset} />
       </Popup>
     )
   );

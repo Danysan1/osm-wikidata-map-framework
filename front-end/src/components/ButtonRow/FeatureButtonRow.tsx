@@ -10,15 +10,18 @@ import { Button } from "../Button/Button";
 import { ButtonRow } from "./ButtonRow";
 import openHistoricalMapLogo from "./img/OpenHistoricalMap_logo.svg";
 import openStreetMapLogo from "./img/Openstreetmap_logo.svg";
+import { SourcePreset } from "@/src/model/SourcePreset";
 
 interface FeatureButtonRowProps {
   feature: OwmfFeature;
+  preset: SourcePreset;
   className?: string;
   openFeatureDetails?: () => void;
 }
 
 export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
   feature,
+  preset,
   className,
   openFeatureDetails,
 }) => {
@@ -68,7 +71,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
   if (feature.properties?.wikidata && !osm_full_id)
     osmWikidataMatcherURL = `https://map.osm.wikidata.link/item/${feature.properties.wikidata}`;
 
-  const mapcomplete_theme = process.env.owmf_mapcomplete_theme,
+  const mapcomplete_theme = preset.mapcomplete_theme,
     mapcompleteURL =
       osm_full_id &&
       mapcomplete_theme &&

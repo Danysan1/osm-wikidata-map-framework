@@ -1,6 +1,6 @@
-import directPreset from "../../public/presets/etymology.json";
-import { SourcePreset } from '../model/SourcePreset';
-import { BERLIN_BBOX, runServiceTests } from './MapServiceTest';
+import directPreset from "../../../public/presets/etymology.json";
+import { SourcePreset } from '../../model/SourcePreset';
+import { BERLIN_BBOX, runServiceTests } from '../MapServiceTest';
 import { OverpassService } from "./OverpassService";
 
 const BASE_PRESET = { id: "base_test" },
@@ -53,8 +53,8 @@ const BASE_PRESET = { id: "base_test" },
         // "overpass_osm_wd", // Checked in base preset
         // "overpass_ohm_wd", // Checked in base preset
     ],
-    baseService = new OverpassService(BASE_PRESET, 8000, 800),
-    directService = new OverpassService(directPreset as SourcePreset, 8000, 800);
+    baseService = new OverpassService(BASE_PRESET, 1000, 800),
+    directService = new OverpassService(directPreset as SourcePreset, 1000, 800);
 
 runServiceTests("base", baseService, BAD_BASE_BACKEND_IDS, GOOD_BASE_BACKEND_IDS, BERLIN_BBOX);
 runServiceTests("direct", directService, BAD_DIRECT_BACKEND_IDS, GOOD_DIRECT_BACKEND_IDS, BERLIN_BBOX);

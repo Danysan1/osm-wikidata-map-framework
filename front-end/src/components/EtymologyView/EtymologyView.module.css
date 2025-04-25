@@ -7,7 +7,13 @@
   justify-items: center;
   grid-row-gap: 0.5em;
   grid-column-gap: 0.5em;
-  grid-template-columns: repeat(auto-fit, minmax(21em, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(24em, 1fr));
+}
+
+.entity_image img {
+  margin: 0.5em;
+  max-width: 24em;
+  max-height: 28em;
 }
 
 .entity {
@@ -18,15 +24,9 @@
   background-color: hsl(200, 30%, 95%);
   border-radius: 0.5em;
   /*height: 100%;*/
-  max-width: 75em;
+  max-width: min(75em, 100%);
 }
 
 .entity_pictures_column:empty {
   display: none;
-}
-
-.entity_image img {
-    margin: 0.5em;
-    max-width: 26em;
-    max-height: 26em;
 }

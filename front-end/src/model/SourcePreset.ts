@@ -18,7 +18,8 @@ export interface SourcePreset {
     mapcomplete_theme?: string;
 
     /**
-     * OSM tags to use for filtering the results
+     * OSM tags to use for filtering the results.
+     * For optimal performance if you initialize the DB from OSM PBF dump sort the tags from the most frequent to the least frequent.
      * 
      * @example ["artist:wikidata","artist_name=*","tourism","historic=*","amenity=fountain"]
      */

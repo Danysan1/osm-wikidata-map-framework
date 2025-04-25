@@ -1,29 +1,31 @@
 import type { BBox } from "geojson";
-import { LngLat } from "maplibre-gl";
+import haversine from 'haversine-distance';
 import { parse as parseWKT } from "wellknown";
-import type { MapDatabase } from "../db/MapDatabase";
-import type { SparqlResponse, SparqlResponseBindingValue } from "../generated/sparql/api";
-import type { LinkedEntity, OsmType } from "../model/LinkedEntity";
-import { OwmfFeatureProperties } from "../model/OwmfFeatureProperties";
-import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
-import { SourcePreset } from "../model/SourcePreset";
-import type { MapService } from "./MapService";
-import { WikidataService } from "./WikidataService";
+import type { MapDatabase } from "../../db/MapDatabase";
+import type { SparqlResponse, SparqlResponseBindingValue } from "../../generated/sparql/api";
+import type { LinkedEntity, OsmType } from "../../model/LinkedEntity";
+import type { OwmfFeatureProperties } from "../../model/OwmfFeatureProperties";
+import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
+import type { SourcePreset } from "../../model/SourcePreset";
+import type { MapService } from "../MapService";
+import { WikidataService } from "../WikidataService";
 
-const NEARBY_FEATURE_THRESHOLD = process.env.owmf_nearby_feature_threshold ? parseInt(process.env.owmf_nearby_feature_threshold) : undefined;
-const fetchSparqlQuery = (type: string) => fetch(`/wdqs/${type}.sparql`).then(r => {
+const NEARBY_FEATURE_THRESHOLD = process.env.NEXT_PUBLIC_OWMF_nearby_feature_threshold ? parseInt(process.env.NEXT_PUBLIC_OWMF_nearby_feature_threshold) : undefined;
+const fetchSparqlQuery = (type: string) => fetch(`/wdqs/map/${type}.sparql`).then(r => {
     if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
     return r.text();
 });
 
 export class WikidataMapService extends WikidataService implements MapService {
     private readonly preset: SourcePreset;
+    private readonly maxElements?: number;
     private readonly db?: MapDatabase;
     private readonly resolveQuery: (type: string) => Promise<string>;
 
-    public constructor(preset: SourcePreset, db?: MapDatabase, resolveQuery?: (type: string) => Promise<string>) {
+    public constructor(preset: SourcePreset, maxElements?: number, db?: MapDatabase, resolveQuery?: (type: string) => Promise<string>) {
         super();
         this.preset = preset;
+        this.maxElements = maxElements;
         this.db = db;
         this.resolveQuery = resolveQuery ?? fetchSparqlQuery;
     }
@@ -39,6 +41,7 @@ export class WikidataMapService extends WikidataService implements MapService {
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         void onlyCentroids; // Wikidata has only centroids
+        language = language.split("_")[0]; // Ignore country
 
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language, year);
         if (cachedResponse)
@@ -55,8 +58,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         else
             throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
 
-        const maxElements = process.env.owmf_max_map_elements,
-            wikidataCountry = process.env.owmf_wikidata_country,
+        const wikidataCountry = process.env.NEXT_PUBLIC_OWMF_wikidata_country,
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
             filterClasses = this.preset.wikidata_filter_classes?.map(c => `wd:${c}`).join(" "),
             classFilterQuery = filterClasses ? `VALUES ?class { ${filterClasses} } ?item wdt:P31/wdt:P279? ?class.` : '',
@@ -64,7 +66,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${classFilterQuery}', classFilterQuery)
                 .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
                 .replaceAll('${language}', language)
-                .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
+                .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : "")
                 .replaceAll('${westLon}', bbox[0].toString())
                 .replaceAll('${southLat}', bbox[1].toString())
                 .replaceAll('${eastLon}', bbox[2].toString())
@@ -90,7 +92,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             onlyCentroids: true,
             language: language,
             year: year,
-            truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
+            truncated: !!this.maxElements && ret.results.bindings.length === this.maxElements,
         };
         out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
 
@@ -159,7 +161,6 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         const feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             etymology_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            lngLat = new LngLat(geometry.coordinates[0], geometry.coordinates[1]),
             existingFeature = acc.find(feature => {
                 if (feature_wd_id && feature.properties?.wikidata === feature_wd_id)
                     return true; // Both features have the same Wikidata ID => They are the same entity
@@ -168,7 +169,8 @@ export class WikidataMapService extends WikidataService implements MapService {
                     return false; // Different Wikidata IDs => Different entities
 
                 // One of the features has no Wikidata ID => if they have the same coordinates we consider them as one single entity
-                if (NEARBY_FEATURE_THRESHOLD && feature.geometry.type === "Point" && lngLat.distanceTo(new LngLat(feature.geometry.coordinates[0], feature.geometry.coordinates[1])) < NEARBY_FEATURE_THRESHOLD) {
+                const distance = feature.geometry.type === "Point" ? haversine(geometry.coordinates, [feature.geometry.coordinates[0], feature.geometry.coordinates[1]]) : null;
+                if (NEARBY_FEATURE_THRESHOLD && distance !== null && distance < NEARBY_FEATURE_THRESHOLD) {
                     console.warn("Merging features with the same coordinates", row, feature);
                     return true;
                 }
@@ -185,7 +187,6 @@ export class WikidataMapService extends WikidataService implements MapService {
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                 propagated: false,
-                statement_entity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 wikidata: etymology_wd_id,
             };
         }

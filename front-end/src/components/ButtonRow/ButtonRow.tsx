@@ -45,7 +45,7 @@ export const ButtonRow: FC<ButtonRowProps> = (props) => {
     }, [props.wikipedia]),
     wikisporeURL = useMemo(() => {
       if (
-        process.env.owmf_wikispore_enable !== "true" ||
+        process.env.NEXT_PUBLIC_OWMF_wikispore_enable !== "true" ||
         !props.wikispore ||
         props.wikispore === "null"
       )

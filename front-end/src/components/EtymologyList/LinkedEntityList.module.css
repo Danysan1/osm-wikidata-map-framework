@@ -9,5 +9,5 @@
   justify-items: center;
   grid-row-gap: 0.5em;
   grid-column-gap: 0.5em;
-  grid-template-columns: repeat(auto-fit, minmax(20em, max-content));
+  grid-template-columns: repeat(auto-fit, minmax(24em, max-content));
 }

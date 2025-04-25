@@ -86,6 +86,8 @@
         "report_problem": "Signaler un problème relatif à cet élément"
     },
     "etymology_details": {
+        "languages": "Langues:",
+        "more_details": "Plus de détails:",
         "source": "Source de l'entité:",
         "propagation": "propagation",
         "propagation_title": "Description du mécanisme de propagation"

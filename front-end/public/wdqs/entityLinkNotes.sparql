@@ -1,0 +1,8 @@
+SELECT ?entity (GROUP_CONCAT(DISTINCT ?lang; SEPARATOR=', ') AS ?languages)
+WHERE {
+  wd:${featureQID} p:${propertyPID} ?stmt.
+  ?stmt ps:${propertyPID} wd:${linkedEntityQID}.
+  OPTIONAL { ?stmt pq:P805 ?entity. }
+  OPTIONAL { ?stmt pq:P407/rdfs:label ?lang FILTER(LANG(?lang) = '${language}'). }
+}
+GROUP BY ?entity

@@ -1,10 +1,11 @@
-import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
+import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { getFeatureLinkedEntities, OwmfFeature } from "@/src/model/OwmfResponse";
-import { CachedDetailsService } from "@/src/services/WikidataDetailsService/CachedDetailsService";
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./DataTable.module.css";
 import { DataTableRow } from "./DataTableRow";
+import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
+import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 
 interface DataTableProps {
   features: OwmfFeature[];
@@ -17,12 +18,12 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
 
   useEffect(() => {
     const wikidataIdArray = features.flatMap((f) =>
-        getFeatureLinkedEntities(f)
-          .filter((e) => e.wikidata)
-          .map((e) => e.wikidata!)
-      ),
+      getFeatureLinkedEntities(f)
+        .filter((e) => e.wikidata)
+        .map((e) => e.wikidata!)
+    ),
       uniqueWikidataIds = new Set<string>(wikidataIdArray),
-      detailsService = new CachedDetailsService(i18n.language);
+      detailsService = new WikidataDetailsService(i18n.language, new EntityDetailsDatabase());
 
     detailsService
       .fetchEtymologyDetails(uniqueWikidataIds)

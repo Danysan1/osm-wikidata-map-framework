@@ -7,7 +7,7 @@ You can find below some information useful to contribute to the OSM-Wikidata Map
 
 ## Helping with translation
 
-The translations for the title and description of the specific instance of OWMF is located in the `owmf_i18n_override` configuration.
+The translations for the title and description of the specific instance of OWMF is located in the `NEXT_PUBLIC_OWMF_i18n_override` configuration.
 For example, the title and description of Open Etymology Map are located in the [`.env.example` file in its repository](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example).
 
 All other translations are located in the [`front-end/public/locales/{LANGUAGE_CODE}/common.json`](front-end/public/locales/) files of this repository.

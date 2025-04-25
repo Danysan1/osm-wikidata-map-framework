@@ -22,7 +22,7 @@ export const DataTablePopup: FC<DataTablePopupProps> = ({
   setOpenFeature,
 }) => {
   const uniqueFeatures = useMemo(() => {
-    if (process.env.owmf_deduplicate_by_name !== "true") {
+    if (process.env.NEXT_PUBLIC_OWMF_deduplicate_by_name !== "true") {
       return features;
     } else {
       const uniqueMap = features.reduce<Record<string, OwmfFeature>>(

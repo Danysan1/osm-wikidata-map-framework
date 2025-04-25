@@ -16,30 +16,23 @@ export class StatsDatabase extends Dexie {
 
     public constructor() {
         super("StatsDatabase");
-        this.version(1).stores({
-            stats: "++id, [colorSchemeID+language+wikidataIDs]"
+        this.version(3).stores({
+            stats: "++id, [colorSchemeID+language+wikidataIDs]",
         });
     }
 
-    public async clearStats(maxHours?: number) {
+    public async clear(maxHours?: number) {
+        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : new Date(0);
         await this.transaction('rw', this.stats, async () => {
-            if (maxHours) {
-                const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
-                    count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                console.debug("Evicted old stats from indexedDB", { maxHours, count, threshold });
-            } else {
-                await this.stats.clear();
-                console.debug("Cleared all stats from indexedDB");
-            }
+            const count = await this.stats.filter(row => !row.timestamp || new Date(row.timestamp) < threshold).delete();
+            console.debug("Evicted old stats from indexedDB", { count, threshold });
         });
     }
 
     public async getStats(colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string): Promise<EtymologyStat[] | undefined> {
         try {
             const row = await this.transaction('r', this.stats, async () => {
-                return await this.stats
-                    .where({ colorSchemeID, language, wikidataIDs })
-                    .first();
+                return await this.stats.where({ colorSchemeID, language, wikidataIDs }).first();
             });
             return row?.stats;
         } catch (e) {

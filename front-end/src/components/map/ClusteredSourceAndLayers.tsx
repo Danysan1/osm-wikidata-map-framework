@@ -41,8 +41,8 @@ interface ClusteredSourceAndLayersProps {
 export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (props) => {
   /** Maplibre GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
   const clusterProperties = props.useLinkedEntityCount ? {
-      linked_entity_count: ["+", ["get", "linked_entity_count"]],
-    } : undefined,
+    linked_entity_count: ["+", ["get", "linked_entity_count"]],
+  } : undefined,
     /** The name of the field to be used as count */
     countFieldName = props.useLinkedEntityCount ? "linked_entity_count" : "point_count",
     /** The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version) */
@@ -73,13 +73,15 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
       return;
     }
 
-    const bounds = map?.getBounds().toArray(),
+    if (!props.backEndService?.canHandleBackEnd(backEndID)) {
+      console.warn("Unsupported back-end ID, NOT fetching map clusters:", backEndID);
+      return;
+    }
+
+    const bounds = map?.getBounds()?.toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (!bbox || !props.backEndService?.canHandleBackEnd(backEndID)) {
-      console.warn("Unsupported back-end ID or missing bbox, NOT fetching map clusters", {
-        bbox,
-        backEndID,
-      });
+    if (!bbox) {
+      console.warn("Missing bbox, NOT fetching map clusters");
       return;
     }
 
@@ -92,16 +94,11 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
       return;
     }
 
-    console.debug("ClusteredSourceAndLayers fetching map cluster", {
-      bbox,
-      backEndID,
-    });
+    console.debug("ClusteredSourceAndLayers fetching map cluster:", backEndID);
     showLoadingSpinner(true);
     props.backEndService
       .fetchMapElements(backEndID, true, bbox, i18n.language, year)
-      .then((data) => {
-        setElementsData(data);
-      })
+      .then(setElementsData)
       .catch((e) => {
         console.error("Failed fetching map clusters", e);
         showSnackbar(t("snackbar.map_error"));
@@ -147,8 +144,8 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     [map]
   );
   const onMouseEnter = useCallback(() => {
-      if (map) map.getCanvas().style.cursor = "pointer";
-    }, [map]),
+    if (map) map.getCanvas().style.cursor = "pointer";
+  }, [map]),
     onMouseLeave = useCallback(() => {
       if (map) map.getCanvas().style.cursor = "";
     }, [map]),

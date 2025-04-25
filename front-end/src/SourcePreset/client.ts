@@ -6,7 +6,7 @@ export async function fetchSourcePreset(sourcePresetID?: string) {
     if (!sourcePresetID || sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
         preset = getCustomSourcePreset();
     } else {
-        const presetURL = `${process.env.owmf_base_path ?? ""}/presets/${sourcePresetID}.json`,
+        const presetURL = `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/presets/${sourcePresetID}.json`,
             presetResponse = await fetch(presetURL);
         if (!presetResponse.ok)
             throw new Error(`Failed fetching preset "${presetURL}"`);

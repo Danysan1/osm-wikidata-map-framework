@@ -9,23 +9,17 @@ export class MapDatabase extends Dexie {
 
     public constructor() {
         super("MapDatabase");
-
-        this.version(7).stores({
+        this.version(8).stores({
             //maps: "++id, [sourcePresetID+backEndID+onlyCentroids+language]" // Does not work: https://stackoverflow.com/a/56661425
-            maps: "++id, [sourcePresetID+backEndID+language+year]"
+            maps: "++id, [sourcePresetID+backEndID+language+year]",
         });
     }
 
-    public async clearMaps(maxHours?: number) {
+    public async clear(maxHours?: number) {
+        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : new Date(0);
         await this.transaction('rw', this.maps, async () => {
-            if (maxHours) {
-                const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
-                    count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                console.debug("Evicted old maps from indexedDB", { maxHours, count, threshold });
-            } else {
-                await this.maps.clear();
-                console.debug("Cleared all maps from indexedDB");
-            }
+            const count = await this.maps.filter(row => !row.timestamp || new Date(row.timestamp) < threshold).delete();
+            console.debug("Evicted old maps from indexedDB", { count, threshold });
         });
     }
 
@@ -52,14 +46,14 @@ export class MapDatabase extends Dexie {
         }
     }
 
-    public async addMap(map: MapRow) {
-        map.id = undefined;
-        if (map.timestamp === undefined)
-            map.timestamp = new Date().toISOString();
+    public async addMap(map: OwmfResponse) {
+        const row: MapRow = { ...map, id: undefined };
+        if (row.timestamp === undefined)
+            row.timestamp = new Date().toISOString();
 
         try {
             await this.transaction('rw', this.maps, async () => {
-                await this.maps.add(map);
+                await this.maps.add(row);
             });
         } catch (e) {
             console.error("Failed adding map to cache", e);

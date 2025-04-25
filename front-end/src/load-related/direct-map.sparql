@@ -16,7 +16,6 @@ SELECT DISTINCT
     ?etymology
     (?_from_p AS ?from_prop)
     ?alias
-    ?stmtEntity
 WHERE {
     VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }
     ?item p:P625 ?locationStatement;
@@ -34,5 +33,4 @@ WHERE {
     OPTIONAL { ?item rdfs:label ?label_en FILTER(LANG(?label_en) = "en") }
     OPTIONAL { ?item wdt:P910?/wdt:P373 ?commons. }
     OPTIONAL { ?alias owl:sameAs ?item. }
-    OPTIONAL { ?stmt pq:P805 ?stmtEntity. }
 }

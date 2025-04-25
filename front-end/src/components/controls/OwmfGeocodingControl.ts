@@ -19,11 +19,11 @@ interface OwmfGeocodingControlProps {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
  */
 export const OwmfGeocodingControl: FC<OwmfGeocodingControlProps> = (props) => {
-  if (!process.env.owmf_maptiler_key) throw new Error('Maptiler key is required to use GeocodingControl');
+  if (!process.env.NEXT_PUBLIC_OWMF_maptiler_key) throw new Error('Maptiler key is required to use GeocodingControl');
 
   const { i18n } = useTranslation();
   const ctrl = useControl<GeocodingControl>(() => new GeocodingControl({
-      apiKey: process.env.owmf_maptiler_key!,
+      apiKey: process.env.NEXT_PUBLIC_OWMF_maptiler_key!,
     }), { position: props.position });
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const OwmfGeocodingControl: FC<OwmfGeocodingControlProps> = (props) => {
 
   useEffect(() => {
     ctrl.setOptions({
-      apiKey: process.env.owmf_maptiler_key!,
+      apiKey: process.env.NEXT_PUBLIC_OWMF_maptiler_key!,
       language: i18n.language,
       collapsed: true,
     });
