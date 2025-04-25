@@ -1,17 +1,24 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import {
-  ChangeEvent,
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
+  type ChangeEvent,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
   cloneElement,
   useCallback,
   useEffect,
   useMemo,
-  useState
+  useState,
+  type JSX,
 } from "react";
 import { createPortal } from "react-dom";
-import { ControlPosition, IControl, MapInstance, MapSourceDataEvent, useControl } from "react-map-gl/maplibre";
+import {
+  type ControlPosition,
+  type IControl,
+  type MapInstance,
+  type MapSourceDataEvent,
+  useControl
+} from "react-map-gl/maplibre";
 import commonStyles from "../control.module.css";
 import styles from "./DropdownControl.module.css";
 
@@ -177,7 +184,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
                   </select>
                 </td>
               </tr>
-              
+
               {children && (
                 <tr className={`${styles.extra_children} ${dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}`}>
                   <td colSpan={2}>
