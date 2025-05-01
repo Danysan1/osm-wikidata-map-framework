@@ -100,7 +100,10 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
   }, [featureI18n?.description, i18n.language, props]);
 
   useEffect(() => {
-    if (feature.properties?.wikipedia) {
+    if (!feature.properties?.wikipedia?.startsWith(i18n.language)) {
+      console.debug("Skipping fetching feature Wikipedia extract: ", feature.properties?.wikipedia);
+      setWikipediaExtract(undefined);
+    } else {
       new WikipediaService()
         .fetchExtract(feature.properties?.wikipedia)
         .then((res) => {
@@ -118,10 +121,8 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
           );
           setWikipediaExtract(undefined);
         });
-    } else {
-      setWikipediaExtract(undefined);
     }
-  }, [feature.properties?.wikipedia]);
+  }, [feature.properties?.wikipedia, i18n.language]);
 
   return (
     <div className={styles.detail_container}>

@@ -4,8 +4,16 @@ export class WikipediaService {
     /**
      * @see https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_summary__title_
      */
-    async fetchExtract(articleURL: string): Promise<string> {
-        const response = await fetch(articleURL?.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true");
+    async fetchExtract(article: string): Promise<string> {
+        let url;
+        if (article.startsWith("http")) {
+            url = article.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true";
+        } else {
+            const split = article.split(":");
+            url = `https://${split[0]}.wikipedia.org/api/rest_v1/page/summary/${split[1]}?redirect=true`;
+        }
+        console.debug("fetchExtract", { article, url });
+        const response = await fetch(url);
         if (response.status === 302)
             throw new Error("The Wikipedia page for this item is a redirect");
         if (response.status !== 200)
