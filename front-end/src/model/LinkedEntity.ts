@@ -123,7 +123,7 @@ export interface LinkedEntity {
     death_place?: string;
 }
 
-export interface EntityLinkNotes {
+export interface EntityLinkNote {
     /**
      * Q-ID of the Wikidata entity that this entity link is subject of.
      * For example, the article describing the etymology represented by this statement.

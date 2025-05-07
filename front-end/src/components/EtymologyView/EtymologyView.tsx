@@ -1,5 +1,5 @@
-import { DatePrecision, EntityLinkNotes, LinkedEntity } from "@/src/model/LinkedEntity";
-import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
+import { DatePrecision, EntityLinkNote, LinkedEntity } from "@/src/model/LinkedEntity";
+import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,16 +9,15 @@ import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./EtymologyView.module.css";
 import { LinkedEntitySourceRow } from "./LinkedEntitySourceRow";
-import { WikidataEntityLinkNotesService } from "@/src/services/WikidataEntityLinkNotesService/WikidataEntityLinkNotesService";
-import { EntityLinkNotesDatabase } from "@/src/db/EntityLinkNotesDatabase";
 
 const MAX_IMAGES = 2;
 
 interface EtymologyViewProps {
   entity: LinkedEntityDetails;
+  linkNote?: EntityLinkNote;
 }
 
-export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
+export const EtymologyView: FC<EtymologyViewProps> = ({ entity, linkNote }) => {
   const { i18n, t } = useTranslation(),
     [wikipediaExtract, setWikipediaExtract] = useState<string>();
 
@@ -73,8 +72,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
       !!entity.death_place;
     if (anyBirthOrDeath) {
       const birth_date = entity.birth_date
-        ? formatDate(entity.birth_date, entity.birth_date_precision)
-        : "?",
+          ? formatDate(entity.birth_date, entity.birth_date_precision)
+          : "?",
         birth_place = entity.birth_place ? entity.birth_place : "?",
         death_date = entity.death_date
           ? formatDate(entity.death_date, entity.death_date_precision)
@@ -83,8 +82,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
       return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
     } else if (!!entity.start_date || !!entity.end_date) {
       const start_date = entity.start_date
-        ? formatDate(entity.start_date, entity.start_date_precision)
-        : "?",
+          ? formatDate(entity.start_date, entity.start_date_precision)
+          : "?",
         end_date = entity.end_date
           ? formatDate(entity.end_date, entity.end_date_precision)
           : "?";
@@ -149,32 +148,18 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
     );
   }, [entity]);
 
-  const [linkNotes, setLinkNotes] = useState<EntityLinkNotes>();
-
-  useEffect(() => {
-    if (process.env.NEXT_PUBLIC_OWMF_statement_notes !== "true")
-      return undefined; // Link statement entity fetching is disabled
-
-    if (!!entity.from_parts_of_wikidata_cod || entity.propagated)
-      return undefined; // Entity linked indirectly to the feature, no link statement to search
-
-    if (!entity.from_wikidata_entity || !entity.from_wikidata_prop || !entity.wikidata)
-      return undefined; // Entity link is not on Wikidata
-
-    console.debug("Fetching entity link statement notes", entity);
-    new WikidataEntityLinkNotesService(i18n.language, new EntityLinkNotesDatabase())
-      .fetchEntityLinkNotes(entity.from_wikidata_entity, entity.from_wikidata_prop, entity.wikidata)
-      .then(setLinkNotes)
-      .catch(console.error);
-  }, [entity, i18n.language]);
-
   const statementEntities = useMemo<LinkedEntity[]>(
-    () => !linkNotes?.entityQID ? [] : [{
-      wikidata: linkNotes.entityQID,
-      from_wikidata_entity: entity.from_wikidata_entity,
-      from_wikidata_prop: entity.from_wikidata_prop,
-    }],
-    [entity.from_wikidata_entity, entity.from_wikidata_prop, linkNotes?.entityQID]
+    () =>
+      !linkNote?.entityQID
+        ? []
+        : [
+            {
+              wikidata: linkNote.entityQID,
+              from_wikidata_entity: entity.from_wikidata_entity,
+              from_wikidata_prop: entity.from_wikidata_prop,
+            },
+          ],
+    [entity.from_wikidata_entity, entity.from_wikidata_prop, linkNote?.entityQID]
   );
 
   if (!entity.name && !entity.description && !entity.wikidata) {
@@ -186,18 +171,18 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
     <div className={styles.entity}>
       <div className={styles.entity_grid}>
         <div className={styles.entity_info_column}>
-          {!!linkNotes?.languages && <p>
-            {t("etymology_details.languages")} {linkNotes?.languages}
-          </p>}
+          {!!linkNote?.languages && (
+            <p>
+              {t("etymology_details.languages")} {linkNote?.languages}
+            </p>
+          )}
 
           <h2 className="etymology_name">{entity.name}</h2>
           <h3 className="etymology_description">{entity.description}</h3>
 
           <EntityButtonRow entity={entity} />
 
-          {wikipediaExtract && (
-            <p className="wikipedia_extract">📖 {wikipediaExtract}</p>
-          )}
+          {wikipediaExtract && <p className="wikipedia_extract">📖 {wikipediaExtract}</p>}
           {startEndDate && <p className="start_end_date">📅 {startEndDate}</p>}
           {entity.event_place && <p className="event_place">📍 {entity.event_place}</p>}
           {entity.citizenship && <p className="citizenship">🌍 {entity.citizenship}</p>}
@@ -220,10 +205,12 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity }) => {
 
       {!!parts?.length && <LinkedEntityList linkedEntities={parts} />}
 
-      {!!statementEntities?.length && <div>
-        <h3>{t("etymology_details.more_details")}</h3>
-        <LinkedEntityList linkedEntities={statementEntities} />
-      </div>}
+      {!!statementEntities?.length && (
+        <div>
+          <h3>{t("etymology_details.more_details")}</h3>
+          <LinkedEntityList linkedEntities={statementEntities} />
+        </div>
+      )}
     </div>
   );
 };

@@ -1,13 +1,13 @@
 import Dexie, { Table } from "dexie";
-import type { EntityLinkNotes } from "../model/LinkedEntity";
+import type { EntityLinkNote } from "../model/LinkedEntity";
 
 interface EntityLinkNotesRow {
     id?: number;
     featureQID: string;
     propertyPID: string;
-    linkedEntityQID: string;
+    linkedEntityQIDs: Set<string>;
     language: string;
-    notes?: EntityLinkNotes;
+    notes?: Record<string, EntityLinkNote>;
     timestamp: string;
 }
 
@@ -16,23 +16,26 @@ export class EntityLinkNotesDatabase extends Dexie {
 
     public constructor() {
         super("EntityLinkNotesDatabase");
-        this.version(2).stores({
-            entityLinkNotes: "++id, [featureQID+propertyPID+linkedEntityQID+language]",
+        this.version(3).stores({
+            entityLinkNotes: "++id, [featureQID+propertyPID+language]",
         });
     }
 
     public async clear(maxHours?: number) {
-        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : new Date(0);
+        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : null;
         await this.transaction('rw', this.entityLinkNotes, async () => {
-            const count = await this.entityLinkNotes.filter(row => !row.timestamp || new Date(row.timestamp) < threshold).delete();
+            const count = await this.entityLinkNotes.filter(row => !row.timestamp || !threshold || new Date(row.timestamp) < threshold).delete();
             console.debug("Evicted old entityLinkNotes from indexedDB", { count, threshold });
         });
     }
 
-    public async getEntityLinkNotes(featureQID: string, propertyPID: string, linkedEntityQID: string, language: string): Promise<EntityLinkNotes | undefined> {
+    public async getEntityLinkNotes(featureQID: string, propertyPID: string, linkedEntityQIDs: Set<string>, language: string): Promise<Record<string, EntityLinkNote> | undefined> {
         try {
             const row = await this.transaction('r', this.entityLinkNotes, async () => {
-                return await this.entityLinkNotes.where({ featureQID, propertyPID, linkedEntityQID, language }).first();
+                return await this.entityLinkNotes
+                    .where({ featureQID, propertyPID, language })
+                    .and(row => linkedEntityQIDs.difference(row.linkedEntityQIDs).size === 0)
+                    .first();
             });
             return row?.notes;
         } catch (e) {
@@ -41,10 +44,10 @@ export class EntityLinkNotesDatabase extends Dexie {
         }
     }
 
-    public async addEntityLinkNotes(featureQID: string, propertyPID: string, linkedEntityQID: string, language: string, notes?: EntityLinkNotes) {
+    public async addEntityLinkNotes(featureQID: string, propertyPID: string, linkedEntityQIDs: Set<string>, language: string, notes?: Record<string, EntityLinkNote>) {
         try {
             await this.transaction('rw', this.entityLinkNotes, async () => {
-                await this.entityLinkNotes.add({ propertyPID, featureQID, linkedEntityQID, notes, language, timestamp: new Date().toISOString() });
+                await this.entityLinkNotes.add({ propertyPID, featureQID, linkedEntityQIDs, notes, language, timestamp: new Date().toISOString() });
             });
         } catch (e) {
             console.error("Failed adding stats to cache", e);

@@ -1,13 +1,15 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
-import type { LinkedEntity } from "@/src/model/LinkedEntity";
+import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
+import { EntityLinkNotesDatabase } from "@/src/db/EntityLinkNotesDatabase";
+import type { EntityLinkNote, LinkedEntity } from "@/src/model/LinkedEntity";
 import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
+import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
+import { WikidataEntityLinkNotesService } from "@/src/services/WikidataEntityLinkNotesService/WikidataEntityLinkNotesService";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
 import styles from "./LinkedEntityList.module.css";
-import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
-import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 
 interface LinkedEntityListProps {
   linkedEntities: LinkedEntity[];
@@ -20,7 +22,10 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     downloadEntityDetails = useCallback(
-      async (entities?: LinkedEntity[], maxItems = 100): Promise<LinkedEntityDetails[]> => {
+      async (
+        entities?: LinkedEntity[],
+        maxItems = 100
+      ): Promise<LinkedEntityDetails[]> => {
         if (!entities?.length) return [];
 
         // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
@@ -48,19 +53,20 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
         }
 
         try {
-          const detailsService = new WikidataDetailsService(i18n.language, new EntityDetailsDatabase()),
+          const detailsService = new WikidataDetailsService(
+              i18n.language,
+              new EntityDetailsDatabase()
+            ),
             fetched = await detailsService.fetchEtymologyDetails(etymologyIDs);
           const combined = entities.map<LinkedEntityDetails>((old) =>
             old.wikidata && fetched[old.wikidata]
               ? { ...old, ...fetched[old.wikidata] }
               : old
           );
-          const filtered = combined
-            .filter(deduplicateByName)
-            .sort(
-              // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
-              (a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0)
-            );
+          const filtered = combined.filter(deduplicateByName).sort(
+            // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
+            (a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0)
+          );
           console.debug("downloadEntityDetails", { entities, combined, filtered });
           return filtered;
         } catch (err) {
@@ -83,6 +89,18 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
       });
   }, [downloadEntityDetails, linkedEntities, showLoadingSpinner]);
 
+  const [linkNotes, setLinkNotes] = useState<Record<string, EntityLinkNote>>();
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_OWMF_statement_notes !== "true") return; // Link statement entity fetching is disabled
+
+    console.debug("Fetching linked entities link notes");
+    new WikidataEntityLinkNotesService(i18n.language, new EntityLinkNotesDatabase())
+      .fetchLinkedEntitiesLinkNotes(linkedEntities)
+      .then(setLinkNotes)
+      .catch(console.error);
+  }, [linkedEntities, i18n.language]);
+
   return (
     <div className={styles.linked_entities_grid}>
       {loadingEtymologies && (
@@ -91,14 +109,22 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
         </div>
       )}
 
-      {entityDetails?.map((ety, i) => (
-        <EtymologyView key={i} entity={ety} />
+      {entityDetails?.map((entity, i) => (
+        <EtymologyView
+          key={i}
+          entity={entity}
+          linkNote={linkNotes?.[entity.wikidata ?? ""]}
+        />
       ))}
     </div>
   );
 };
 
-function deduplicateByName(entity: LinkedEntityDetails, index: number, all: LinkedEntityDetails[]) {
+function deduplicateByName(
+  entity: LinkedEntityDetails,
+  index: number,
+  all: LinkedEntityDetails[]
+) {
   // If deduplication is disabled show all text entities
   if (process.env.NEXT_PUBLIC_OWMF_deduplicate_by_name !== "true") return true;
 
@@ -110,13 +136,13 @@ function deduplicateByName(entity: LinkedEntityDetails, index: number, all: Link
   }
 
   // Ignore text entities with the same name as an existing Wikidata entity
-  const normalName = normalizeName(entity.name)
-  return !all.some((other) =>
-    !!other.wikidata &&
-    !!other.name && (
-      normalizeName(other.name).includes(normalName) ||
-      (other.description && normalizeName(other.description).includes(normalName))
-    )
+  const normalName = normalizeName(entity.name);
+  return !all.some(
+    (other) =>
+      !!other.wikidata &&
+      !!other.name &&
+      (normalizeName(other.name).includes(normalName) ||
+        (other.description && normalizeName(other.description).includes(normalName)))
   );
 }
 

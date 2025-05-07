@@ -1,8 +1,12 @@
-SELECT ?entity (GROUP_CONCAT(DISTINCT ?lang; SEPARATOR=', ') AS ?languages)
+SELECT
+  ?linkedEntity
+  (SAMPLE(?stmtEntity) AS ?stmtEntity)
+  (GROUP_CONCAT(DISTINCT ?lang; SEPARATOR=', ') AS ?languages)
 WHERE {
+  VALUES ?linkedEntity { ${linkedEntityValues} }
   wd:${featureQID} p:${propertyPID} ?stmt.
-  ?stmt ps:${propertyPID} wd:${linkedEntityQID}.
-  OPTIONAL { ?stmt pq:P805 ?entity. }
+  ?stmt ps:${propertyPID} ?linkedEntity.
+  OPTIONAL { ?stmt pq:P805 ?stmtEntity. }
   OPTIONAL { ?stmt pq:P407/rdfs:label ?lang FILTER(LANG(?lang) = '${language}'). }
 }
-GROUP BY ?entity
+GROUP BY ?linkedEntity

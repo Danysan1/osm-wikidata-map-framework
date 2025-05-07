@@ -22,9 +22,9 @@ export class StatsDatabase extends Dexie {
     }
 
     public async clear(maxHours?: number) {
-        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : new Date(0);
+        const threshold = maxHours ? new Date(Date.now() - 1000 * 60 * 60 * maxHours) : null;
         await this.transaction('rw', this.stats, async () => {
-            const count = await this.stats.filter(row => !row.timestamp || new Date(row.timestamp) < threshold).delete();
+            const count = await this.stats.filter(row => !row.timestamp || !threshold || new Date(row.timestamp) < threshold).delete();
             console.debug("Evicted old stats from indexedDB", { count, threshold });
         });
     }
