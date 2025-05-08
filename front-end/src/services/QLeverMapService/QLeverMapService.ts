@@ -19,7 +19,7 @@ const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 const keyPredicate = (key: string) => key.includes(":") ? "<" + OSMKEY + key + ">" : "osmkey:" + key;
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
-const fetchSparqlQuery = (type: string) => fetch(`/qlever/${type}.sparql`).then(r => {
+const fetchSparqlQuery = (type: string) => fetch(`/qlever/${type}.sparql`, { cache: "force-cache" }).then(r => {
     if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
     return r.text();
 });
@@ -67,7 +67,7 @@ export class QLeverMapService implements MapService {
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         language = language.split("_")[0]; // Ignore country
-        
+
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
             console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
             return { type: "FeatureCollection", features: [] };

@@ -12,7 +12,7 @@ export class WikidataEntityLinkNotesService extends WikidataService {
         this.db = db;
         this.language = language.split("_")[0]; // Ignore country
         this.resolveQuery = resolveQuery ?? (
-            () => fetch(`/wdqs/entityLinkNotes.sparql`).then(r => r.text())
+            () => fetch("/wdqs/entityLinkNotes.sparql", { cache: "force-cache" }).then(r => r.text())
         );
     }
 

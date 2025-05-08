@@ -11,7 +11,7 @@ import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
 
 const NEARBY_FEATURE_THRESHOLD = process.env.NEXT_PUBLIC_OWMF_nearby_feature_threshold ? parseInt(process.env.NEXT_PUBLIC_OWMF_nearby_feature_threshold) : undefined;
-const fetchSparqlQuery = (type: string) => fetch(`/wdqs/map/${type}.sparql`).then(r => {
+const fetchSparqlQuery = (type: string) => fetch(`/wdqs/map/${type}.sparql`, { cache: "force-cache" }).then(r => {
     if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
     return r.text();
 });
