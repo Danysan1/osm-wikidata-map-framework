@@ -60,10 +60,13 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         const wikidataCountry = process.env.NEXT_PUBLIC_OWMF_wikidata_country,
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-            filterClasses = this.preset.wikidata_filter_classes?.map(c => `wd:${c}`).join(" "),
-            classFilterQuery = filterClasses ? `VALUES ?class { ${filterClasses} } ?item wdt:P31/wdt:P279? ?class.` : '',
+            featureFilterClasses = this.preset.feature_filter_classes?.map(c => `wd:${c}`)?.join(" "),
+            featureFilterQuery = featureFilterClasses ? `VALUES ?featureClass { ${featureFilterClasses} } ?item wdt:P31/wdt:P279? ?featureClass.` : '',
+            entityFilterClasses = this.preset.linked_entity_filter_classes?.map(c => `wd:${c}`)?.join(" "),
+            entityFilterQuery = entityFilterClasses ? `VALUES ?entityClass { ${entityFilterClasses} } ?etymology wdt:P31/wdt:P279? ?entityClass.` : '',
             sparqlQuery = sparqlQueryTemplate
-                .replaceAll('${classFilterQuery}', classFilterQuery)
+                .replaceAll('${featureFilterQuery}', featureFilterQuery)
+                .replaceAll('${entityFilterQuery}', entityFilterQuery)
                 .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : "")

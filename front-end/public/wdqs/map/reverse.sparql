@@ -21,8 +21,9 @@ SELECT
     (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
+    ${entityFilterQuery}
     ?stmt ps:${indirectProperty} ?item.
-    ${classFilterQuery}
+    ${featureFilterQuery}
     ?item p:P625 ?locationStatement.
     ${wikidataCountryQuery}
     MINUS { ?stmt pq:P582 []. } # Ignore if the entity link statement has an end date

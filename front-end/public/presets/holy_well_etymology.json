@@ -14,7 +14,7 @@
     "osm_wikidata_properties": [
         "P138", "P825", "P547"
     ],
-    "wikidata_filter_classes": [
+    "feature_filter_classes": [
         "Q1371047", "Q126443332"
     ]
 }

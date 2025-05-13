@@ -5,7 +5,7 @@
         "leisure=park",
         "leisure=garden"
     ],
-    "wikidata_filter_classes": [
+    "feature_filter_classes": [
         "Q1107656", "Q22652", "Q22698", "Q22746", "Q16023747"
     ]
 }

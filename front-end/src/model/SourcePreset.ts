@@ -75,11 +75,18 @@ export interface SourcePreset {
     relation_member_role?: string;
 
     /**
-     * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities
+     * Whitelist of Q-IDs of Wikidata classes to consider when filtering features from Wikidata
      * 
      * @example ["Q473972","Q179049","Q46169"]
      */
-    wikidata_filter_classes?: string[];
+    feature_filter_classes?: string[];
+
+    /**
+     * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities
+     * 
+     * @example ["Q15056995", "Q15056993", "Q111722634", "Q110055303"]
+     */
+    linked_entity_filter_classes?: string[];
 
     /**
      * P-ID of the Wikidata property which connects the linked entity (popup element) to a relation whose P625 qualifier identifies the coordinates of the subject (map element)

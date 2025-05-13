@@ -1,0 +1,13 @@
+{
+    "background_color": "hsl(180, 100%, 96%)",
+    "osm_filter_tags": [
+        "historic=aircraft",
+        "memorial=aircraft"
+    ],
+    "osm_text_key": "model",
+    "osm_wikidata_keys": [
+        "model:wikidata"
+    ],
+    "osm_wikidata_properties": ["P31"],
+    "linked_entity_filter_classes": ["Q45296117", "Q15056995", "Q15056993", "Q111722634", "Q110055303"]
+}

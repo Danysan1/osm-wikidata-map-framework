@@ -13,6 +13,7 @@ WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
     MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
+    ${entityFilterQuery}
     
     # Filter by location
     SERVICE wikibase:box {

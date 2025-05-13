@@ -10,7 +10,7 @@
     "osm_wikidata_keys": [
         "subject:wikidata"
     ],
-    "wikidata_filter_classes": [
+    "feature_filter_classes": [
         "Q26703203"
     ],
     "osm_wikidata_properties": [

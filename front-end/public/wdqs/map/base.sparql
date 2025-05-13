@@ -18,7 +18,7 @@ SELECT
     (SAMPLE(?_ohm_rel) AS ?ohm_rel)
     (SAMPLE(?_alias) AS ?alias)
 WHERE {
-    ${classFilterQuery}
+    ${featureFilterQuery}
     ?item p:P625 ?locationStatement;
           rdfs:label ?anyLabel.
     ${wikidataCountryQuery}

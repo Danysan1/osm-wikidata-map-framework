@@ -45,8 +45,9 @@ WITH {
     SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_website ?_wikipedia ?_wikispore ?_picture ?_height ?_levels ?_osm_node ?_osm_way ?_osm_rel ?_ohm_rel ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
+        ${entityFilterQuery}
         ?stmt ps:${indirectProperty} ?item.
-        ${classFilterQuery}
+        ${featureFilterQuery}
         ?item p:P625 ?locationStatement.
         ${wikidataCountryQuery}
         MINUS { ?stmt (pq:P625|pq:P582) []. } # Ignore if the entity link statement has a location qualifier (it will fetched be in the other subquery) or an end date

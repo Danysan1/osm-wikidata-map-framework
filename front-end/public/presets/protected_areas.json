@@ -6,7 +6,7 @@
         "leisure=nature_reserve"
     ],
     "relation_propagation_type": "site",
-    "wikidata_filter_classes": [
+    "feature_filter_classes": [
         "Q473972", "Q179049", "Q46169"
     ]
 }
