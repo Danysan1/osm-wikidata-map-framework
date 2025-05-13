@@ -45,7 +45,7 @@
         "network": "Redes",
         "operator": "Operadores",
         "protected_areas": "Áreas protegidas",
-        "stolperstein": "Stolpersteine"
+        "stolperstein": "Stolpersteine (pedras de tropeço)"
     },
     "source": {
         "choose_source": "Escolher origem dos dados",
@@ -64,7 +64,7 @@
         "gender": "Por gênero",
         "type": "Por tipo",
         "country": "Por país",
-        "field_of_work": "Por campo de trabalho",
+        "field_of_work": "Por área de trabalho",
         "occupation": "Por profissão",
         "start_century": "Por século de início/nascimento",
         "end_century": "Por século de fim/morte",
