@@ -93,7 +93,7 @@ export class OverpassService implements MapService {
 
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if (area < 0.0000001 || area > 1.5)
+        if (area < 0.0000001 || area > 6)
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
         let osmInstance: OsmInstance,

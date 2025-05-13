@@ -30,3 +30,11 @@
 .entity_pictures_column:empty {
   display: none;
 }
+
+.entity_name,
+.entity_description,
+.wikipedia_extract {
+  max-width: 60em;
+  margin-left: auto;
+  margin-right: auto;
+}

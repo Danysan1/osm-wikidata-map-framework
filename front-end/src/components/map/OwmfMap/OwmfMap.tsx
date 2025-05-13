@@ -161,8 +161,11 @@ export const OwmfMap = () => {
   }, []);
 
   useEffect(() => {
-    if (!pmtilesActive && !clustersActive && !detailsActive) showLoadingSpinner(false);
-  }, [clustersActive, detailsActive, pmtilesActive, showLoadingSpinner]);
+    if (backEndService && !pmtilesActive && !clustersActive && !detailsActive) {
+      showLoadingSpinner(false);
+      showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000);
+    }
+  }, [backEndService, clustersActive, detailsActive, pmtilesActive, showLoadingSpinner, showSnackbar, t]);
 
   useEffect(() => {
     if (sourcePreset?.id === sourcePresetID) {

@@ -1,5 +1,6 @@
 import { getPropLinkedEntities } from "@/src/model/OwmfFeatureProperties";
 import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
+import { SourcePreset } from "@/src/model/SourcePreset";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
 import { WikipediaService } from "@/src/services/WikipediaService";
@@ -11,7 +12,6 @@ import { LinkedEntityList } from "../EtymologyList/LinkedEntityList";
 import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
 import { FeatureSourceRow } from "./FeatureSourceRow";
 import styles from "./FeatureView.module.css";
-import { SourcePreset } from "@/src/model/SourcePreset";
 
 interface FeatureViewProps {
   feature: OwmfFeature;
@@ -139,7 +139,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
       {wikipediaExtract && (
         <p className={styles.wikipedia_extract}>📖 {wikipediaExtract}</p>
       )}
-      {props && <FeatureImages feature={props} />}
+      {props && <FeatureImages feature={props} className={styles.feature_images} />}
 
       {props?.linked_entities && (
         <LinkedEntityList linkedEntities={getPropLinkedEntities(props)} />

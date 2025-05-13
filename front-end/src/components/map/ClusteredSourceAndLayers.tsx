@@ -86,9 +86,10 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     }
 
     const bboxArea = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-    if (bboxArea < 0.0000001 || bboxArea > 1.6) {
+    if (bboxArea < 0.0000001 || bboxArea > 6) {
       console.debug("BBox area too big, NOT fetching map clusters", {
         bbox,
+        bboxArea,
         backEndID,
       });
       return;

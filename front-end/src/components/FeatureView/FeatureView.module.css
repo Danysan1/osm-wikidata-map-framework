@@ -12,6 +12,7 @@ div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,
 div.detail_container .wikipedia_extract,
+div.detail_container .feature_images,
 div.detail_container .feature_buttons_container {
   max-width: 75em;
   margin-left: auto;

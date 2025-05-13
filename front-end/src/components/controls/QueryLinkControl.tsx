@@ -38,20 +38,20 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = ({
 
         const content = typeof e.source?.data === "object" ? e.source.data as OwmfResponse : undefined;
         if (!content) {
-            console.debug("Source data is not an object, hiding", e.source);
+            console.debug("QueryLinkControl: Source data is not an object, hiding", e.source);
             setUrl(undefined);
             return;
         }
 
         if(!!site && content.site !== site) {
-            console.debug("QueryLinkControl: Wrong site, hiding", { content, mapEventField });
+            // console.debug("QueryLinkControl: Wrong site, hiding", { content, mapEventField });
             setUrl(undefined);
             return;
         }
 
         const query = content[mapEventField];
         if (typeof query !== "string" || !query.length) {
-            console.debug("QueryLinkControl: Missing query field, hiding", { content, mapEventField });
+            // console.debug("QueryLinkControl: Missing query field, hiding", { content, mapEventField });
             setUrl(undefined);
             return;
         }

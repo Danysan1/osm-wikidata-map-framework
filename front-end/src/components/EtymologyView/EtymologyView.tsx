@@ -177,12 +177,12 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, linkNote }) => {
             </p>
           )}
 
-          <h2 className="etymology_name">{entity.name}</h2>
-          <h3 className="etymology_description">{entity.description}</h3>
+          <h2 className={styles.entity_name}>{entity.name}</h2>
+          <h3 className={styles.entity_description}>{entity.description}</h3>
 
           <EntityButtonRow entity={entity} />
 
-          {wikipediaExtract && <p className="wikipedia_extract">📖 {wikipediaExtract}</p>}
+          {wikipediaExtract && <p className={styles.wikipedia_extract}>📖 {wikipediaExtract}</p>}
           {startEndDate && <p className="start_end_date">📅 {startEndDate}</p>}
           {entity.event_place && <p className="event_place">📍 {entity.event_place}</p>}
           {entity.citizenship && <p className="citizenship">🌍 {entity.citizenship}</p>}
