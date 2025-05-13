@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Voreinstellung wählen",
+        "aircraft": "Luftfahrzeuge",
         "architect": "Architekt*innen von Gebäuden",
         "artist": "Autor*innen von Kunstwerken",
         "base": "OSM + Wikidata",
@@ -41,7 +42,10 @@
         "green_spaces": "Grünflächen",
         "holy_wells": "Heilige Quellen",
         "holy_well_etymology": "Etymologie heiliger Quellen",
-        "protected_areas": "Schutzgebiete"
+        "network": "Netzwerke",
+        "operator": "Betriebsstätten",
+        "protected_areas": "Schutzgebiete",
+        "stolperstein": "Stolpersteine"
     },
     "source": {
         "choose_source": "Datenquelle wählen",
@@ -60,6 +64,7 @@
         "gender": "Nach Geschlecht",
         "type": "Nach Typ",
         "country": "Nach Land",
+        "field_of_work": "Nach Arbeitsgebiet",
         "occupation": "Nach Tätigkeit",
         "start_century": "Nach Gründungs-/Geburtsjahrhundert",
         "end_century": "Nach Jahrhundert des Endes/Todes",

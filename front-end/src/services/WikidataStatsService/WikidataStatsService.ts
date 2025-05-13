@@ -1,23 +1,23 @@
+import type { StatsDatabase } from "@/src/db/StatsDatabase";
 import { parse } from "papaparse";
 import type { EtymologyStat } from "../../model/EtymologyStat";
 import { ColorSchemeID } from "../../model/colorScheme";
 import { WikidataService } from "../WikidataService";
 import countryStatsQuery from "./country.sparql";
 import endCenturyStatsQuery from "./end-century.sparql";
+import lineOfWorkStatsQuery from "./field_of_work.sparql";
 import genderStatsQuery from "./gender.sparql";
-import lineOfWorkStatsQuery from "./line_of_work.sparql";
 import occupationStatsQuery from "./occupation.sparql";
 import pictureStatsQuery from "./picture.sparql";
 import startCenturyStatsQuery from "./start-century.sparql";
 import typeStatsQuery from "./type.sparql";
 import wikilinkStatsQuery from "./wikilink.sparql";
-import type { StatsDatabase } from "@/src/db/StatsDatabase";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     [ColorSchemeID.type]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_types.csv`,
     [ColorSchemeID.gender]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_genders.csv`,
     [ColorSchemeID.country]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_countries.csv`,
-    [ColorSchemeID.line_of_work]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_lines_of_work.csv`,
+    [ColorSchemeID.field_of_work]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_lines_of_work.csv`,
     [ColorSchemeID.occupation]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_occupations.csv`,
 }
 
@@ -27,7 +27,7 @@ export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
     [ColorSchemeID.type]: typeStatsQuery,
     [ColorSchemeID.gender]: genderStatsQuery,
     [ColorSchemeID.country]: countryStatsQuery,
-    [ColorSchemeID.line_of_work]: lineOfWorkStatsQuery,
+    [ColorSchemeID.field_of_work]: lineOfWorkStatsQuery,
     [ColorSchemeID.occupation]: occupationStatsQuery,
     [ColorSchemeID.start_century]: startCenturyStatsQuery,
     [ColorSchemeID.end_century]: endCenturyStatsQuery,

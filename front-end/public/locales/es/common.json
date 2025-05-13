@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Elija preestablecido",
+        "aircraft": "Aeronaves",
         "architect": "Arquitectos de construcción",
         "artist": "Autores de obras de arte",
         "base": "OSM + Wikidata",
@@ -41,7 +42,10 @@
         "green_spaces": "Espacios verdes",
         "holy_wells": "Pozos sagrados",
         "holy_well_etymology": "Etimología de pozos sagrados",
-        "protected_areas": "Áreas protegidas"
+        "network": "Redes",
+        "operator": "Operadores",
+        "protected_areas": "Áreas protegidas",
+        "stolperstein": "Stolpersteine"
     },
     "source": {
         "choose_source": "Elija la fuente de datos",
@@ -60,6 +64,7 @@
         "gender": "Por genero",
         "type": "Por tipo",
         "country": "Por país",
+        "field_of_work": "Por campo de trabajo",
         "occupation": "Por ocupación",
         "start_century": "Por siglo de inicio/nacimiento",
         "end_century": "Por siglo de fin/muerte",

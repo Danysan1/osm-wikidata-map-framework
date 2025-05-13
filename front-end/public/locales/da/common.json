@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Vælg forudindstilling",
+        "aircraft": "Luftfartøjer",
         "architect": "Bygningsarkitekter",
         "artist": "Kunstværksforfattere",
         "base": "OSM + Wikidata",
@@ -41,7 +42,10 @@
         "green_spaces": "Grønne områder",
         "holy_wells": "Hellige kilder",
         "holy_well_etymology": "Etymologi af hellige kilder",
-        "protected_areas": "Beskyttede områder"
+        "network": "Netværk",
+        "operator": "Operatører",
+        "protected_areas": "Beskyttede områder",
+        "stolperstein": "Snublesten"
     },
     "source": {
         "choose_source": "Vælg datakilde",
@@ -60,6 +64,7 @@
         "gender": "Efter køn",
         "type": "Efter type",
         "country": "Efter land",
+        "field_of_work": "Efter arbejdsområde",
         "occupation": "Efter beskæftigelse",
         "start_century": "Efter start/fødselsårhundrede",
         "end_century": "Efter slut/dødsårhundrede",

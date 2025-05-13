@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Choisir un préréglage",
+        "aircraft": "Aéronefs",
         "architect": "Architectes du bâtiment",
         "artist": "Auteurs d'œuvres d'art",
         "base": "OSM + Wikidata",
@@ -41,7 +42,10 @@
         "green_spaces": "Espaces verts",
         "holy_wells": "Puits sacrés",
         "holy_well_etymology": "Étymologie de puits sacrés",
-        "protected_areas": "Aires protégées"
+        "network": "Réseaux",
+        "operator": "Opérateurs",
+        "protected_areas": "Aires protégées",
+        "stolperstein": "Stolpersteine"
     },
     "source": {
         "choose_source": "Choisissez la source de données",
@@ -60,6 +64,7 @@
         "gender": "Par sexe",
         "type": "Par type",
         "country": "Par pays",
+        "field_of_work": "Par domaine d'activité",
         "occupation": "Par occupation",
         "start_century": "Par siècle de début/naissance",
         "end_century": "Par siècle de fin/décès",

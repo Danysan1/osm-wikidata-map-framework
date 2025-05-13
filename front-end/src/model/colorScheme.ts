@@ -3,7 +3,7 @@ export enum ColorSchemeID {
     gender = "gender",
     type = "type",
     country = "country",
-    line_of_work = "line_of_work",
+    field_of_work = "field_of_work",
     occupation = "occupation",
     start_century = "start_century",
     end_century = "end_century",
@@ -50,7 +50,7 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     [ColorSchemeID.country]: {
         defaultText: "By country", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
-    [ColorSchemeID.line_of_work]: {
+    [ColorSchemeID.field_of_work]: {
         defaultText: "By line of work", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics", requiresLinkedEntities: true,
     },
     [ColorSchemeID.occupation]: {

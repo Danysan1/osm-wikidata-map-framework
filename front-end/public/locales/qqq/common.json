@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Alt text for the '🗃️' button to show/hide the preset choice dropdown",
+        "aircraft": "Name of the 'aircraft' source preset",
         "architect": "Name of the 'architect' source preset",
         "artist": "Name of the 'artist' source preset",
         "base": "Name of the 'base' source preset",
@@ -40,7 +41,11 @@
         "etymology": "Name of the 'etymology' source preset",
         "green_spaces": "Name of the 'green_spaces' source preset",
         "holy_wells": "Name of the 'holy_wells' source preset",
-        "holy_well_etymology": "Name of the 'holy_well_etymology' source preset"
+        "holy_well_etymology": "Name of the 'holy_well_etymology' source preset",
+        "network": "Name of the 'network' source preset",
+        "operator": "Name of the 'operator' source preset",
+        "protected_areas": "Name of the 'protected_areas' source preset",
+        "stolperstein": "Name of the 'stolperstein' source preset"
     },
     "source": {
         "choose_source": "Alt text for the '⚙️' button to show/hide the source choice dropdown",
@@ -59,6 +64,7 @@
         "gender": "Dropdown item for linked entity gender statistics",
         "type": "Dropdown item for linked entity type statistics",
         "country": "Dropdown item for linked entity country statistics",
+        "field_of_work": "Dropdown item for linked entity field of work statistics",
         "occupation": "Dropdown item for linked entity occupation statistics",
         "start_century": "Dropdown item for linked entity start/birth century statistics",
         "end_century": "Dropdown item for linked entity end/death century statistics",
@@ -85,6 +91,8 @@
         "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"
     },
     "etymology_details": {
+        "languages": "Languages:",
+        "more_details": "More details:",
         "source": "Initial text of the linked entity source row",
         "propagation": "propagation",
         "propagation_title": "Alt text of the link to the description of the propagation mechanism"

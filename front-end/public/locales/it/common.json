@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Scegli preset",
+        "aircraft": "Aeromobili",
         "architect": "Architetti degli edifici",
         "artist": "Autori delle opere d'arte",
         "base": "OSM + Wikidata",
@@ -41,7 +42,10 @@
         "green_spaces": "Spazi verdi",
         "holy_wells": "Pozzi sacri",
         "holy_well_etymology": "Etimologia dei pozzi sacri",
-        "protected_areas": "Aree protette"
+        "network": "Reti",
+        "operator": "Operatori",
+        "protected_areas": "Aree protette",
+        "stolperstein": "Pietre d'inciampo"
     },
     "source": {
         "choose_source": "Scegli fonte dati",
@@ -60,6 +64,7 @@
         "gender": "Per genere",
         "type": "Per tipo",
         "country": "Per paese",
+        "field_of_work": "Per campo di lavoro",
         "occupation": "Per occupazione",
         "start_century": "Per secolo di inizio/nascita",
         "end_century": "Per secolo di fine/morte",

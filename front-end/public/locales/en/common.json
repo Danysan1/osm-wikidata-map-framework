@@ -32,6 +32,7 @@
     },
     "preset": {
         "choose_preset": "Choose preset",
+        "aircraft": "Aircrafts",
         "architect": "Building architects",
         "artist": "Artwork authors",
         "base": "OSM + Wikidata",
@@ -41,7 +42,10 @@
         "green_spaces": "Green spaces",
         "holy_wells": "Holy wells",
         "holy_well_etymology": "Etymology of holy wells",
-        "protected_areas": "Protected areas"
+        "network": "Networks",
+        "operator": "Operators",
+        "protected_areas": "Protected areas",
+        "stolperstein": "Stolpersteine"
     },
     "source": {
         "choose_source": "Choose data source",
@@ -60,6 +64,7 @@
         "gender": "By gender",
         "type": "By type",
         "country": "By country",
+        "field_of_work": "By field of work",
         "occupation": "By occupation",
         "start_century": "By start/birth century",
         "end_century": "By end/death century",
