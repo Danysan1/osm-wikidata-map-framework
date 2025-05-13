@@ -4,16 +4,16 @@ export interface BackgroundStyle {
 
     /** Name of the vendor to display in the UI */
     vendorText: string,
-    
+
     /** Name of the style to display in the UI */
     styleText: string;
-    
+
     /** URL of the style JSON */
     styleUrl: string;
-    
+
     /** Placeholder text for the API key */
     keyPlaceholder?: string;
-    
+
     /** API key to use for this style, necessary only if keyPlaceholder is specified */
     key?: string
 
@@ -71,6 +71,19 @@ export function mapboxStyle(id: string, text: string, mapboxUser: string, mapbox
         vendorText: "Mapbox",
         styleText: text,
         styleUrl: `https://api.mapbox.com/styles/v1/${mapboxUser}/${mapboxId}/?access_token=${mapboxToken}`
+    };
+}
+
+/**
+ * @see https://tracestrack.com/category/maps/
+ * @see https://console.tracestrack.com/vector-explorer
+ */
+export function tracestrackStyle(text: string, tracestrackId: string, tracestrackKey: string): BackgroundStyle {
+    return {
+        id: `tracestrack_${tracestrackId}`,
+        vendorText: "Tracestrack",
+        styleText: text,
+        styleUrl: `https://tile.tracestrack.com/v/maps/${tracestrackId}/style.json?key=${tracestrackKey}`
     };
 }
 

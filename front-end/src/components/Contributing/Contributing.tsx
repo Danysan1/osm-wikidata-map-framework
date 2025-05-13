@@ -290,6 +290,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                 {process.env.NEXT_PUBLIC_OWMF_enable_versatiles === "true" && <li><a href="https://versatiles.org/">VersaTiles</a></li>}
                 {process.env.NEXT_PUBLIC_OWMF_enable_stadia_maps === "true" && <li><a href="https://stadiamaps.com/">Stadia Maps</a></li>}
                 {!!process.env.NEXT_PUBLIC_OWMF_jawg_token && <li><a href="https://www.jawg.io/en/">Jawg</a></li>}
+                {!!process.env.NEXT_PUBLIC_OWMF_tracestrack_key && <li><a href="https://tracestrack.com/">Tracestrack</a></li>}
                 {!!process.env.NEXT_PUBLIC_OWMF_mapbox_token && <li><a href="https://www.mapbox.com/">Mapbox</a></li>}
                 {process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true" && <li><a href="https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse">OpenHistoricalMap</a></li>}
             </ul>

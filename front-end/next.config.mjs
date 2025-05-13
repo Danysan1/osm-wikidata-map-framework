@@ -33,6 +33,7 @@ function generateCspHeaders() {
     maptilerImg = process.env.NEXT_PUBLIC_OWMF_maptiler_key ? "https://cdn.maptiler.com/maptiler-geocoding-control/" : "",
     stadiaConnect = process.env.NEXT_PUBLIC_OWMF_enable_stadia_maps === "true" ? 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/' : "",
     jawgConnect = process.env.NEXT_PUBLIC_OWMF_jawg_token ? 'https://api.jawg.io/ https://tile.jawg.io/' : "",
+    tracestrackConnect = process.env.NEXT_PUBLIC_OWMF_tracestrack_key ? 'https://api.jawg.io/ https://tile.jawg.io/' : "",
     googleAnalyticsImg = process.env.NEXT_PUBLIC_OWMF_google_analytics_id ? 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences' : "",
     googleAnalyticsScript = process.env.NEXT_PUBLIC_OWMF_google_analytics_id ? 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com' : "",
     sentryConnect = process.env.owmf_sentry_js_dsn ? 'https://*.ingest.sentry.io' : "",
@@ -48,7 +49,7 @@ function generateCspHeaders() {
     osmAmericanaConnect = 'https://zelonewolf.github.io/openstreetmap-americana/ https://osm-americana.github.io/fontstack66/ https://tile.ourmap.us/data/ https://*.cloudfront.net/planet/',
     cspHeader = `
     child-src blob: ;
-    connect-src 'self' ${wikimediaConnect} ${osmConnect} ${ohmConnect} ${sentryConnect} ${mapboxConnect} ${maptilerConnect} ${stadiaConnect} ${jawgConnect} ${googleAnalyticsImg} ${qleverConnect} ${pmtilesConnect} ${osmAmericanaConnect} ;
+    connect-src 'self' ${wikimediaConnect} ${osmConnect} ${ohmConnect} ${sentryConnect} ${mapboxConnect} ${maptilerConnect} ${stadiaConnect} ${jawgConnect} ${tracestrackConnect} ${googleAnalyticsImg} ${qleverConnect} ${pmtilesConnect} ${osmAmericanaConnect} ;
     default-src 'self' ;
     font-src 'self' ;
     form-action 'self' ${payPalForm} ;

@@ -8,6 +8,7 @@ import {
   maptilerStyle,
   openHistoricalMapStyle,
   stadiaStyle,
+  tracestrackStyle,
   versaTilesStyle,
 } from "@/src/model/backgroundStyle";
 import type {
@@ -30,8 +31,17 @@ import { DropdownControl } from "./DropdownControl/DropdownControl";
 function getBackgroundStyles() {
   const maptiler_key = process.env.NEXT_PUBLIC_OWMF_maptiler_key,
     jawg_token = process.env.NEXT_PUBLIC_OWMF_jawg_token,
+    tracestrack_key = process.env.NEXT_PUBLIC_OWMF_tracestrack_key,
     mapbox_token = process.env.NEXT_PUBLIC_OWMF_mapbox_token,
     backgroundStyles: BackgroundStyle[] = [];
+
+  if (tracestrack_key) {
+    backgroundStyles.push(
+      tracestrackStyle("Carto", "carto", tracestrack_key),
+      // tracestrackStyle("Lite", "lite", tracestrack_key),
+      // tracestrackStyle("Dark", "dark", tracestrack_key)
+    );
+  }
 
   if (mapbox_token) {
     backgroundStyles.push(
