@@ -13,7 +13,10 @@ else
   console.log("Static export disabled, building dynamic server-side app to be run with `next start`");
 
 process.env.NEXT_PUBLIC_OWMF_version = JSON.parse(readFileSync('package.json', 'utf8')).version;
-process.env.NEXT_PUBLIC_OWMF_i18n_override = existsSync("i18n.json") ? readFileSync("i18n.json", "utf8") : undefined;
+
+if(existsSync("i18n.json"))
+  process.env.NEXT_PUBLIC_OWMF_i18n_override = readFileSync("i18n.json", "utf8");
+
 if (!process.env.NEXT_PUBLIC_OWMF_source_presets || process.env.NEXT_PUBLIC_OWMF_source_presets === "all") {
   const presetDir = join(process.cwd(), "public", "presets"),
     presetFiles = existsSync(presetDir) ? readdirSync(presetDir) : [],
