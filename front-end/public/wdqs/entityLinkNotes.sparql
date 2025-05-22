@@ -1,12 +1,22 @@
 SELECT
   ?linkedEntity
   (SAMPLE(?stmtEntity) AS ?stmtEntity)
-  (GROUP_CONCAT(DISTINCT ?lang; SEPARATOR=', ') AS ?languages)
+  (GROUP_CONCAT(DISTINCT ?langLabel; SEPARATOR=', ') AS ?languages)
 WHERE {
   VALUES ?linkedEntity { ${linkedEntityValues} }
   wd:${featureQID} p:${propertyPID} ?stmt.
   ?stmt ps:${propertyPID} ?linkedEntity.
   OPTIONAL { ?stmt pq:P805 ?stmtEntity. }
-  OPTIONAL { ?stmt pq:P407/rdfs:label ?lang FILTER(LANG(?lang) = '${language}'). }
+  OPTIONAL {
+    {
+      # Example: https://www.wikidata.org/wiki/Q40#Q40$425f767e-4093-2523-2194-5d149685969f => "Old High German"
+      ?stmt pq:P407/rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}')
+    } UNION {
+      # Example: https://www.wikidata.org/wiki/Q40#Q40$2be387a7-4d8e-e7a8-42b7-7fcae0e87d89 => "Slovak, Czech"
+      ?stmt pq:P5168 ?obj.
+      BIND(LANG(?obj) AS ?iso639)
+      ?iso639 ^wdt:P218/rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}').
+    }
+  }
 }
 GROUP BY ?linkedEntity
