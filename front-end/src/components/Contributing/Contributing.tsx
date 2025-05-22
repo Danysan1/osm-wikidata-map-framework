@@ -24,7 +24,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
         anyLinkedEntity = !!sourcePreset?.osm_wikidata_keys || !!sourcePreset?.osm_wikidata_properties || !!sourcePreset?.wikidata_indirect_property || !!sourcePreset?.osm_text_key,
         anyPropagation = anyLinkedEntity && process.env.NEXT_PUBLIC_OWMF_pmtiles_preset === sourcePreset.id;
 
-    return <div>
+    return <div className={styles.container}>
         <Link href="/">&lt; Back to map</Link>
 
         <h1>{t("info_box.contribute", "Contribute to the map")}</h1>
@@ -137,13 +137,11 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                 The following tools make it easier to contribute to OpenStreetMap by linking Wikidata entities:
             </p>
             <ul>
-                {sourcePreset?.mapcomplete_theme && <li><a href={`https://mapcomplete.org/${sourcePreset?.mapcomplete_theme}`}>mapcomplete.org</a> helps discovering missing <code>*:wikidata</code> tags and find their possible value</li>}
-                <li><a href="https://osm.wikidata.link/">osm.wikidata.link</a> helps discovering missing <code>wikidata</code> tags and find their possible value</li>
+                {sourcePreset?.mapcomplete_theme && <li><a href={`https://mapcomplete.org/${sourcePreset?.mapcomplete_theme}`}>MapComplete</a> helps discovering missing <code>*:wikidata</code> tags and find their possible value</li>}
+                <li><a href="https://osm.wikidata.link/">OSM ↔ Wikidata matcher</a> helps discovering missing <code>wikidata</code> tags and find their possible value</li>
+                <li><a href="https://map.osm.wikidata.link/">OWL map</a> helps discovering missing <code>wikidata</code> tags directly on a map</li>
+                <li><a href="https://www.openstreetmap.org/">openstreetmap.org</a> allows to manually edit map elements (you can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>)</li>
             </ul>
-            <p>
-                If those tools aren&apos;t enough for your needs and you want to manually add or correct entities linked to a map feature you can do it on <a href="https://www.openstreetmap.org/">openstreetmap.org</a>.
-                You can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>.
-            </p>
             <p>
                 The wikidata Q-ID of an item (object/person/...) can be found by searching its name on <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page">wikidata.org</a>, once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
                 Suppose for example that you want to link some item to Nelson Mandela: after searching it on wikidata you will find its page at <a href="https://www.wikidata.org/wiki/Q8023">https://www.wikidata.org/wiki/Q8023</a>. As can be seen at the end of the URL, its Q-ID is <code>Q8023</code>.
@@ -165,12 +163,11 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                         <td><code>{key}=*</code></td>
                         <td><a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}>OSM Wiki</a></td>
                         {index === 0 && <td rowSpan={sourcePreset.osm_wikidata_keys?.length}>
-                            Links the OSM element for the map feature directly to a Wikidata entity:<br />
+                            Links the OSM element for the map feature directly to a Wikidata entity. Example:<br />
                             <Image
                                 alt={"OSM to Wikidata diagram"}
                                 src={osmTagDiagram}
-                                width={400}
-                                height={200}/>
+                                width={420}/>
                         </td>}
                     </tr>)}
                     {sourcePreset.osm_text_key && <tr>
@@ -191,12 +188,11 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                             <td><code>P11693</code> (OpenStreetMap node ID)</td>
                             <td><a href="https://www.wikidata.org/wiki/Property:P11693">Wikidata</a></td>
                             <td rowSpan={4 + (sourcePreset.osm_wikidata_properties ? sourcePreset.osm_wikidata_properties.length : 1)}>
-                                The link is inferred by combining a OSM-Wikidata same-entity tag/property with an intra-Wikidata link property:<br />
+                                The link is inferred by combining a OSM-Wikidata same-entity tag/property with an intra-Wikidata link property. Example:<br />
                                 <Image
                                     alt={"OSM+Wikidata diagram"}
                                     src={sourcePreset.osm_wikidata_properties ? directDiagram : reverseDiagram}
-                                    width={400}
-                                    height={sourcePreset.osm_wikidata_properties ? 250 : 420}/>
+                                    width={sourcePreset.osm_wikidata_properties ? 500 : 400}/>
                             </td>
                         </tr>
                         <tr>

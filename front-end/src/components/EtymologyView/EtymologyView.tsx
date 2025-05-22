@@ -1,4 +1,4 @@
-import { DatePrecision, EntityLinkNote, LinkedEntity } from "@/src/model/LinkedEntity";
+import { DatePrecision, LinkedEntity } from "@/src/model/LinkedEntity";
 import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
@@ -14,10 +14,11 @@ const MAX_IMAGES = 2;
 
 interface EtymologyViewProps {
   entity: LinkedEntityDetails;
-  linkNote?: EntityLinkNote;
+  firstLine?: string;
+  entityLinkQID?: string;
 }
 
-export const EtymologyView: FC<EtymologyViewProps> = ({ entity, linkNote }) => {
+export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entityLinkQID }) => {
   const { i18n, t } = useTranslation(),
     [wikipediaExtract, setWikipediaExtract] = useState<string>();
 
@@ -150,16 +151,16 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, linkNote }) => {
 
   const statementEntities = useMemo<LinkedEntity[]>(
     () =>
-      !linkNote?.entityQID
+      !entityLinkQID
         ? []
         : [
             {
-              wikidata: linkNote.entityQID,
+              wikidata: entityLinkQID,
               from_wikidata_entity: entity.from_wikidata_entity,
               from_wikidata_prop: entity.from_wikidata_prop,
             },
           ],
-    [entity.from_wikidata_entity, entity.from_wikidata_prop, linkNote?.entityQID]
+    [entity.from_wikidata_entity, entity.from_wikidata_prop, entityLinkQID]
   );
 
   if (!entity.name && !entity.description && !entity.wikidata) {
@@ -171,10 +172,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, linkNote }) => {
     <div className={styles.entity}>
       <div className={styles.entity_grid}>
         <div className={styles.entity_info_column}>
-          {!!linkNote?.languages && (
-            <p>
-              {t("etymology_details.languages")} {linkNote?.languages}
-            </p>
+          {!!firstLine && (
+            <p>{firstLine}</p>
           )}
 
           <h2 className={styles.entity_name}>{entity.name}</h2>
@@ -206,10 +205,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, linkNote }) => {
       {!!parts?.length && <LinkedEntityList linkedEntities={parts} />}
 
       {!!statementEntities?.length && (
-        <div>
-          <h3>{t("etymology_details.more_details")}</h3>
-          <LinkedEntityList linkedEntities={statementEntities} />
-        </div>
+        <LinkedEntityList linkedEntities={statementEntities} firstLine={t("etymology_details.more_details")} />
       )}
     </div>
   );

@@ -1,13 +1,18 @@
+.container {
+  max-width: 75em;
+  margin: auto;
+}
+
 table.tag_table {
-    border-collapse: collapse;
+  border-collapse: collapse;
 }
 
 table.tag_table th,
 table.tag_table td {
-    border: 1px solid black;
-    padding: 0 .5em;
+  border: 1px solid black;
+  padding: 0 0.5em;
 }
 
 table.tag_table td > a {
-    text-wrap: nowrap;
+  text-wrap: nowrap;
 }

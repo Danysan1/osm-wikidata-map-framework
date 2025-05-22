@@ -92,7 +92,7 @@
     },
     "etymology_details": {
         "languages": "Languages:",
-        "more_details": "More details:",
+        "more_details": "'More details' button text",
         "source": "Initial text of the linked entity source row",
         "propagation": "propagation",
         "propagation_title": "Alt text of the link to the description of the propagation mechanism"

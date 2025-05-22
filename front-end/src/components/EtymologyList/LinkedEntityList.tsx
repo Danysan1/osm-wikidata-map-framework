@@ -13,9 +13,10 @@ import styles from "./LinkedEntityList.module.css";
 
 interface LinkedEntityListProps {
   linkedEntities: LinkedEntity[];
+  firstLine?: string;
 }
 
-export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) => {
+export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities, firstLine }) => {
   const { t, i18n } = useTranslation(),
     [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
     [entityDetails, setEntityDetails] = useState<LinkedEntityDetails[]>(),
@@ -113,7 +114,8 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities }) 
         <EtymologyView
           key={i}
           entity={entity}
-          linkNote={linkNotes?.[entity.wikidata ?? ""]}
+          firstLine={firstLine ?? (entity.wikidata && linkNotes?.[entity.wikidata] && `${t("etymology_details.languages")} ${linkNotes[entity.wikidata].languages}`)}
+          entityLinkQID={entity.wikidata && linkNotes?.[entity.wikidata]?.entityQID}
         />
       ))}
     </div>
