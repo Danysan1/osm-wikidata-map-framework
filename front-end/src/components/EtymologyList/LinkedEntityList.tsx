@@ -114,7 +114,7 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities, fi
         <EtymologyView
           key={i}
           entity={entity}
-          firstLine={firstLine ?? (entity.wikidata && linkNotes?.[entity.wikidata] && `${t("etymology_details.languages")} ${linkNotes[entity.wikidata].languages}`)}
+          firstLine={firstLine ?? (entity.wikidata && linkNotes?.[entity.wikidata]?.languages && `${t("etymology_details.languages")} ${linkNotes[entity.wikidata].languages}`)}
           entityLinkQID={entity.wikidata && linkNotes?.[entity.wikidata]?.entityQID}
         />
       ))}
