@@ -161,11 +161,23 @@ export const OwmfMap = () => {
   }, []);
 
   useEffect(() => {
-    if (backEndService && !pmtilesActive && !clustersActive && !detailsActive) {
+    if (!pmtilesActive && !clustersActive && !detailsActive) {
       showLoadingSpinner(false);
-      showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000);
+      if (backEndService) {
+        // A back-end service is active => Not using pmtiles
+        // No layers are active => The user is zoomed out too far
+        showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000);
+      }
     }
-  }, [backEndService, clustersActive, detailsActive, pmtilesActive, showLoadingSpinner, showSnackbar, t]);
+  }, [
+    backEndService,
+    clustersActive,
+    detailsActive,
+    pmtilesActive,
+    showLoadingSpinner,
+    showSnackbar,
+    t,
+  ]);
 
   useEffect(() => {
     if (sourcePreset?.id === sourcePresetID) {
