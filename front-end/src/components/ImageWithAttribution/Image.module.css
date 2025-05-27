@@ -11,8 +11,18 @@ p.pic_attr {
   text-align: center;
 }
 
-p.pic_attr img {
+p.pic_attr img,
+p.pic_attr li:not(:first-child) {
   display: none;
+}
+
+p.pic_attr div,
+p.pic_attr p,
+p.pic_attr ul,
+p.pic_attr li:first-child {
+  display: inline;
+  padding: 0;
+  list-style-type: none;
 }
 
 img.pic_img {
