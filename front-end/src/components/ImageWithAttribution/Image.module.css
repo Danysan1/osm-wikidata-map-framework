@@ -12,17 +12,16 @@ p.pic_attr {
 }
 
 p.pic_attr img,
-p.pic_attr li:not(:first-child) {
+p.pic_attr ul,
+p.pic_attr table,
+p.pic_attr br {
   display: none;
 }
 
 p.pic_attr div,
-p.pic_attr p,
-p.pic_attr ul,
-p.pic_attr li:first-child {
+p.pic_attr p {
   display: inline;
   padding: 0;
-  list-style-type: none;
 }
 
 img.pic_img {

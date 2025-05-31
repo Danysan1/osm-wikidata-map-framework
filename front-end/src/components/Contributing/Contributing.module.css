@@ -1,5 +1,5 @@
 .container {
-  max-width: 75em;
+  max-width: var(--owmf-popup-width, 75em);
   margin: auto;
 }
 
