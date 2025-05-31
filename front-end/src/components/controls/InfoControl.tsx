@@ -38,7 +38,8 @@ interface InfoControlProps {
 
 export const InfoControl: FC<InfoControlProps> = (props) => {
   const [isPopupOpen, setPopupOpen] = useState(true),
-    [showInstructions, setShowInstructions] = useState(false),
+    showInstructionsOnFirstLoad = process.env.NEXT_PUBLIC_OWMF_instructions_on_load === "true",
+    [showInstructions, setShowInstructions] = useState(showInstructionsOnFirstLoad),
     openPopup = useCallback(() => {
       setPopupOpen(true);
       setShowInstructions(true);
