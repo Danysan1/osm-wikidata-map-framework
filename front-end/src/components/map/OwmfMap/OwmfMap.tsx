@@ -347,8 +347,8 @@ export const OwmfMap = () => {
       <BackgroundStyleControl setBackgroundStyle={setBackgroundStyle} position="top-right" />
       {process.env.NEXT_PUBLIC_OWMF_enable_projection_control === "true" && <ProjectionControl setBackgroundStyle={setBackgroundStyle} position="top-right" />}
       <LanguageControl position="top-right" />
-      <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
-      <OsmWikidataMatcherControl position="top-right" />
+      <IDEditorControl minZoomLevel={thresholdZoomLevel} position="top-right" />
+      <OsmWikidataMatcherControl minZoomLevel={thresholdZoomLevel} position="top-right" />
       <DataTableControl
         sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
         dataLayerIDs={dataLayerIDs}

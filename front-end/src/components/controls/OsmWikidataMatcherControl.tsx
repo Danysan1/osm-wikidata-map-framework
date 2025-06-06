@@ -7,6 +7,7 @@ import { LinkControl } from './LinkControl';
 
 interface OsmWikidataMatcherControlProps {
   position?: ControlPosition;
+  minZoomLevel?: number;
 }
 
 /**
@@ -24,7 +25,7 @@ export const OsmWikidataMatcherControl: FC<OsmWikidataMatcherControlProps> = (pr
     linkURL={url}
     icon={osmWdMatcherLogo as StaticImport}
     title="OSM <-> Wikidata matcher"
-    minZoomLevel={16}
+    minZoomLevel={props.minZoomLevel}
     position={props.position}
     className='osm-wd-matcher-ctrl' />;
 }
