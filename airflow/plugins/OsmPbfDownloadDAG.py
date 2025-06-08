@@ -47,7 +47,10 @@ def get_source_url(work_dir:str, ti:TaskInstance, **context):
         try:
             makedirs(work_dir)
         except Exception as e:
-            print("Failed creating folder, did you run airflow-init (e.g. though init.bat) to chown the workdir to the correct user?")
+            print('''
+VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV")
+Failed creating folder, did you run airflow-init (e.g. though init.bat) to chown the workdir to the correct user?"
+====================================================================================================''')
             raise e
     
     dataset_dir = f'/workdir/{params["prefix"]}'

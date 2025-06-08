@@ -141,6 +141,8 @@ services:
     image: redis:7.2-bookworm
     expose:
       - 6379
+    volumes:
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -356,6 +358,7 @@ services:
       - TZ=Europe/London
     volumes:
       - torrent-daemon-config:/config:delegated
+      - torrent-daemon-downloads:/downloads:delegated
       - db-init-work-dir:/workdir:delegated
     networks:
       - airflow-torrent-bridge
@@ -423,7 +426,9 @@ volumes:
   postgres-db-volume:
   db-data:
   pgadmin-data:
+  redis-data:
   torrent-daemon-config:
+  torrent-daemon-downloads:
 
 networks:
   airflow-internal:
