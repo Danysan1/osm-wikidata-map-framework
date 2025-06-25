@@ -33,7 +33,20 @@ function getBackgroundStyles() {
     jawg_token = process.env.NEXT_PUBLIC_OWMF_jawg_token,
     tracestrack_key = process.env.NEXT_PUBLIC_OWMF_tracestrack_key,
     mapbox_token = process.env.NEXT_PUBLIC_OWMF_mapbox_token,
+    enable_versatiles = process.env.NEXT_PUBLIC_OWMF_enable_versatiles === "true",
+    enable_stadia = process.env.NEXT_PUBLIC_OWMF_enable_stadia_maps === "true",
+    enable_ohm = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true",
     backgroundStyles: BackgroundStyle[] = [];
+
+  console.debug("Preparing background styles", {
+    maptiler_key,
+    jawg_token,
+    tracestrack_key,
+    mapbox_token,
+    enable_versatiles,
+    enable_stadia,
+    enable_ohm,
+  });
 
   if (tracestrack_key) {
     backgroundStyles.push(
@@ -59,7 +72,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (process.env.NEXT_PUBLIC_OWMF_enable_versatiles) {
+  if (enable_versatiles) {
     backgroundStyles.push(
       versaTilesStyle("versatiles_colorful", "Colorful", "colorful"),
       versaTilesStyle("versatiles_neutrino", "Neutrino", "neutrino"),
@@ -68,7 +81,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (process.env.NEXT_PUBLIC_OWMF_enable_stadia_maps) {
+  if (enable_stadia) {
     backgroundStyles.push(
       stadiaStyle("stadia_alidade_dark", "Alidade smooth dark", "alidade_smooth_dark"),
       stadiaStyle("stadia_alidade", "Alidade smooth", "alidade_smooth"),
@@ -129,7 +142,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true") {
+  if (enable_ohm) {
     backgroundStyles.push(
       openHistoricalMapStyle("ohm_main", "Historic", "main/main"),
       openHistoricalMapStyle("ohm_rail", "Railway", "rail/rail"),
