@@ -1,7 +1,9 @@
 {
     "background_color": "hsl(180, 100%, 96%)",
     "osm_filter_tags": [
+        "artwork_type=aircraft",
         "historic=aircraft",
+        "historic=aircraft_wreck",
         "memorial=aircraft"
     ],
     "osm_text_key": "model",
