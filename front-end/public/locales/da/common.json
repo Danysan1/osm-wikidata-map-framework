@@ -36,7 +36,7 @@
         "architect": "Bygningsarkitekter",
         "artist": "Kunstværksforfattere",
         "base": "OSM + Wikidata",
-        "brand": "Mærker",
+        "brand": "Varemærker",
         "burial": "Gravsteder",
         "etymology": "Etymologier (navnenes oprindelse)",
         "green_spaces": "Grønne områder",
@@ -52,7 +52,7 @@
         "db_all": "Alle kilder fra DB",
         "db_osm_wikidata_reverse": "Wikidata-objekter, der henvises til med OSM wikidata=* og {{indirectWdProperty}}",
         "propagated": "Udbredt",
-        "all_keys": "Alle nøgler",
+        "all_keys": "Alle taster",
         "wd_reverse": "Wikidata-objekter, der henvises til med {{indirectWdProperty}}",
         "wd_qualifier": "P625-kvalifikatorer på {{indirectWdProperty}}",
         "wd_indirect": "P625-kvalifikatorer på {{indirectWdProperty}} og Wikidata-objekter, der henvises til med {{indirectWdProperty}}"
@@ -68,8 +68,8 @@
         "occupation": "Efter beskæftigelse",
         "start_century": "Efter start/fødselsårhundrede",
         "end_century": "Efter slut/dødsårhundrede",
-        "entity_link_count": "Efter Wikilink antal",
-        "feature_link_count": "Efter Wikilink antal",
+        "entity_link_count": "Efter entitets Wikilink-antal",
+        "feature_link_count": "Efter elements Wikilink-antal",
         "feature_picture": "Efter billedtilgængelighed",
         "available": "Tilgængelig",
         "unavailable": "Ikke tilgængelig",
@@ -80,11 +80,11 @@
         "black": "Sort",
         "red": "Rød",
         "orange": "Orange",
-        "entity_source": "Efter tilknyttet objektkilde"
+        "entity_source": "Efter linket entitets kilde"
     },
     "feature_details": {
-        "source": "Elementkilde:",
-        "loading_first_n_items": "Indlæser kun første {{partial}} objekter ud af {{total}}...",
+        "source": "Objektkilde:",
+        "loading_first_n_items": "Indlæser kun første {{partial}} entiteter ud af {{total}}...",
         "location": "Placering",
         "picture_via_commons": "Billede fra Wikimedia Commons",
         "loading": "Indlæsning af objekter...",
@@ -93,7 +93,7 @@
     "etymology_details": {
         "languages": "Sprog:",
         "more_details": "Flere detaljer",
-        "source": "Objektkilde:",
+        "source": "Entitetkilde:",
         "propagation": "udbredelse",
         "propagation_title": "Beskrivelse af udbredelsesmekanismen"
     },
@@ -107,6 +107,7 @@
     "change_language": "Skift sprog",
     "choose_basemap": "Vælg baggrundsstil",
     "choose_projection": "Vælg kortprojektion",
+    "choose_year": "Vælg året:",
     "overpass_turbo_query": "Kilde OverpassQL-forespørgslel på Overpass Turbo",
     "wdqs_query": "Kilden SPARQL-forespørgsel på Wikidata Query Service",
     "qlever_query": "Kilden SPARQL-forespørgsel på QLever UI",
