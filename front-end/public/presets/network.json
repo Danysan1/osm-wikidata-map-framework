@@ -6,6 +6,7 @@
         "network",
         "public_transport"
     ],
+    "osm_text_key": "network",
     "osm_wikidata_keys": [
         "network:wikidata"
     ],

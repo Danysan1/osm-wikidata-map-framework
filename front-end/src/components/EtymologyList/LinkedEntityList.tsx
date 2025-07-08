@@ -55,9 +55,9 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities, fi
 
         try {
           const detailsService = new WikidataDetailsService(
-              i18n.language,
-              new EntityDetailsDatabase()
-            ),
+            i18n.language,
+            new EntityDetailsDatabase()
+          ),
             fetched = await detailsService.fetchEtymologyDetails(etymologyIDs);
           const combined = entities.map<LinkedEntityDetails>((old) =>
             old.wikidata && fetched[old.wikidata]
@@ -138,23 +138,23 @@ function deduplicateByName(
   }
 
   // Ignore text entities with the same name as an existing Wikidata entity
-  const normalName = normalizeName(entity.name);
+  const normalName = normalizeForComparison(entity.name);
   return !all.some(
     (other) =>
       !!other.wikidata &&
       !!other.name &&
-      (normalizeName(other.name).includes(normalName) ||
-        (other.description && normalizeName(other.description).includes(normalName)))
+      (normalizeForComparison(other.name).includes(normalName) ||
+        (other.description && normalizeForComparison(other.description).includes(normalName)))
   );
 }
 
 /**
  * @see https://stackoverflow.com/a/37511463/2347196
  */
-function normalizeName(str: string) {
+function normalizeForComparison(str: string) {
   return str
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f.]/g, "")
+    .replace(/[\u0300-\u036f.-]/g, "")
     .trim()
     .toLowerCase();
 }
