@@ -3,7 +3,7 @@ import { Configuration, StatementsApi } from "wikibase-rest-api-ts";
 export class WikidataStatementService {
     protected readonly api: StatementsApi;
 
-    public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
+    public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase') {
         this.api = new StatementsApi(new Configuration({
             basePath,
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // Must be set: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy

@@ -3,7 +3,7 @@ import { Configuration, LabelsApi } from "wikibase-rest-api-ts";
 export class WikidataLabelService {
     protected readonly api: LabelsApi;
 
-    public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
+    public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase') {
         this.api = new LabelsApi(new Configuration({
             basePath,
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }

@@ -1,5 +1,5 @@
 {
-  "version": "4.8.7",
+  "version": "4.8.8",
   "name": "osm-wikidata-map-framework-front-end",
   "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
   "description": "OSM-Wikidata Map Framework - Create interactive maps to show details about map elements based on OpenStreetMap and Wikidata",
@@ -67,7 +67,7 @@
     "react-i18next": "^14.1.2",
     "react-map-gl": "^8.0.0",
     "wellknown": "^0.5.0",
-    "wikibase-rest-api-ts": "^1.0.0"
+    "wikibase-rest-api-ts": "^1.2.2"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^15.1.6",

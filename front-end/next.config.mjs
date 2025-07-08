@@ -42,7 +42,7 @@ function generateCspHeaders() {
     sentryConnect = process.env.owmf_sentry_js_dsn ? 'https://*.ingest.sentry.io' : "",
     sentryScript = process.env.owmf_sentry_js_dsn ? 'https://js.sentry-cdn.com https://browser.sentry-cdn.com' : "",
     wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org",
-    wikimediaConnect = "https://query-main.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/",
+    wikimediaConnect = "https://query-main.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/",
     ohmConnect = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true" ? "https://overpass-api.openhistoricalmap.org/api/ https://www.openhistoricalmap.org/map-styles/" : "",
     osmConnect = "https://overpass-api.de/api/",
     payPalForm = process.env.NEXT_PUBLIC_OWMF_paypal_id ? 'https://www.paypal.com/donate' : "",
