@@ -22,11 +22,14 @@ export class WikimediaCommonsService {
      * @see https://www.mediawiki.org/wiki/API:Cross-site_requests
      * @see https://www.mediawiki.org/wiki/Manual:CORS#Using_jQuery_methods
      */
-    async fetchAttribution(imgName: string): Promise<string> {
+    async fetchAttribution(imgName: string, appendLicense?: boolean): Promise<string> {
         const metadata = await this.fetchMetadata(imgName),
-            license = metadata?.LicenseShortName?.value ?? "?",
-            artist = metadata?.Attribution?.value ?? metadata?.Artist?.value ?? "?";
-        return `Wikimedia Commons - ${artist.replace(/<span style="display: none;">.*<\/span>/, "")} - ${license}`;
+            license = metadata?.LicenseShortName?.value,
+            artist = metadata?.Attribution?.value ?? metadata?.Artist?.value;
+        let attribution = "Wikimedia Commons";
+        if (artist) attribution += ` - ${artist.replace(/<span style="display: none;">.*<\/span>/, "")}`;
+        if (appendLicense && license) attribution += ` - ${license}`;
+        return attribution;
     }
 
     async fetchMetadata(imgName: string) {

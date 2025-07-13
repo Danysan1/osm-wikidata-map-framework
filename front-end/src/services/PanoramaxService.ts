@@ -10,11 +10,15 @@ export class PanoramaxService {
     /**
      * Fetch the attribution text for a Panoramax file (includes license and author)
      */
-    async fetchAttribution(imgUUID: string): Promise<string> {
+    async fetchAttribution(imgUUID: string, appendLicense?: boolean): Promise<string> {
         const metadata = (await this.api.imageInfo(imgUUID)).properties,
-            artist = metadata.exif["Exif.Image.Artist"] ?? "?",
-            producer = metadata["geovisio:producer"] ?? "?",
-            license = (metadata as unknown as Record<string,string>).license ?? metadata["geovisio:license"] ?? "?";
-        return `Panoramax - ${artist}, ${producer} - ${license}`;
+            artist = metadata.exif["Exif.Image.Artist"],
+            producer = metadata["geovisio:producer"],
+            license = (metadata as unknown as Record<string, string>).license ?? metadata["geovisio:license"];
+        let attribution = "Panoramax";
+        if (artist) attribution += ` - ${artist}`;
+        if (producer) attribution += `, ${producer}`;
+        if (appendLicense && license) attribution += ` - ${license}`;
+        return attribution;
     }
 }
