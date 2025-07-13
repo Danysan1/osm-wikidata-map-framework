@@ -93,6 +93,7 @@ Q143912,triumphal arch,Buildings,#ffcc33
 Q2087181,house museum,Buildings,#ffcc33
 Q489357,farmhouse,Buildings,#ffcc33
 Q1076486,sports venue,Buildings,#ffcc33
+Q200023,swimming center,Buildings,#ffcc33
 Q483110,stadium,Buildings,#ffcc33
 Q19860854,destroyed building or structure,Buildings,#ffcc33
 Q245016,military base,Buildings,#ffcc33
@@ -114,6 +115,9 @@ Q52177058,civic building,Buildings,#ffcc33
 Q16831714,government building,Buildings,#ffcc33
 Q25550691,town hall,Buildings,#ffcc33
 Q35112127,historic building,Buildings,#ffcc33
+Q62447,aerodrome,Buildings,#ffcc33
+Q1248784,airport,Buildings,#ffcc33
+Q644371,international airport,Buildings,#ffcc33
 Q8502,mountain,Nature,#99ff33
 Q46831,mountain range,Nature,#99ff33
 Q3777462,alpine group,Nature,#99ff33
@@ -161,6 +165,7 @@ Q8928,constellation,Nature,#99ff33
 Q11344,chemical element,Nature,#99ff33
 Q9019918,endorheic lake,Nature,#99ff33
 Q1061151,massif,Nature,#99ff33
+Q22675015,type of quantum particle,Nature,#99ff33
 Q1414991,area,Locations,#33ff66
 Q1620908,historical region,Locations,#33ff66
 Q35657,U.S. state,Locations,#33ff66
@@ -362,3 +367,4 @@ Q7889,video game,Art,#ff33cc
 Q4502142,visual artwork,Art,#ff33cc
 Q838948,artwork,Art,#ff33cc
 Q3305213,painting,Art,#ff33cc
+Q7725634,literary work,Art,#ff33cc
