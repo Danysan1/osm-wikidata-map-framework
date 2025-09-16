@@ -10,10 +10,11 @@ import { WikidataMapService } from "./WikidataMapService/WikidataMapService";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];
-    private alreadyFetchingPromise: Promise<OwmfResponse> | undefined;
+    private readonly alreadyFetchingPromises: Record<number, Promise<OwmfResponse> | undefined>;
 
     constructor(sourcePreset: SourcePreset) {
         this.services = [];
+        this.alreadyFetchingPromises = {};
         const maxHours = parseInt(process.env.NEXT_PUBLIC_OWMF_cache_timeout_hours ?? "24"),
             rawMaxElements = process.env.NEXT_PUBLIC_OWMF_max_map_elements,
             maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
@@ -47,19 +48,21 @@ export class CombinedCachedMapService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
-        if (this.alreadyFetchingPromise !== undefined) {
+        const existingPromise = this.alreadyFetchingPromises[+onlyCentroids];
+        if (existingPromise) {
             console.debug("fetchMapElements: Already fetching data from back-end, skipping another fetch");
-            return this.alreadyFetchingPromise;
+            return existingPromise;
         }
 
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        this.alreadyFetchingPromise = service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
+        const promise = service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
+        this.alreadyFetchingPromises[+onlyCentroids] = promise;
 
-        const out = await this.alreadyFetchingPromise;
-        this.alreadyFetchingPromise = undefined;
+        const out = await promise;
+        this.alreadyFetchingPromises[+onlyCentroids] = undefined;
         return out;
     }
 }
