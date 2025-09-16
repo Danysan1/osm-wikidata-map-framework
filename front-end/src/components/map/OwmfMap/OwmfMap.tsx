@@ -80,18 +80,27 @@ export const OwmfMap = () => {
     [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
-    minZoomLevel = useMemo(() => parseInt(process.env.NEXT_PUBLIC_OWMF_min_zoom_level ?? "9"), []),
+    minZoomLevel = useMemo(
+      () =>
+        sourcePreset?.use_min_zoom_level
+          ? parseInt(process.env.NEXT_PUBLIC_OWMF_min_zoom_level ?? "9")
+          : 1,
+      [sourcePreset?.use_min_zoom_level]
+    ),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
-    thresholdZoomLevel = parseInt(process.env.NEXT_PUBLIC_OWMF_threshold_zoom_level ?? "14"),
+    thresholdZoomLevel = useMemo(
+      () => parseInt(process.env.NEXT_PUBLIC_OWMF_threshold_zoom_level ?? "14"),
+      []
+    ),
     [pmtilesReady, setPMTilesReady] = useState(false),
     inlineStyle = useMemo<CSSProperties | undefined>(
       () =>
         process.env.NEXT_PUBLIC_OWMF_use_background_color === "true"
           ? {
-            backgroundColor: sourcePreset?.background_color ?? "#ffffff",
-            "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
-          }
+              backgroundColor: sourcePreset?.background_color ?? "#ffffff",
+              "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
+            }
           : undefined,
       [sourcePreset?.background_color]
     ),
@@ -207,7 +216,10 @@ export const OwmfMap = () => {
     if (!fetchedSourcePreset) return;
 
     if (fetchedSourcePreset.id !== sourcePresetID) {
-      console.debug("Not setting wrong source preset", { sourcePresetID, new: fetchedSourcePreset.id });
+      console.warn("Not setting wrong source preset", {
+        sourcePresetID,
+        new: fetchedSourcePreset.id,
+      });
       return;
     }
 

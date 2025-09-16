@@ -43,6 +43,10 @@ export class WikidataMapService extends WikidataService implements MapService {
         void onlyCentroids; // Wikidata has only centroids
         language = language.split("_")[0]; // Ignore country
 
+        const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
+        if (area < 0.000001)
+            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
+
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language, year);
         if (cachedResponse)
             return cachedResponse;

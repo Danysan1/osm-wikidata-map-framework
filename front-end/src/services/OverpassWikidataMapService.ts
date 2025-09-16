@@ -55,18 +55,42 @@ export class OverpassWikidataMapService implements MapService {
 
 
             console.time("overpass_wikidata_fetch");
-            const [overpassData, wikidataData] = await Promise.all([
+            const [overpassResult, wikidataResult] = await Promise.allSettled([
                 this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language, year),
                 this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language, year)
             ]);
             console.timeEnd("overpass_wikidata_fetch");
 
-            console.time("overpass_wikidata_merge");
-            out = this.mergeMapData(overpassData, wikidataData);
-            console.timeEnd("overpass_wikidata_merge");
+            let overpassData: OwmfResponse | undefined;
+            if (overpassResult.status === "fulfilled") {
+                overpassData = overpassResult.value;
+            } else {
+                console.error("OverpassWikidataMapService: Overpass query failed", overpassResult.reason);
+                //out.error = `Overpass query failed: ${overpassResult.reason}`;
+            }
 
-            if (!out)
-                throw new Error("Merge failed");
+            let wikidataData: OwmfResponse | undefined;
+            if (wikidataResult.status === "fulfilled") {
+                wikidataData = wikidataResult.value;
+            } else {
+                console.error("OverpassWikidataMapService: Wikidata query failed", wikidataResult.reason);
+                //out.error = `Wikidata query failed: ${wikidataResult.reason}`;
+            }
+
+            if (overpassData && wikidataData) {
+                console.time("overpass_wikidata_merge");
+                out = this.mergeMapData(overpassData, wikidataData);
+                overpassData.partial = false;
+                console.timeEnd("overpass_wikidata_merge");
+            } else if (overpassData) {
+                out = overpassData;
+                out.partial = true;
+            } else if (wikidataData) {
+                out = wikidataData;
+                out.partial = true;
+            } else {
+                throw new Error(`Both Overpass and Wikidata queries failed: ${overpassResult.status === "rejected" ? overpassResult.reason : ""} ${wikidataResult.status === "rejected" ? wikidataResult.reason : ""}`);
+            }
 
             out.onlyCentroids = onlyCentroids;
             out.sourcePresetID = this.preset.id;

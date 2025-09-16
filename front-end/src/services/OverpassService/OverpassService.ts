@@ -93,7 +93,7 @@ export class OverpassService implements MapService {
 
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if (area < 0.0000001 || area > 6)
+        if (area < 0.000001 || (!onlyCentroids && area > 5))
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
         let osmInstance: OsmInstance,
@@ -401,8 +401,8 @@ export class OverpassService implements MapService {
         year: number
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
-        const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
-            notTooBig = `[!"sqkm"][!"boundary"]["type"!="boundary"]${maxMembersFilter}`,
+        const maxMembersFilter = this.maxRelationMembers ? `(if:count_members() < ${this.maxRelationMembers})` : "",
+            notTooBig = this.preset.ignore_big_elements ? `[!"sqkm"][!"boundary"]["type"!="boundary"]` : "",
             dateFilters = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ? [
                 // Filter for openstreetmap.org or openhistoricalmap.org in the current year
                 '[!"end_date"]["route"!="historic"]'
@@ -430,13 +430,14 @@ export class OverpassService implements MapService {
 `;
 
         dateFilters.forEach((dateFilter) => {
+            const commonFilters = `${notTooBig}${maxMembersFilter}${dateFilter}`;
             filter_wd_keys.forEach(
-                key => query += `nwr${notTooBig}${dateFilter}["${key}"]; // filter & secondary wikidata key\n`
+                key => query += `nwr${commonFilters}["${key}"]; // filter & secondary wikidata key\n`
             );
             if (text_etymology_key_is_filter)
-                query += `nwr${notTooBig}${dateFilter}["${osm_text_key}"]; // filter & text etymology key\n`;
+                query += `nwr${commonFilters}["${osm_text_key}"]; // filter & text etymology key\n`;
             if (use_wikidata && !filter_tags && !osm_text_key)
-                query += `nwr${notTooBig}${dateFilter}["wikidata"];\n`;
+                query += `nwr${commonFilters}["wikidata"];\n`;
 
             filter_tags?.forEach(filter_tag => {
                 const filter_split = filter_tag.split("="),
@@ -446,17 +447,17 @@ export class OverpassService implements MapService {
 
                 if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
                     non_filter_wd_keys.forEach(
-                        key => query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
+                        key => query += `nwr${commonFilters}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
                     );
                     if (osm_text_key && !text_etymology_key_is_filter)
-                        query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
+                        query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
                     if (use_wikidata)
-                        query += `nwr${notTooBig}${dateFilter}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
+                        query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
                 }
             });
 
             if (relation_member_role)
-                query += `nwr${notTooBig}${dateFilter}(if:count_by_role("${relation_member_role}") > 0); // relation as linked entity \n`;
+                query += `nwr${commonFilters}(if:count_by_role("${relation_member_role}") > 0); // relation as linked entity \n`;
         });
 
         const outClause = onlyCentroids ? `out ids center ${this.maxElements ?? ""};` : `out body ${this.maxElements ?? ""}; >; out skel qt;`;

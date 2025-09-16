@@ -63,6 +63,9 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
     /** OverpassQL query used to fetch the features */
     overpass_query?: string;
 
+    /** Whether this is a partial result because a part of the query returned an error */
+    partial?: boolean;
+
     site?: OsmInstance;
 
     /** Whether the response has been truncated due to the maximum number of features being reached */

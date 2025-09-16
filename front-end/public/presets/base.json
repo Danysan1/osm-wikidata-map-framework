@@ -1,3 +1,5 @@
 {
-    "relation_propagation_type": "site"
+  "ignore_big_elements": true,
+  "relation_propagation_type": "site",
+  "use_min_zoom_level": true
 }

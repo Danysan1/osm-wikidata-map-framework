@@ -17,5 +17,6 @@
   "relation_member_role": "tomb",
   "wikidata_indirect_property": "P119",
   "wikidata_image_property": "P1442",
-  "use_linked_entity_count": true
+  "use_linked_entity_count": true,
+  "use_min_zoom_level": true
 }

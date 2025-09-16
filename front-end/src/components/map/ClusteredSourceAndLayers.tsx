@@ -40,13 +40,17 @@ interface ClusteredSourceAndLayersProps {
  */
 export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (props) => {
   /** Maplibre GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
-  const clusterProperties = props.useLinkedEntityCount ? {
-    linked_entity_count: ["+", ["get", "linked_entity_count"]],
-  } : undefined,
+  const clusterProperties = props.useLinkedEntityCount
+      ? {
+          linked_entity_count: ["+", ["get", "linked_entity_count"]],
+        }
+      : undefined,
     /** The name of the field to be used as count */
     countFieldName = props.useLinkedEntityCount ? "linked_entity_count" : "point_count",
     /** The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version) */
-    countShowFieldName = props.useLinkedEntityCount ? "linked_entity_count" : "point_count_abbreviated",
+    countShowFieldName = props.useLinkedEntityCount
+      ? "linked_entity_count"
+      : "point_count_abbreviated",
     clusterLayerID = useMemo(() => props.sourceID + CLUSTER_LAYER, [props.sourceID]),
     countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
     unclusteredLayerID = useMemo(
@@ -61,10 +65,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     { t, i18n } = useTranslation();
 
   useEffect(() => {
-    if (
-      (props.minZoom && zoom < props.minZoom) ||
-      (props.maxZoom && zoom >= props.maxZoom)
-    ) {
+    if (zoom < props.minZoom || (!!props.maxZoom && zoom >= props.maxZoom)) {
       console.debug("Zoom level too low/high, NOT fetching map clusters", {
         zoom,
         minZoom: props.minZoom,
@@ -86,8 +87,8 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     }
 
     const bboxArea = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-    if (bboxArea < 0.0000001 || bboxArea > 6) {
-      console.debug("BBox area too big, NOT fetching map clusters", {
+    if (bboxArea < 0.001) {
+      console.warn("BBox area too small, NOT fetching map clusters", {
         bbox,
         bboxArea,
         backEndID,
@@ -145,8 +146,8 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     [map]
   );
   const onMouseEnter = useCallback(() => {
-    if (map) map.getCanvas().style.cursor = "pointer";
-  }, [map]),
+      if (map) map.getCanvas().style.cursor = "pointer";
+    }, [map]),
     onMouseLeave = useCallback(() => {
       if (map) map.getCanvas().style.cursor = "";
     }, [map]),
@@ -185,6 +186,11 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     return () => void map?.off("click", unclusteredLayerID, onUnclusteredLayerClick);
   }, [map, onUnclusteredLayerClick, unclusteredLayerID]);
 
+  useEffect(() => {
+    if(!!elementsData?.partial || !!elementsData?.truncated)
+      showSnackbar(t("snackbar.partial_result"), "wheat");
+  }, [elementsData, showSnackbar, t]);
+
   return (
     elementsData && (
       <Source
@@ -201,7 +207,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
         <Layer
           id={clusterLayerID}
           type="circle"
-          minzoom={props.minZoom}
+          minzoom={props.minZoom ?? 1}
           maxzoom={props.maxZoom}
           filter={["has", countFieldName]}
           paint={{
@@ -234,7 +240,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
         <Layer
           id={countLayerID}
           type="symbol"
-          minzoom={props.minZoom}
+          minzoom={props.minZoom ?? 1}
           maxzoom={props.maxZoom}
           filter={["has", countFieldName]}
           layout={{
@@ -247,7 +253,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
         <Layer
           id={unclusteredLayerID}
           type="circle"
-          minzoom={props.minZoom}
+          minzoom={props.minZoom ?? 1}
           maxzoom={props.maxZoom}
           filter={["!", ["has", countFieldName]]}
           paint={{

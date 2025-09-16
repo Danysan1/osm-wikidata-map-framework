@@ -34,9 +34,12 @@ export class MapDatabase extends Dexie {
                             return false;
 
                         const [mapMinLon, mapMinLat, mapMaxLon, mapMaxLat] = map.bbox,
-                            mapIncludesBBox = !map.truncated && mapMinLon <= minLon && mapMinLat <= minLat && mapMaxLon >= maxLon && mapMaxLat >= maxLat,
-                            mapIncludedInBBoxIsTruncated = !!map.truncated && minLon <= mapMinLon && minLat <= mapMinLat && maxLon >= mapMaxLon && maxLat >= mapMaxLat;
-                        return mapIncludesBBox || mapIncludedInBBoxIsTruncated;
+                            mapIncludesBBox = mapMinLon <= minLon && mapMinLat <= minLat && mapMaxLon >= maxLon && mapMaxLat >= maxLat,
+                            mapIsIncludedInBBox = minLon <= mapMinLon && minLat <= mapMinLat && maxLon >= mapMaxLon && maxLat >= mapMaxLat;
+                        return (!!map.partial || !!map.truncated) ? mapIsIncludedInBBox : mapIncludesBBox;
+                        // If the map for this bbox is truncated, there is no point in requesting a larger bbox that includes it
+                        // (it would be truncated as well, with the same number of features)
+                        // so in that case we return the truncated map as valid
                     })
                     .first();
             });

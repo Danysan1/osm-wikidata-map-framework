@@ -1,6 +1,11 @@
 export const DEFAULT_SOURCE_PRESET_ID = "custom";
 export interface SourcePreset {
     /**
+     * Background color for controls and popups
+     */
+    background_color?: string;
+
+    /**
      * Whether to fetch parts of linked entities (e.g. the members of a duo)
      */
     fetch_parts_of_linked_entities?: boolean;
@@ -9,6 +14,13 @@ export interface SourcePreset {
      * Unique identifier for the source preset.
      */
     id: string;
+
+    /**
+     * When using Overpass-based back-ends, big elements like country/region borders and the biggest lakes can create major slowdowns.
+     * To display them pmtiles-based back-ends are recommended.
+     * This setting allows to filter out big elements in the Overpass queries used by Overpass-based back-ends.
+     */
+    ignore_big_elements?: boolean;
 
     /**
      * ID of the MapComplete theme to link to from the button in the feature details popup
@@ -89,6 +101,16 @@ export interface SourcePreset {
     linked_entity_filter_classes?: string[];
 
     /**
+     * Whether to show linked entity count (instead of feature count) in clusters
+     */
+    use_linked_entity_count?: boolean;
+
+    /**
+     * Whether to use the min_zoom_level setting
+     */
+    use_min_zoom_level?: boolean;
+
+    /**
      * P-ID of the Wikidata property which connects the linked entity (popup element) to a relation whose P625 qualifier identifies the coordinates of the subject (map element)
      * 
      * @example "P119"
@@ -101,14 +123,4 @@ export interface SourcePreset {
      * @example "P1442"
      */
     wikidata_image_property?: string;
-
-    /**
-     * Background color for control buttons and popups
-     */
-    background_color?: string;
-
-    /**
-     * Whether to show linked entity count (instead of feature count) in clusters
-     */
-    use_linked_entity_count?: boolean;
 }

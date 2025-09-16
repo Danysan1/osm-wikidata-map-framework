@@ -44,7 +44,7 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
 
     const bboxArea = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
     if (bboxArea < 0.0000001 || bboxArea > 1.6) {
-      console.debug("BBox area too big, NOT fetching map details", {
+      console.warn("BBox area too big, NOT fetching map details", {
         bbox,
         bboxArea,
         backEndID,

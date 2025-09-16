@@ -15,11 +15,11 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
     [customIntroJS, setCustomIntroJS] = useState<string>();
 
   useEffect(() => {
-    console.debug(
-      "InfoPopup fetching custom intro",
-      process.env.NEXT_PUBLIC_OWMF_custom_intro_html
-    );
     if (process.env.NEXT_PUBLIC_OWMF_custom_intro_html) {
+      console.debug(
+        "InfoPopup fetching custom intro",
+        process.env.NEXT_PUBLIC_OWMF_custom_intro_html
+      );
       fetch(process.env.NEXT_PUBLIC_OWMF_custom_intro_html)
         .then((response) => response.text())
         .then((text) => {

@@ -307,6 +307,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
       if (!styleSpec.projection?.type)
         styleSpec.projection = undefined; // Prevent errors with Mapbox styles
 
+      // https://github.com/mapbox/mapbox-gl-js/issues/4808
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
     },
     [i18n.language, style?.canFilterByDate, style?.key, style?.keyPlaceholder, year]
