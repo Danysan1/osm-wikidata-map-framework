@@ -36,10 +36,11 @@ export class MapDatabase extends Dexie {
                         const [mapMinLon, mapMinLat, mapMaxLon, mapMaxLat] = map.bbox,
                             mapIncludesBBox = mapMinLon <= minLon && mapMinLat <= minLat && mapMaxLon >= maxLon && mapMaxLat >= maxLat,
                             mapIsIncludedInBBox = minLon <= mapMinLon && minLat <= mapMinLat && maxLon >= mapMaxLon && maxLat >= mapMaxLat;
-                        return (!!map.partial || !!map.truncated) ? mapIsIncludedInBBox : mapIncludesBBox;
+                        return map.truncated ? mapIsIncludedInBBox : mapIncludesBBox;
                         // If the map for this bbox is truncated, there is no point in requesting a larger bbox that includes it
                         // (it would be truncated as well, with the same number of features)
                         // so in that case we return the truncated map as valid
+                        // The same doesn't apply to partial results (map.partial==true): these might be combined results with one source that would yield more data at lower zoom.
                     })
                     .first();
             });

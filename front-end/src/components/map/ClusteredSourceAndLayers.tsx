@@ -187,8 +187,10 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
   }, [map, onUnclusteredLayerClick, unclusteredLayerID]);
 
   useEffect(() => {
-    if(!!elementsData?.partial || !!elementsData?.truncated)
-      showSnackbar(t("snackbar.partial_result"), "wheat");
+    if(!!elementsData?.partial || !!elementsData?.truncated) {
+      console.warn("Cluster data was partial or truncated, zoom in to view all data", elementsData);
+      // showSnackbar(t("snackbar.partial_result"), "wheat");
+    }
   }, [elementsData, showSnackbar, t]);
 
   return (
