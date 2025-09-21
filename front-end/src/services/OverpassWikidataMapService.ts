@@ -4,6 +4,7 @@ import { OsmInstance, type LinkedEntity, type OsmType, type OsmWdJoinField } fro
 import { createFeatureTags, getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import type { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
+import { normalizeCommonsTitle } from "./WikimediaCommonsService";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
     node: "P11693",
@@ -217,22 +218,25 @@ export class OverpassWikidataMapService implements MapService {
             osmFeature.properties.wikispore ??= wikidataFeature.properties?.wikispore;
 
             // Merge Wikidata feature linked entities into OSM feature linked entities
-            getFeatureLinkedEntities(wikidataFeature)?.forEach((wdEtymology: LinkedEntity) => {
-                const osmEtymologies = getFeatureLinkedEntities(osmFeature) ?? [],
-                    osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
-                if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {
+            getFeatureLinkedEntities(wikidataFeature)?.forEach((wdEntity: LinkedEntity) => {
+                const osmEntities = getFeatureLinkedEntities(osmFeature) ?? [],
+                    osmEntityIndex = osmEntities?.findIndex(osmEntity => osmEntity.wikidata === wdEntity.wikidata);
+                if (osmEntities && wdEntity.wikidata && osmEntityIndex !== undefined && osmEntityIndex !== -1) {
                     // Wikidata linked entity has priority over the Overpass one as it can have more details
-                    console.warn("Overpass+Wikidata: Duplicate linked entity, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmEtymologies[osmEtymologyIndex], wd: wdEtymology });
-                    osmEtymologies[osmEtymologyIndex] = wdEtymology;
+                    console.warn("Overpass+Wikidata: Duplicate linked entity, using the Wikidata one", { id: wdEntity.wikidata, osm: osmEntities[osmEntityIndex], wd: wdEntity });
+                    osmEntities[osmEntityIndex] = wdEntity;
                 } else {
                     //console.debug("Overpass+Wikidata: Pushing Wikidata linked entity", wdEtymology);
-                    osmEtymologies.push(wdEtymology);
+                    osmEntities.push(wdEntity);
 
                     if (!osmFeature.properties)
                         osmFeature.properties = {};
-                    osmFeature.properties.linked_entities = osmEtymologies.length ? osmEtymologies : undefined;
-                    osmFeature.properties.linked_entity_count = osmEtymologies.length;
+                    osmFeature.properties.linked_entities = osmEntities.length ? osmEntities : undefined;
+                    osmFeature.properties.linked_entity_count = osmEntities.length;
                 }
+
+                if (osmFeature.properties?.picture && wdEntity.linkPicture && normalizeCommonsTitle(osmFeature.properties.picture) === normalizeCommonsTitle(wdEntity.linkPicture))
+                    wdEntity.linkPicture = undefined; // Prevent duplicating the picture both in the feature and the linked entity
             });
         });
 

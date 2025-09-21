@@ -1,4 +1,4 @@
-import { WikimediaCommonsService } from "@/src/services/WikimediaCommonsService";
+import { normalizeCommonsTitle, WikimediaCommonsService } from "@/src/services/WikimediaCommonsService";
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageWithAttribution } from "./ImageWithAttribution";
@@ -17,18 +17,13 @@ interface CommonsImageProps {
   className?: string;
 }
 
-const PREFIX_REGEX = /^.*((Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/))/,
-  SUFFIX_REGEX = /[;?].*$/;
-
 /**
  * Display a Wikimedia Commons image and its attribution
  */
 export const CommonsImage: FC<CommonsImageProps> = ({ name, className }) => {
   const { t } = useTranslation(),
     title = t("feature_details.picture_via_commons", "Picture from Wikimedia Commons"),
-    decodedImg = decodeURIComponent(
-      name.replace(PREFIX_REGEX, "").replace(SUFFIX_REGEX, "")
-    );
+    decodedImg = normalizeCommonsTitle(name);
 
   /**
    * UrlEncoded name

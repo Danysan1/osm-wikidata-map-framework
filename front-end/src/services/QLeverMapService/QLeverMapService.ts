@@ -348,7 +348,7 @@ export class QLeverMapService implements MapService {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const itemCommons = row.itemCommons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            itemPicture = row.itemPicture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
+            itemPicture = row.itemPicture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined) || row.linkPicture?.value;
 
         let render_height;
         if (row.height?.value)
@@ -379,7 +379,7 @@ export class QLeverMapService implements MapService {
                 from_wikidata: false,
                 name: linkedName,
                 description: linkedDescription,
-                linkPicture: row.linkPicture?.value,
+                linkPicture: row.linkPicture?.value === itemPicture ? undefined : row.linkPicture?.value, // Prevent duplicating the picture both in the feature and the linked entity
             });
         }
 

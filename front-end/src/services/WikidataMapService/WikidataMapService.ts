@@ -166,8 +166,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             return acc;
         }
 
-        const feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            etymology_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        const itemPicture = row.itemPicture?.value || row.linkPicture?.value,
+            feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            entity_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             existingFeature = acc.find(feature => {
                 if (feature_wd_id && feature.properties?.wikidata === feature_wd_id)
                     return true; // Both features have the same Wikidata ID => They are the same entity
@@ -185,16 +187,16 @@ export class WikidataMapService extends WikidataService implements MapService {
                 return false; // All equality checks failed => They are different entities              
             });
 
-        let etymology: LinkedEntity | undefined;
-        if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            console.warn("Wikidata: Ignoring duplicate etymology", { etymology_wd_id, existing: existingFeature.properties, new: row });
-        } else if (etymology_wd_id) {
-            etymology = {
+        let entity: LinkedEntity | undefined;
+        if (entity_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === entity_wd_id)) {
+            console.warn("Wikidata: Ignoring duplicate etymology", { etymology_wd_id: entity_wd_id, existing: existingFeature.properties, new: row });
+        } else if (entity_wd_id) {
+            entity = {
                 from_wikidata: true,
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                 propagated: false,
-                wikidata: etymology_wd_id,
+                wikidata: entity_wd_id,
                 linkPicture: row.linkPicture?.value,
             };
         }
@@ -234,7 +236,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 osm_type: osm_type,
                 ohm_id: ohm_id,
                 ohm_type: ohm_type,
-                picture: row.itemPicture?.value,
+                picture: itemPicture,
                 render_height: render_height,
                 tags: {
                     description: row.itemDescription?.value,
@@ -247,8 +249,8 @@ export class WikidataMapService extends WikidataService implements MapService {
                 wikispore: row.wikispore?.value,
             };
 
-        const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-            from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+        const from_wikidata_entity = feature_wd_id ? feature_wd_id : entity?.from_wikidata_entity,
+            from_wikidata_prop = feature_wd_id ? "P625" : entity?.from_wikidata_prop,
             id = `wikidata.org/entity/${from_wikidata_entity}#${from_wikidata_prop}`,
             specificProps: OwmfFeatureProperties = {
                 id: id,
@@ -257,28 +259,34 @@ export class WikidataMapService extends WikidataService implements MapService {
                 from_wikidata_prop: from_wikidata_prop,
             }
 
+        let feature: OwmfFeature;
         if (existingFeature) { // Merge the details (and new etymology, if any) into the existing feature for this entity
             existingFeature.properties ??= specificProps;
             Object.assign(existingFeature.properties, Object.fromEntries(
                 Object.entries(commonProps).filter(([, v]) => v !== undefined)
             )); // Merges the properties objects, overwriting only non-undefined properties ( https://stackoverflow.com/a/56650790/2347196 )
-            if (etymology) {
-                getFeatureLinkedEntities(existingFeature).push(etymology);
+            if (entity) {
+                getFeatureLinkedEntities(existingFeature).push(entity);
                 existingFeature.properties.linked_entity_count = (existingFeature.properties.linked_entity_count ?? 0) + 1;
             }
+            feature = existingFeature;
         } else { // Add the new feature for this item 
-            acc.push({
+            feature = {
                 type: "Feature",
                 id: id,
                 geometry,
                 properties: {
                     ...commonProps,
                     ...specificProps,
-                    linked_entities: etymology ? [etymology] : undefined,
-                    linked_entity_count: etymology ? 1 : 0,
+                    linked_entities: entity ? [entity] : undefined,
+                    linked_entity_count: entity ? 1 : 0,
                 }
-            });
+            };
+            acc.push(feature);
         }
+        if (feature.properties?.picture && entity?.linkPicture && feature.properties.picture === entity.linkPicture)
+            entity.linkPicture = undefined; // Prevent duplicating the picture both in the feature and the linked entity
+
         return acc;
     }
 }

@@ -1,6 +1,19 @@
 import { CommonsApi, CommonsApiResponse } from "../generated/commons/api";
 import { Configuration } from "../generated/commons/configuration";
 
+export const COMMONS_FILE_REGEX = /(Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/)/,
+    COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/;
+
+const COMMONS_PREFIX_REGEX = /^.*((Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/))/,
+    COMMONS_SUFFIX_REGEX = /[;?].*$/;
+
+export function normalizeCommonsTitle(name: string) {
+    return decodeURIComponent(
+        name.replace(COMMONS_PREFIX_REGEX, "")
+            .replace(COMMONS_SUFFIX_REGEX, "")
+    );
+}
+
 export class WikimediaCommonsService {
     private readonly api: CommonsApi;
 

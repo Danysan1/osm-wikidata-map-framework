@@ -4,6 +4,7 @@ import { FC, useEffect, useState } from "react";
 import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "./CommonsImage";
 import { PanoramaxImage } from "./PanoramaxImage";
+import { COMMONS_FILE_REGEX } from "@/src/services/WikimediaCommonsService";
 
 const PANORAMAX_UUID_REGEX = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/;
 
@@ -11,8 +12,6 @@ interface FeatureImagesProps {
   feature: OwmfFeatureProperties;
   className?: string;
 }
-
-const COMMONS_FILE_REGEX = /(Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/)/;
 
 export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) => {
   const tags = getPropTags(feature),

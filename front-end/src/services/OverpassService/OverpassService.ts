@@ -6,10 +6,9 @@ import { DatePrecision, LinkedEntity, OsmInstance, OsmType } from "../../model/L
 import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import type { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
+import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "../WikimediaCommonsService";
 
-const COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/,
-    COMMONS_FILE_REGEX = /(Special:FilePath\/)|(File:)|(commons\/\w\/\w\w\/)/,
-    WIKIDATA_QID_REGEX = /^Q[0-9]+/,
+const WIKIDATA_QID_REGEX = /^Q[0-9]+/,
     OVERPASS_ENDPOINTS: Record<OsmInstance, string> = {
         [OsmInstance.OpenHistoricalMap]: "https://overpass-api.openhistoricalmap.org/api/interpreter",
         [OsmInstance.OpenStreetMap]: "https://overpass-api.de/api/interpreter"
