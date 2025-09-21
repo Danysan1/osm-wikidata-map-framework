@@ -73,8 +73,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
       !!entity.death_place;
     if (anyBirthOrDeath) {
       const birth_date = entity.birth_date
-          ? formatDate(entity.birth_date, entity.birth_date_precision)
-          : "?",
+        ? formatDate(entity.birth_date, entity.birth_date_precision)
+        : "?",
         birth_place = entity.birth_place ? entity.birth_place : "?",
         death_date = entity.death_date
           ? formatDate(entity.death_date, entity.death_date_precision)
@@ -83,8 +83,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
       return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
     } else if (!!entity.start_date || !!entity.end_date) {
       const start_date = entity.start_date
-          ? formatDate(entity.start_date, entity.start_date_precision)
-          : "?",
+        ? formatDate(entity.start_date, entity.start_date_precision)
+        : "?",
         end_date = entity.end_date
           ? formatDate(entity.end_date, entity.end_date_precision)
           : "?";
@@ -154,12 +154,12 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
       !entityLinkQID
         ? []
         : [
-            {
-              wikidata: entityLinkQID,
-              from_wikidata_entity: entity.from_wikidata_entity,
-              from_wikidata_prop: entity.from_wikidata_prop,
-            },
-          ],
+          {
+            wikidata: entityLinkQID,
+            from_wikidata_entity: entity.from_wikidata_entity,
+            from_wikidata_prop: entity.from_wikidata_prop,
+          },
+        ],
     [entity.from_wikidata_entity, entity.from_wikidata_prop, entityLinkQID]
   );
 
@@ -174,6 +174,10 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
         <div className={styles.entity_info_column}>
           {!!firstLine && (
             <p>{firstLine}</p>
+          )}
+
+          {entity.linkPicture && (
+            <CommonsImage name={entity.linkPicture} className={styles.entity_image} />
           )}
 
           <h2 className={styles.entity_name}>{entity.name}</h2>

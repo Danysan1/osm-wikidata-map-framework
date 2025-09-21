@@ -5,12 +5,12 @@ import type { DatePrecision, LinkedEntity } from "./LinkedEntity";
  */
 export interface LinkedEntityDetails extends LinkedEntity {
     /**
-     * Localized name of the country of citizenship
+     * Localized name of the country of citizenship of the subject entity
      */
     citizenship?: string;
     
     /**
-     * Name of the Wikimedia Commons category
+     * Name of the Wikimedia Commons category for the subject entity
      */
     commons?: string;
     
@@ -53,12 +53,12 @@ export interface LinkedEntityDetails extends LinkedEntity {
     occupations?: string;
     
     /**
-     * Title of some Wikimedia Commons pictures about the subject
+     * Title of some Wikimedia Commons pictures about the subject entity
      */
     pictures?: string[];
     
     /**
-     * Localized list of notable prizes received by the subject
+     * Localized list of notable prizes received by the subject entity
      */
     prizes?: string;
     
@@ -66,17 +66,17 @@ export interface LinkedEntityDetails extends LinkedEntity {
     start_date_precision?: DatePrecision;
     
     /**
-     * Title of a Wikipedia page about the subject, prefixed with its language code (<language>:<Page name>)
+     * Title of a Wikipedia page about the subject entity, prefixed with its language code (<language>:<Page name>)
      */
     wikipedia?: string;
     
     /**
-     * Title of a Wikispore page about the subject
+     * Title of a Wikispore page about the subject entity
      */
     wikispore?: string;
     
     /**
-     * Coordinates of the location of the subject
+     * Coordinates of the location of the subject entity
      */
     wkt_coords?: string;
 }

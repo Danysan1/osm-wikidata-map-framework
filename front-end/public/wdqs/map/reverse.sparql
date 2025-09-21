@@ -4,11 +4,12 @@ SELECT
     (SAMPLE(COALESCE(?lang_label,?default_label,?anyLabel)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
-    (SAMPLE(?_commons) AS ?commons)
+    (SAMPLE(?_commons) AS ?itemCommons)
     (SAMPLE(?_website) AS ?website)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_wikispore) AS ?wikispore)
-    (SAMPLE(?_picture) AS ?picture)
+    (SAMPLE(?_linkPicture) AS ?linkPicture)
+    (SAMPLE(?_itemPicture) AS ?itemPicture)
     (SAMPLE(?_height) AS ?height)
     (SAMPLE(?_levels) AS ?levels)
     (SAMPLE(?_osm_node) AS ?osm_node)
@@ -47,7 +48,8 @@ WHERE {
     OPTIONAL { ?item wdt:P856 ?_website. }
     OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P7721 ?_wikispore. }
-    OPTIONAL { ?item wdt:P18 ?_picture. }
+    ${linkPictureQuery}
+    OPTIONAL { ?item wdt:P18 ?_itemPicture. }
     OPTIONAL { ?item p:P2048/psn:P2048/wikibase:quantityAmount ?_height. } # https://stackoverflow.com/a/57560572/2347196
     OPTIONAL { ?item wdt:P1101 ?_levels. }
     OPTIONAL { ?item wdt:P11693 ?_osm_node. }

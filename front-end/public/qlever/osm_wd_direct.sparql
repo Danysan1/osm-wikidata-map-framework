@@ -22,9 +22,9 @@ SELECT
     (SAMPLE(COALESCE(?osm_lang_name,?osm_default_name)) AS ?itemLabel)
     # (SAMPLE(COALESCE(?osm_descr,?wd_descr)) AS ?itemDescription)
     (SAMPLE(?osm_descr) AS ?itemDescription)
-    #(SAMPLE(?_commons) AS ?commons)
+    #(SAMPLE(?_commons) AS ?itemCommons)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
-    #(SAMPLE(?_picture) AS ?picture)
+    #(SAMPLE(?_itemPicture) AS ?itemPicture)
     (SAMPLE(?_wikimedia_commons) AS ?wikimedia_commons)
     (SAMPLE(?_image) AS ?image)
     (SAMPLE(?_height) AS ?height)
@@ -74,7 +74,7 @@ WHERE {
         # OPTIONAL { ?item @${language}@schema:description ?wd_descr. }
         # OPTIONAL { ?item wdt:P910?/wdt:P373 ?_commons. }
         # OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
-        # OPTIONAL { ?item wdt:P18 ?_picture. }
+        # OPTIONAL { ?item wdt:P18 ?_itemPicture. }
     }
 
     ?osm osm2rdfkey:wikidata ?item; geo:hasGeometry/geo:asWKT ?osm_location.

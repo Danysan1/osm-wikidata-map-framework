@@ -212,11 +212,11 @@ export class QLeverMapService implements MapService {
             if (!indirectProperty)
                 throw new Error("No indirect property in preset" + this.preset.id);
             const imageProperty = this.preset.wikidata_image_property,
-                pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
+                linkPictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_linkPicture. }` : '';
 
             sparqlQuery = sparqlQuery
                 .replaceAll('${indirectProperty}', indirectProperty)
-                .replaceAll('${pictureQuery}', pictureQuery);
+                .replaceAll('${linkPictureQuery}', linkPictureQuery);
         } else if (backEndID.includes("direct")) {
             let properties: string[];
             const sourceProperty = /_direct_(P\d+)$/.exec(backEndID)?.at(1),
@@ -346,9 +346,9 @@ export class QLeverMapService implements MapService {
         linkedEntity?: LinkedEntity
     ): OwmfFeature {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
+        const itemCommons = row.itemCommons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
+            itemPicture = row.itemPicture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
 
         let render_height;
         if (row.height?.value)
@@ -379,6 +379,7 @@ export class QLeverMapService implements MapService {
                 from_wikidata: false,
                 name: linkedName,
                 description: linkedDescription,
+                linkPicture: row.linkPicture?.value,
             });
         }
 
@@ -388,7 +389,7 @@ export class QLeverMapService implements MapService {
             geometry,
             properties: {
                 id: id,
-                commons: commons,
+                commons: itemCommons,
                 linked_entities: linkedEntities.length ? linkedEntities : undefined,
                 linked_entity_count: linkedEntities.length,
                 from_osm_instance: osm_instance,
@@ -405,7 +406,7 @@ export class QLeverMapService implements MapService {
                 ohm_type: osm_instance === OsmInstance.OpenHistoricalMap ? osm_type : undefined,
                 osm_id: osm_instance === OsmInstance.OpenStreetMap ? osm_id : undefined,
                 osm_type: osm_instance === OsmInstance.OpenStreetMap ? osm_type : undefined,
-                picture: picture,
+                picture: itemPicture,
                 wikidata: feature_wd_id,
                 wikipedia: row.wikipedia?.value,
             }

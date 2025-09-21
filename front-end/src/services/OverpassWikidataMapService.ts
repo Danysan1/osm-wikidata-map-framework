@@ -152,10 +152,9 @@ export class OverpassWikidataMapService implements MapService {
                 return true; // Same Wikidata => merge
             }
 
-            if (osmFeature.properties?.osm_id !== undefined &&
-                osmFeature.properties?.osm_id === wikidataFeature.properties?.osm_id &&
-                osmFeature.properties?.osm_type !== undefined &&
-                osmFeature.properties?.osm_type === wikidataFeature.properties?.osm_type) {
+            const osmID = osmFeature.properties?.osm_id,
+                osmType = osmFeature.properties?.osm_type;
+            if (osmID && osmID === wikidataFeature.properties?.osm_id && osmType && osmType === wikidataFeature.properties?.osm_type) {
                 const join_field = JOIN_FIELD_MAP[wikidataFeature.properties.osm_type];
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
                 return true; // Same OSM => merge
@@ -222,10 +221,11 @@ export class OverpassWikidataMapService implements MapService {
                 const osmEtymologies = getFeatureLinkedEntities(osmFeature) ?? [],
                     osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
                 if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {
-                    // Wikidata etymology has priority over the Overpass one as it can have more details
-                    console.warn("Overpass+Wikidata: Duplicate etymology, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmFeature.properties, wd: wikidataFeature.properties });
+                    // Wikidata linked entity has priority over the Overpass one as it can have more details
+                    console.warn("Overpass+Wikidata: Duplicate linked entity, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmEtymologies[osmEtymologyIndex], wd: wdEtymology });
                     osmEtymologies[osmEtymologyIndex] = wdEtymology;
                 } else {
+                    //console.debug("Overpass+Wikidata: Pushing Wikidata linked entity", wdEtymology);
                     osmEtymologies.push(wdEtymology);
 
                     if (!osmFeature.properties)

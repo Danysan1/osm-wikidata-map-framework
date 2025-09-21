@@ -147,10 +147,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             throw new Error(`Invalid Wikidata indirect back-end ID: "${backEndID}"`);
 
         const imageProperty = this.preset.wikidata_image_property,
-            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
+            linkPictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_linkPicture. }` : '';
         return sparqlQueryTemplate
             .replaceAll('${indirectProperty}', indirectProperty)
-            .replaceAll('${pictureQuery}', pictureQuery);
+            .replaceAll('${linkPictureQuery}', linkPictureQuery);
     }
 
     private featureReducer(acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] {
@@ -195,6 +195,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                 propagated: false,
                 wikidata: etymology_wd_id,
+                linkPicture: row.linkPicture?.value,
             };
         }
 
@@ -227,13 +228,13 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         const feature_alias_wd_id = row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             commonProps: OwmfFeatureProperties = {
-                commons: row.commons?.value,
+                commons: row.itemCommons?.value,
                 iiif_url: row.iiif?.value,
                 osm_id: osm_id,
                 osm_type: osm_type,
                 ohm_id: ohm_id,
                 ohm_type: ohm_type,
-                picture: row.picture?.value,
+                picture: row.itemPicture?.value,
                 render_height: render_height,
                 tags: {
                     description: row.itemDescription?.value,

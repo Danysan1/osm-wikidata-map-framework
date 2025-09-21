@@ -41,7 +41,7 @@ WHERE {
     
     # # Extra details
     OPTIONAL { ?stmt pq:P373 ?commons. }
-    ${pictureQuery}
+    ${linkPictureQuery}
     OPTIONAL { ?stmt pq:P11693 ?osm_node. }
     OPTIONAL { ?stmt pq:P10689 ?osm_way. }
     OPTIONAL { ?stmt pq:P402 ?osm_rel. }

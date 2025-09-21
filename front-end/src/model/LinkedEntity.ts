@@ -82,7 +82,12 @@ export interface LinkedEntity {
     osm_wd_join_field?: OsmWdJoinField;
 
     /**
-     * Whether this entity link has been obtained through propagation
+     * Title of a Wikimedia Commons picture for this feature-entity link
+     */
+    linkPicture?: string;
+
+    /**
+     * Whether this feature-entity link has been obtained through propagation
      */
     propagated?: boolean;
 
@@ -125,7 +130,7 @@ export interface LinkedEntity {
 
 export interface EntityLinkNote {
     /**
-     * Q-ID of the Wikidata entity that this entity link is subject of.
+     * Q-ID of the Wikidata entity that this feature-entity link is subject of.
      * For example, the article describing the etymology represented by this statement.
      * @see https://www.wikidata.org/wiki/Property:P805
      */
