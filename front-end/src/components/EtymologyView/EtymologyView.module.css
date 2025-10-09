@@ -7,12 +7,12 @@
   justify-items: center;
   grid-row-gap: 0.5em;
   grid-column-gap: 0.5em;
-  grid-template-columns: repeat(auto-fit, minmax(var(--owmf-cell-width, 24em), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--owmf-cell-width, 30em), 1fr));
 }
 
 .entity_image img {
   margin: 0.5em;
-  max-width: var(--owmf-cell-width, 24em);
+  max-width: var(--owmf-cell-width, 30em);
   max-height: 28em;
 }
 

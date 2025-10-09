@@ -227,6 +227,7 @@ Q154547,duchy,Locations,#33ff66
 Q10864048,first-level administrative division,Locations,#33ff66
 Q19832712,historical administrative division,Locations,#33ff66
 Q107390,federated state,Locations,#33ff66
+Q180673,ceremonial county of England,Locations,#33ff66
 Q5,human,People,#33ffff
 Q21070568,human who may be fictional,People,#33ffff
 Q14073567,sibling duo,People,#33ffff
@@ -332,6 +333,13 @@ Q11618417,local administrative unit of 2nd level,Human settlements,#3366ff
 Q1852859,cadastral populated place in the Netherlands,Human settlements,#3366ff
 Q1392581,cycling city,Human settlements,#3366ff
 Q14770218,cantonal capital of Switzerland,Human settlements,#3366ff
+Q5195043,borough,Human settlements,#3366ff
+Q408804,borough of New York City,Human settlements,#3366ff
+Q287414,neighborhood in New York City,Human settlements,#3366ff
+Q1093829,city in the United States,Human settlements,#3366ff
+Q3301053,consolidated city-county,Human settlements,#3366ff
+Q15284,municipality,Human settlements,#3366ff
+Q57058,municipality of Croatia,Human settlements,#3366ff
 Q43229,organization,Organization,#9933ff
 Q4830453,business,Organization,#9933ff
 Q6881511,enterprise,Organization,#9933ff
