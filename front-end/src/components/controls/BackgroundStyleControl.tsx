@@ -50,7 +50,7 @@ function getBackgroundStyles() {
 
   if (tracestrack_key) {
     backgroundStyles.push(
-      tracestrackStyle("Carto", "carto", tracestrack_key),
+      tracestrackStyle("Carto", "carto", tracestrack_key)
       // tracestrackStyle("Lite", "lite", tracestrack_key),
       // tracestrackStyle("Dark", "dark", tracestrack_key)
     );
@@ -155,12 +155,12 @@ function getBackgroundStyles() {
     );
   }
 
-  // backgroundStyles.push({
-  //   id: "osm_vector",
-  //   styleText: "OSM Vector",
-  //   styleUrl: "https://vector.openstreetmap.org/shortbread_v1/tilejson.json",
-  //   vendorText: "OpenStreetMap",
-  // });
+  backgroundStyles.push({
+    id: "osm_vector",
+    styleText: "OSM Vector",
+    styleUrl: "https://vector.openstreetmap.org/shortbread_v1/tilejson.json",
+    vendorText: "OpenStreetMap",
+  });
 
   return backgroundStyles;
 }
@@ -304,8 +304,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
         }
       });
 
-      if (!styleSpec.projection?.type)
-        styleSpec.projection = undefined; // Prevent errors with Mapbox styles
+      if (!styleSpec.projection?.type) styleSpec.projection = undefined; // Prevent errors with Mapbox styles
 
       // https://github.com/mapbox/mapbox-gl-js/issues/4808
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
@@ -340,15 +339,17 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = ({
     }
   }, [jsonStyleSpec, setBackgroundStyle, showSnackbar, t, updateStyleSpec]);
 
-  return !!dropdownItems.length && (
-    <DropdownControl
-      buttonContent="🌍"
-      dropdownItems={dropdownItems}
-      selectedValue={backgroundStyleID}
-      title={t("choose_basemap")}
-      position={position}
-      className="background-style-ctrl"
-    />
+  return (
+    !!dropdownItems.length && (
+      <DropdownControl
+        buttonContent="🌍"
+        dropdownItems={dropdownItems}
+        selectedValue={backgroundStyleID}
+        title={t("choose_basemap")}
+        position={position}
+        className="background-style-ctrl"
+      />
+    )
   );
 };
 

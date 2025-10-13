@@ -8,7 +8,6 @@ import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
-import { OsmInstance } from "@/src/model/LinkedEntity";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
@@ -373,18 +372,7 @@ export const OwmfMap = () => {
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="overpass_query"
-        site={OsmInstance.OpenStreetMap}
-        baseURL="https://overpass-turbo.eu/?Q="
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-      <QueryLinkControl
-        icon={overpassLogo as StaticImport}
-        title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
-        sourceIDs={geoJsonSourceIDs}
-        mapEventField="overpass_query"
-        site={OsmInstance.OpenHistoricalMap}
-        baseURL="https://openhistoricalmap.github.io/overpass-turbo/?Q="
+        baseURL={`${process.env.NEXT_PUBLIC_OWMF_overpass_turbo_url}?Q=`}
         minZoomLevel={minZoomLevel}
         position="top-right"
       />
@@ -393,7 +381,7 @@ export const OwmfMap = () => {
         title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="wdqs_query"
-        baseURL="https://query-main.wikidata.org/#"
+        baseURL={`${process.env.NEXT_PUBLIC_OWMF_wikibase_sparql_endpoint_url}/#`}
         minZoomLevel={minZoomLevel}
         position="top-right"
       />

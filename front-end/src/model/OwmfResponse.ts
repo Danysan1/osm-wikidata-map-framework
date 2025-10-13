@@ -81,9 +81,6 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
 export function osmKeyToKeyID(key: string) {
     return "osm_" + key.replace(":wikidata", "").replace(":", "_");
 }
-export function ohmKeyToKeyID(key: string) {
-    return "ohm_" + key.replace(":wikidata", "").replace(":", "_");
-}
 
 export function getFeatureLinkedEntities(f: OwmfFeature): LinkedEntity[] {
     let props;

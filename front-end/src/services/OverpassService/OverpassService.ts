@@ -3,16 +3,12 @@ import osmtogeojson from "osmtogeojson";
 import type { OverpassJson } from "overpass-ts";
 import type { MapDatabase } from "../../db/MapDatabase";
 import { DatePrecision, LinkedEntity, OsmInstance, OsmType } from "../../model/LinkedEntity";
-import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
+import { createFeatureTags, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import type { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "../WikimediaCommonsService";
 
-const WIKIDATA_QID_REGEX = /^Q[0-9]+/,
-    OVERPASS_ENDPOINTS: Record<OsmInstance, string> = {
-        [OsmInstance.OpenHistoricalMap]: "https://overpass-api.openhistoricalmap.org/api/interpreter",
-        [OsmInstance.OpenStreetMap]: "https://overpass-api.de/api/interpreter"
-    };
+const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 
 /**
  * Service that handles the creation of Overpass QL queries and the execution of them on the appropriate instance of Overpass
@@ -42,7 +38,6 @@ export class OverpassService implements MapService {
         this.baseBBox = bbox;
         this.wikidata_key_codes = this.preset.osm_wikidata_keys?.reduce((acc: Record<string, string>, key) => {
             acc[osmKeyToKeyID(key)] = key;
-            acc[ohmKeyToKeyID(key)] = key;
             return acc;
         }, {});
         console.debug("OverpassService initialized", { preset: this.preset, wikidata_key_codes: this.wikidata_key_codes });
@@ -92,8 +87,9 @@ export class OverpassService implements MapService {
 
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if (area < 0.000001 || (!onlyCentroids && area > 5))
-            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
+        if (area < 0.000001 || (!onlyCentroids && area > 5)) {
+            throw new Error(`Invalid bbox area: ${area} - ${bbox.join(",")}`);
+        }
 
         let osmInstance: OsmInstance,
             osm_wikidata_keys: string[] = [],
@@ -159,7 +155,7 @@ export class OverpassService implements MapService {
         console.time(`overpass_query_${timerID}`);
         const query = this.buildOverpassQuery(osm_wikidata_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
-            res = await overpassJson(query, { endpoint: OVERPASS_ENDPOINTS[osmInstance] });
+            res = await overpassJson(query, { endpoint: process.env.NEXT_PUBLIC_OWMF_overpass_api_url });
         console.timeEnd(`overpass_query_${timerID}`);
         console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 

@@ -27,7 +27,7 @@ export const FeatureSourceRow: FC<OwmfFeatureProperties> = ({
         fromWdProperty = from_wikidata_prop || "P625",
         fromWikidataUrl =
             from_wikidata && fromWdEntity
-                ? `https://www.wikidata.org/wiki/${fromWdEntity}#${fromWdProperty}`
+                ? `${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${fromWdEntity}#${fromWdProperty}`
                 : undefined;
 
     return <div className="feature_src_wrapper">
