@@ -12,6 +12,7 @@ import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapServic
 import { MapService } from "@/src/services/MapService";
 import {
   DataDrivenPropertyValueSpecification,
+  LngLatBoundsLike,
   RequestTransformFunction,
   addProtocol,
 } from "maplibre-gl";
@@ -49,6 +50,16 @@ import { PMTilesSource } from "../PMTilesSource";
 
 const PMTILES_PREFIX = "pmtiles",
   MAX_ZOOM = 19,
+  BOUNDS: LngLatBoundsLike | undefined =
+    process.env.NEXT_PUBLIC_OWMF_min_lon &&
+      process.env.NEXT_PUBLIC_OWMF_min_lat &&
+      process.env.NEXT_PUBLIC_OWMF_max_lon &&
+      process.env.NEXT_PUBLIC_OWMF_max_lat ? [
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_min_lon),
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_min_lat),
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_max_lon),
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_max_lat),
+    ] : undefined,
   FALLBACK_COLOR = "#3bb2d0",
   POINT_LAYER = "layer_point",
   POINT_TAP_AREA_LAYER = "layer_point_tapArea",
@@ -93,9 +104,9 @@ export const OwmfMap = () => {
       () =>
         process.env.NEXT_PUBLIC_OWMF_use_background_color === "true"
           ? {
-              backgroundColor: sourcePreset?.background_color ?? "#ffffff",
-              "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
-            }
+            backgroundColor: sourcePreset?.background_color ?? "#ffffff",
+            "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
+          }
           : undefined,
       [sourcePreset?.background_color]
     ),
@@ -314,6 +325,7 @@ export const OwmfMap = () => {
       latitude={mapLat}
       longitude={mapLon}
       zoom={mapZoom}
+      maxBounds={BOUNDS}
       maxZoom={MAX_ZOOM}
       onMove={onMoveHandler}
       transformRequest={requestTransformFunction}
