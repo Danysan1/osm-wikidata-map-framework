@@ -36,6 +36,7 @@ function getBackgroundStyles() {
     enable_versatiles = process.env.NEXT_PUBLIC_OWMF_enable_versatiles === "true",
     enable_stadia = process.env.NEXT_PUBLIC_OWMF_enable_stadia_maps === "true",
     enable_ohm = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true",
+    enable_osmf = process.env.NEXT_PUBLIC_OWMF_enable_osmf_tiles === "true",
     backgroundStyles: BackgroundStyle[] = [];
 
   console.debug("Preparing background styles", {
@@ -46,6 +47,7 @@ function getBackgroundStyles() {
     enable_versatiles,
     enable_stadia,
     enable_ohm,
+    enable_osmf,
   });
 
   if (tracestrack_key) {
@@ -155,12 +157,20 @@ function getBackgroundStyles() {
     );
   }
 
-  backgroundStyles.push({
-    id: "osm_vector",
-    styleText: "OSM Vector",
-    styleUrl: "https://vector.openstreetmap.org/shortbread_v1/tilejson.json",
-    vendorText: "OpenStreetMap",
-  });
+  if (enable_osmf) {
+    backgroundStyles.push({
+      id: "osmf_colorful",
+      styleText: "OSMF Colorful",
+      styleUrl: "https://vector.openstreetmap.org/demo/shortbread/colorful.json",
+      vendorText: "OpenStreetMap Foundation",
+    });
+    backgroundStyles.push({
+      id: "osmf_eclipse",
+      styleText: "OSMF Eclipse",
+      styleUrl: "https://vector.openstreetmap.org/demo/shortbread/eclipse.json",
+      vendorText: "OpenStreetMap Foundation",
+    });
+  }
 
   return backgroundStyles;
 }
