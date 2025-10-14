@@ -10,20 +10,19 @@ import { OSM_INSTANCE } from "@/src/config";
 const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 
 /**
- * Service that handles the creation of Overpass QL queries and the execution of them on the appropriate instance of Overpass
+ * Service that handles the creation of Postpass SQL queries and the execution of them on the appropriate instance of Postpass
  * 
- * @see https://wiki.openstreetmap.org/wiki/Overpass_API
- * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass
+ * @see https://wiki.openstreetmap.org/wiki/Postpass
  */
-export class OverpassService extends BaseOverpassService {
+export class PostpassService extends BaseOverpassService {
     public canHandleBackEnd(backEndID: string): boolean {
-        if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_overpass_api_url)
+        if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_postpass_api_url)
             return false;
 
         if (this.preset?.osm_wikidata_keys)
-            return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
+            return /^postpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
 
-        return /^overpass_(osm|ohm)_wd$/.test(backEndID);
+        return /^postpass_(osm|ohm)_wd$/.test(backEndID);
     }
 
     protected async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {

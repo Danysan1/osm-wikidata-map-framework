@@ -1,4 +1,4 @@
-import type { LinkedEntity, OsmInstance, OsmType } from "./LinkedEntity";
+import type { LinkedEntity, OsmType } from "./LinkedEntity";
 
 export interface OsmFeatureTags {
     /**
@@ -203,9 +203,11 @@ export interface OwmfFeatureProperties {
     linked_entities?: LinkedEntity[] | string;
 
     /**
-     * Whether OpenStreetMap instance is the original source of the geometry and names of this feature.
+     * Which (if any) OpenStreetMap instance is the original source of the geometry and names of this feature.
+     * @example "openstreetmap.org"
+     * @example "openhistoricalmap.org"
      */
-    from_osm_instance?: OsmInstance;
+    from_osm_instance?: string;
 
     /**
      * Whether Wikidata is the original source of the geometry and/or names of this feature.
@@ -230,24 +232,14 @@ export interface OwmfFeatureProperties {
     linked_entity_count?: number;
 
     /**
-     * Type of the OpenStreetMap element for this feature
+     * Type of the OpenStreetMap (instance) element for this feature
      */
     osm_type?: OsmType;
 
     /**
-     * Type of the OpenHistoricalMap element for this feature
-     */
-    ohm_type?: OsmType;
-
-    /**
-     * ID (unique only within its osm_type) of the OpenStreetMap element for this feature
+     * ID (unique only within its osm_type) of the OpenStreetMap (instance) element for this feature
      */
     osm_id?: number;
-
-    /**
-     * ID (unique only within its osm_type) of the OpenHistoricalMap element for this feature
-     */
-    ohm_id?: number;
 
     /**
      * Title of a Wikimedia Commons picture for this feature

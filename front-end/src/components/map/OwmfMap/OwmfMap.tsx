@@ -6,8 +6,6 @@ import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingCon
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import overpassLogo from "@/src/img/Overpass-turbo.svg";
-import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
@@ -19,7 +17,6 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { Protocol } from "pmtiles";
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,8 +38,7 @@ import { InfoControl } from "../../controls/InfoControl";
 import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
 import { ProjectionControl } from "../../controls/ProjectionControl";
-import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/QLeverQueryLinkControl";
-import { QueryLinkControl } from "../../controls/QueryLinkControl";
+import { QueryLinkControls } from "../../controls/QueryLinkControls/QueryLinkControls";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
 import { StatisticsColorControl } from "../../controls/StatisticsColorControl/StatisticsColorControl";
 import { FeaturePopup } from "../../popup/FeaturePopup";
@@ -367,25 +363,7 @@ export const OwmfMap = () => {
         position="top-right"
         setOpenFeature={setOpenFeature}
       />
-      <QueryLinkControl
-        icon={overpassLogo as StaticImport}
-        title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
-        sourceIDs={geoJsonSourceIDs}
-        mapEventField="overpass_query"
-        baseURL={`${process.env.NEXT_PUBLIC_OWMF_overpass_turbo_url}?Q=`}
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-      <QueryLinkControl
-        icon={wikidataLogo as StaticImport}
-        title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
-        sourceIDs={geoJsonSourceIDs}
-        mapEventField="wdqs_query"
-        baseURL={`${process.env.NEXT_PUBLIC_OWMF_wikibase_sparql_endpoint_url}/#`}
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-      <QLeverQueryLinkControls
+      <QueryLinkControls
         sourceIDs={geoJsonSourceIDs}
         minZoomLevel={minZoomLevel}
         position="top-right"

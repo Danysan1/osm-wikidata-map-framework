@@ -203,9 +203,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         }
 
         let osm_id: number | undefined,
-            osm_type: OsmType | undefined,
-            ohm_id: number | undefined,
-            ohm_type: OsmType | undefined;
+            osm_type: OsmType | undefined;
         if (row.osm_rel?.value) {
             osm_type = "relation";
             osm_id = parseInt(row.osm_rel.value);
@@ -215,10 +213,6 @@ export class WikidataMapService extends WikidataService implements MapService {
         } else if (row.osm_node?.value) {
             osm_type = "node";
             osm_id = parseInt(row.osm_node.value);
-        }
-        if (row.ohm_rel?.value) {
-            ohm_type = "relation";
-            ohm_id = parseInt(row.ohm_rel.value);
         }
 
         let render_height;
@@ -235,8 +229,6 @@ export class WikidataMapService extends WikidataService implements MapService {
                 iiif_url: row.iiif?.value,
                 osm_id: osm_id,
                 osm_type: osm_type,
-                ohm_id: ohm_id,
-                ohm_type: ohm_type,
                 picture: itemPicture,
                 render_height: render_height,
                 tags: {

@@ -1,6 +1,6 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
-import { OsmInstance, type LinkedEntity, type OsmType, type OsmWdJoinField } from "../model/LinkedEntity";
+import { type LinkedEntity, type OsmType, type OsmWdJoinField } from "../model/LinkedEntity";
 import { createFeatureTags, getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import type { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
@@ -124,7 +124,6 @@ export class OverpassWikidataMapService implements MapService {
             if (osmFeature.properties?.from_wikidata === true)
                 return false; // Already merged with another Wikidata feature => ignore
 
-            const fromOHM = osmFeature.properties?.from_osm_instance === OsmInstance.OpenHistoricalMap;
             let wikidataMatchOsmType: OsmType | undefined,
                 wikidataMatchOsmId: number | undefined;
             if (osmFeature.properties?.wikidata !== undefined && (
@@ -132,8 +131,8 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
                 // The OSM feature itself is represented by this Wikidata entity
-                wikidataMatchOsmType = fromOHM ? osmFeature.properties?.ohm_type : osmFeature.properties?.osm_type;
-                wikidataMatchOsmId = fromOHM ? osmFeature.properties?.ohm_id : osmFeature.properties?.osm_id;
+                wikidataMatchOsmType = osmFeature.properties?.osm_type;
+                wikidataMatchOsmId = osmFeature.properties?.osm_id;
             } else {
                 // Search whether any relation containing this OSM feature is represented by this Wikidata entity
                 wikidataMatchOsmId = osmFeature.properties?.relations?.find(rel =>
@@ -146,7 +145,7 @@ export class OverpassWikidataMapService implements MapService {
 
             if (wikidataMatchOsmId && wikidataMatchOsmType) {
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => {
-                    ety.osm_wd_join_field = fromOHM ? "OHM" : "OSM";
+                    ety.osm_wd_join_field = "OSM";
                     ety.from_osm_id = wikidataMatchOsmId;
                     ety.from_osm_type = wikidataMatchOsmType;
                 });
@@ -211,8 +210,6 @@ export class OverpassWikidataMapService implements MapService {
             osmFeature.properties.wikidata ??= wikidataFeature.properties?.wikidata;
             osmFeature.properties.osm_id ??= wikidataFeature.properties?.osm_id;
             osmFeature.properties.osm_type ??= wikidataFeature.properties?.osm_type;
-            osmFeature.properties.ohm_id ??= wikidataFeature.properties?.ohm_id;
-            osmFeature.properties.ohm_type ??= wikidataFeature.properties?.ohm_type;
             osmFeature.properties.render_height ??= wikidataFeature.properties?.render_height;
             osmFeature.properties.wikidata_alias ??= wikidataFeature.properties?.wikidata_alias;
             osmFeature.properties.wikispore ??= wikidataFeature.properties?.wikispore;
