@@ -1,8 +1,10 @@
+import { OSM_TITLE } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import mapcompleteLogo from "@/src/img/mapcomplete.svg";
 import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
 import osmWdMatcherLogo from "@/src/img/osm-wd-matcher.png";
 import { getFeatureTags, type OwmfFeature } from "@/src/model/OwmfResponse";
+import { SourcePreset } from "@/src/model/SourcePreset";
 import type { Position } from "geojson";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { useTranslation } from "react-i18next";
@@ -10,7 +12,12 @@ import { Button } from "../Button/Button";
 import { ButtonRow } from "./ButtonRow";
 import openHistoricalMapLogo from "./img/OpenHistoricalMap_logo.svg";
 import openStreetMapLogo from "./img/Openstreetmap_logo.svg";
-import { SourcePreset } from "@/src/model/SourcePreset";
+
+const OSM_LOGO = (
+  process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("openhistoricalmap")
+    ? openHistoricalMapLogo
+    : openStreetMapLogo
+) as StaticImport;
 
 interface FeatureButtonRowProps {
   feature: OwmfFeature;
@@ -30,12 +37,8 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
         ? feature.properties.osm_type + "/" + feature.properties?.osm_id
         : null,
     { t } = useTranslation(),
-    openHistoricalMapURL =
-      feature.properties?.ohm_id && feature.properties?.ohm_type
-        ? `https://www.openhistoricalmap.org/${feature.properties.ohm_type}/${feature.properties.ohm_id}`
-        : undefined,
     openStreetMapURL = osm_full_id
-      ? `https://www.openstreetmap.org/${osm_full_id}`
+      ? `${process.env.NEXT_PUBLIC_OWMF_osm_instance_url}/${osm_full_id}`
       : undefined,
     { setLat, setLon, setZoom } = useUrlFragmentContext();
 
@@ -84,7 +87,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
       feature.properties?.osm_type &&
       feature.properties?.osm_id &&
       !feature.properties?.boundary
-        ? `https://www.openstreetmap.org/edit?editor=id&${feature.properties.osm_type}=${feature.properties.osm_id}`
+        ? `${process.env.NEXT_PUBLIC_OWMF_osm_instance_url}/edit?editor=id&${feature.properties.osm_type}=${feature.properties.osm_id}`
         : undefined;
 
   return (
@@ -100,21 +103,11 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
       {openStreetMapURL && (
         <Button
           href={openStreetMapURL}
-          title="OpenStreetMap"
+          title={OSM_TITLE}
           className="osm_button"
-          icon={openStreetMapLogo as StaticImport}
-          iconAlt="OpenStreetMap logo"
-          text="OpenStreetMap"
-        />
-      )}
-      {openHistoricalMapURL && (
-        <Button
-          href={openHistoricalMapURL}
-          title="OpenHistoricalMap"
-          className="osm_button"
-          icon={openHistoricalMapLogo as StaticImport}
-          iconAlt="OpenHistoricalMap logo"
-          text="OpenHistoricalMap"
+          icon={OSM_LOGO}
+          iconAlt={`${OSM_TITLE} logo`}
+          text={OSM_TITLE}
         />
       )}
       {iDEditorURL && (

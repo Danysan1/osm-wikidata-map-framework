@@ -12,7 +12,7 @@ export const LinkedEntityLink: FC<LinkedEntityLinkProps> = ({ linkedEntity }) =>
 
   return (
     <a
-      href={`https://www.wikidata.org/wiki/${linkedEntity.wikidata}`}
+      href={`${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${linkedEntity.wikidata}`}
       target="_blank"
       rel="noreferrer"
     >

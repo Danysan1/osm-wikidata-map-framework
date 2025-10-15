@@ -3,7 +3,7 @@ import { Configuration, DescriptionsApi } from "wikibase-rest-api-ts";
 export class WikidataDescriptionService {
     protected readonly api: DescriptionsApi;
 
-    public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase') {
+    public constructor(basePath = process.env.NEXT_PUBLIC_OWMF_wikibase_rest_endpoint_url) {
         this.api = new DescriptionsApi(new Configuration({
             basePath,
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }

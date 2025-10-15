@@ -1,5 +1,6 @@
+import { OSM_TITLE } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { LinkedEntity, OsmInstance } from "@/src/model/LinkedEntity";
+import { LinkedEntity } from "@/src/model/LinkedEntity";
 import Link from "next/link";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,13 +22,12 @@ export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
             osm_wd_join_field === "OSM" ||
             !!from_osm_instance ||
             !!propagated,
-        fromOsmInstance = from_osm_instance ?? OsmInstance.OpenStreetMap,
         osmFeatureUrl =
             fromOsm && from_osm_type && from_osm_id
-                ? `https://www.${fromOsmInstance}/${from_osm_type}/${from_osm_id}`
+                ? `${process.env.NEXT_PUBLIC_OWMF_osm_instance_url}/${from_osm_type}/${from_osm_id}`
                 : null,
         fromWdUrl = from_wikidata_entity
-            ? `https://www.wikidata.org/wiki/${from_wikidata_entity}`
+            ? `${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${from_wikidata_entity}`
             : null,
         wdFeatureUrl =
             osm_wd_join_field?.startsWith("P") && fromWdUrl
@@ -35,7 +35,7 @@ export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
                 : null,
         showArrow = (!!osmFeatureUrl || !!wdFeatureUrl) && !!fromWdUrl,
         wdUrlPartOf = from_parts_of_wikidata_cod
-            ? `https://www.wikidata.org/wiki/${from_parts_of_wikidata_cod}#P527`
+            ? `${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${from_parts_of_wikidata_cod}#P527`
             : null
 
     return <span className="etymology_src_wrapper">
@@ -45,7 +45,7 @@ export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
         {osmFeatureUrl && (
             <span className="etymology_src_osm_feature_wrapper">
                 <a className="etymology_src_osm_feature" href={osmFeatureUrl}>
-                    {fromOsmInstance}
+                    {OSM_TITLE}
                 </a>
                 &nbsp;
             </span>
@@ -94,7 +94,7 @@ export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
                 &gt;&nbsp;
                 <a
                     className="etymology_src_entity"
-                    href={`https://www.wikidata.org/wiki/${wikidata}`}
+                    href={`${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${wikidata}`}
                 >
                     wikidata.org
                 </a>

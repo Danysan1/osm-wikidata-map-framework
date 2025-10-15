@@ -32,7 +32,7 @@ SELECT
     (true AS ?from_wikidata)
     (SAMPLE(?osm_location) AS ?location)
 WHERE {
-    SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    SERVICE <https://qlever.dev/api/wikidata> {
         ?item p:P625 ?locationStatement.
         ${wikidataCountryQuery}
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes

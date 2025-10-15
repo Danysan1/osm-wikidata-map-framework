@@ -1,5 +1,5 @@
 import { Feature, FeatureCollection, Geometry } from "geojson";
-import { LinkedEntity, OsmInstance } from "./LinkedEntity";
+import { LinkedEntity } from "./LinkedEntity";
 import { createPropTags, getPropLinkedEntities, getPropTags, OsmFeatureTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
 
 export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
@@ -63,10 +63,18 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
     /** OverpassQL query used to fetch the features */
     overpass_query?: string;
 
+    /** Postpass SQL query used to fetch the features */
+    postpass_query?: string;
+
     /** Whether this is a partial result because a part of the query returned an error */
     partial?: boolean;
 
-    site?: OsmInstance;
+    /**
+     * Which (if any) OpenStreetMap instance is the original source of this data
+     * @example "openstreetmap.org"
+     * @example "openhistoricalmap.org"
+     */
+    osmInstance?: string;
 
     /** Whether the response has been truncated due to the maximum number of features being reached */
     truncated?: boolean;
@@ -80,9 +88,6 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
 
 export function osmKeyToKeyID(key: string) {
     return "osm_" + key.replace(":wikidata", "").replace(":", "_");
-}
-export function ohmKeyToKeyID(key: string) {
-    return "ohm_" + key.replace(":wikidata", "").replace(":", "_");
 }
 
 export function getFeatureLinkedEntities(f: OwmfFeature): LinkedEntity[] {

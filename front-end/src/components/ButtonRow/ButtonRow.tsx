@@ -34,7 +34,7 @@ export const ButtonRow: FC<ButtonRowProps> = (props) => {
 
       if (props.wikidata.startsWith("http")) return props.wikidata;
 
-      return `https://www.wikidata.org/wiki/${props.wikidata}`;
+      return `${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${props.wikidata}`;
     }, [props.wikidata]),
     wikipediaURL = useMemo(() => {
       if (!props.wikipedia || props.wikipedia === "null") return undefined;

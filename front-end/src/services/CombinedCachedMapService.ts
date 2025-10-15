@@ -7,6 +7,7 @@ import { OverpassService } from "./OverpassService/OverpassService";
 import { OverpassWikidataMapService } from "./OverpassWikidataMapService";
 import { QLeverMapService } from "./QLeverMapService/QLeverMapService";
 import { WikidataMapService } from "./WikidataMapService/WikidataMapService";
+import { PostpassService } from "./PostpassService/PostpassService";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];
@@ -31,13 +32,16 @@ export class CombinedCachedMapService implements MapService {
         );
         const db = new MapDatabase(),
             overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox),
+            postpassService = new PostpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox),
             wikidataService = new WikidataMapService(sourcePreset, maxElements, db);
         this.services.push(
-            wikidataService,
             overpassService,
-            new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db)
+            postpassService,
+            wikidataService,
+            new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db),
+            new OverpassWikidataMapService(sourcePreset, postpassService, wikidataService, db)
         )
-        if (process.env.NEXT_PUBLIC_OWMF_qlever_enable === "true")
+        if (process.env.NEXT_PUBLIC_OWMF_qlever_instance_url)
             this.services.push(new QLeverMapService(sourcePreset, maxElements, maxRelationMembers, db, bbox));
 
         setTimeout(() => void db.clear(maxHours), 10_000);

@@ -1,9 +1,20 @@
 export type OsmType = 'node' | 'way' | 'relation';
-export enum OsmInstance {
-    OpenStreetMap = "openstreetmap.org",
-    OpenHistoricalMap = "openhistoricalmap.org"
+export type OsmWdJoinField = 'OSM' | 'P11693' | 'P10689' | 'P402';
+
+export function parseOsmType(text?: string): OsmType | undefined {
+    if (!text)
+        return undefined;
+
+    const lower = text?.toLowerCase();
+    if (lower === "node" || lower === "n")
+        return "node";
+    if (lower === "way" || lower === "w")
+        return "way";
+    if (lower === "relation" || lower === "rel" || lower === "r")
+        return "relation";
+
+    return undefined;
 }
-export type OsmWdJoinField = 'OSM' | 'OHM' | 'P11693' | 'P10689' | 'P402';
 
 /**
  * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
@@ -25,9 +36,11 @@ export const enum DatePrecision {
 
 export interface LinkedEntity {
     /**
-     * Which OpenStreetMap instance is the original source of the link to this entity
+     * Which (if any) OpenStreetMap instance is the original source of the link to this entity
+     * @example "openstreetmap.org"
+     * @example "openhistoricalmap.org"
      */
-    from_osm_instance?: OsmInstance;
+    from_osm_instance?: string;
 
     /**
      * Type of the source OpenStreetMap element

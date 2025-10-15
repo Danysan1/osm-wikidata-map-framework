@@ -1,18 +1,9 @@
+import { OSM_INSTANCE } from "@/src/config";
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { OverpassJson } from "overpass-ts";
-import type { MapDatabase } from "../../db/MapDatabase";
-import { DatePrecision, LinkedEntity, OsmInstance, OsmType } from "../../model/LinkedEntity";
-import { createFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
-import type { SourcePreset } from "../../model/SourcePreset";
-import type { MapService } from "../MapService";
-import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "../WikimediaCommonsService";
-
-const WIKIDATA_QID_REGEX = /^Q[0-9]+/,
-    OVERPASS_ENDPOINTS: Record<OsmInstance, string> = {
-        [OsmInstance.OpenHistoricalMap]: "https://overpass-api.openhistoricalmap.org/api/interpreter",
-        [OsmInstance.OpenStreetMap]: "https://overpass-api.de/api/interpreter"
-    };
+import { type OwmfResponse } from "../../model/OwmfResponse";
+import { BaseOverpassService } from "../BaseOverpassService";
 
 /**
  * Service that handles the creation of Overpass QL queries and the execution of them on the appropriate instance of Overpass
@@ -20,95 +11,25 @@ const WIKIDATA_QID_REGEX = /^Q[0-9]+/,
  * @see https://wiki.openstreetmap.org/wiki/Overpass_API
  * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass
  */
-export class OverpassService implements MapService {
-    private readonly preset: SourcePreset;
-    private readonly maxElements?: number;
-    private readonly maxRelationMembers?: number;
-    private readonly wikidata_key_codes?: Record<string, string>;
-    private readonly db?: MapDatabase;
-    private readonly baseBBox?: BBox;
-
-    public constructor(
-        preset: SourcePreset,
-        maxElements?: number,
-        maxRelationMembers?: number,
-        db?: MapDatabase,
-        bbox?: BBox
-    ) {
-        this.preset = preset;
-        this.maxElements = maxElements;
-        this.maxRelationMembers = maxRelationMembers;
-        this.db = db;
-        this.baseBBox = bbox;
-        this.wikidata_key_codes = this.preset.osm_wikidata_keys?.reduce((acc: Record<string, string>, key) => {
-            acc[osmKeyToKeyID(key)] = key;
-            acc[ohmKeyToKeyID(key)] = key;
-            return acc;
-        }, {});
-        console.debug("OverpassService initialized", { preset: this.preset, wikidata_key_codes: this.wikidata_key_codes });
-    }
-
+export class OverpassService extends BaseOverpassService {
     public canHandleBackEnd(backEndID: string): boolean {
-        if (process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" && backEndID.includes("ohm"))
+        if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_overpass_api_url)
             return false;
-        else if (this.preset?.osm_wikidata_keys)
+
+        if (this.preset?.osm_wikidata_keys)
             return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
-        else
-            return /^overpass_(osm|ohm)_wd$/.test(backEndID);
+
+        return /^overpass_(osm|ohm)_wd$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
-        language = ''; // Not used in Overpass query
-
-        const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
-        if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
-            console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
-            return { type: "FeatureCollection", features: [] };
-        }
-
-        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox, language, year);
-        if (cachedResponse)
-            return cachedResponse;
-
-        console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
-        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, year);
-        if (onlyCentroids) {
-            console.debug(`Overpass found ${out.features.length} centroids`);
-        } else {
-            console.debug(`Overpass found ${out.features.length} features before filtering`);
-            out.features = out.features.filter(
-                (feature: OwmfFeature) => !!feature.properties?.linked_entity_count || ( // Any linked entity is available or ...
-                    backEndID.endsWith("_wd") && // ... this back-end allows features that just have wikidata=* and ...
-                    (!!feature.properties?.wikidata || feature.properties?.relations?.some(rel => rel.reltags?.wikidata)) // ... wikidata=* is available on the feature or on a containing relation     
-                ));
-            out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
-            console.debug(`Overpass found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
-        }
-        out.language = language;
-
-        void this.db?.addMap(out);
-        return out;
-    }
-
-    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
-        const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if (area < 0.000001 || (!onlyCentroids && area > 5))
-            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
-
-        let osmInstance: OsmInstance,
-            osm_wikidata_keys: string[] = [],
+    protected async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
+        let osm_wikidata_keys: string[] = [],
             use_wikidata = false,
             relation_member_role: string | undefined,
             search_text_key: string | undefined;
 
         if (backEndID.includes("overpass_osm_wd")) {
             // Search only elements with wikidata=*
-            osmInstance = OsmInstance.OpenStreetMap;
-            osm_wikidata_keys = [];
-            search_text_key = undefined;
-            use_wikidata = true;
-        } else if (process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true" && backEndID.includes("overpass_ohm_wd")) {
-            osmInstance = OsmInstance.OpenHistoricalMap
             osm_wikidata_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
@@ -122,7 +43,6 @@ export class OverpassService implements MapService {
             if (!keyCode)
                 throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
 
-            osmInstance = keyCode.startsWith("ohm_") ? OsmInstance.OpenHistoricalMap : OsmInstance.OpenStreetMap;
             if (keyCode.endsWith("_all_wd")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
                 osm_wikidata_keys = this.preset.osm_wikidata_keys;
@@ -159,7 +79,7 @@ export class OverpassService implements MapService {
         console.time(`overpass_query_${timerID}`);
         const query = this.buildOverpassQuery(osm_wikidata_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
-            res = await overpassJson(query, { endpoint: OVERPASS_ENDPOINTS[osmInstance] });
+            res = await overpassJson(query, { endpoint: process.env.NEXT_PUBLIC_OWMF_overpass_api_url });
         console.timeEnd(`overpass_query_${timerID}`);
         console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 
@@ -175,8 +95,8 @@ export class OverpassService implements MapService {
         console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES`);
         // console.table(out.features);
 
-        out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys, osmInstance));
-        out.site = osmInstance;
+        out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys));
+        out.osmInstance = OSM_INSTANCE;
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;
@@ -216,180 +136,6 @@ export class OverpassService implements MapService {
         });
     }
 
-    private transformFeature(feature: OwmfFeature, osm_keys: string[], site: OsmInstance) {
-        if (!feature.properties)
-            feature.properties = {};
-
-        // osmtogeojson initializes feature.properties.id with the full OSM ID (osm_type/osm_id)
-        const full_osm_props_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
-            full_osm_base_id = typeof feature.id === "string" && feature.id.includes("/") ? feature.id : undefined,
-            full_osm_id = full_osm_base_id ?? full_osm_props_id,
-            osmSplit = full_osm_id?.split("/"),
-            osm_type = osmSplit?.length ? osmSplit[0] as OsmType : undefined,
-            osm_id = osmSplit?.length ? parseInt(osmSplit[1]) : undefined,
-            tags = createFeatureTags(feature);
-        feature.id = `${site}/${full_osm_id}`;
-        feature.properties.id = feature.id; // Copying the ID as sometimes Maplibre erases feature.id
-        feature.properties.from_wikidata = false;
-        feature.properties.from_osm_instance = site;
-        if (site === OsmInstance.OpenStreetMap) {
-            feature.properties.osm_id = osm_id;
-            feature.properties.osm_type = osm_type;
-        } else {
-            feature.properties.ohm_id = osm_id;
-            feature.properties.ohm_type = osm_type;
-        }
-
-        if (tags.height)
-            feature.properties.render_height = parseInt(tags.height);
-        else if (tags["building:levels"])
-            feature.properties.render_height = parseInt(tags["building:levels"]) * 4;
-        else if (tags.building)
-            feature.properties.render_height = 6;
-
-        if (tags.wikidata && WIKIDATA_QID_REGEX.test(tags.wikidata))
-            feature.properties.wikidata = tags.wikidata
-
-        if (tags.wikipedia)
-            feature.properties.wikipedia = tags.wikipedia;
-
-        if (tags.wikimedia_commons)
-            feature.properties.commons = COMMONS_CATEGORY_REGEX.exec(tags.wikimedia_commons)?.at(1);
-
-        if (tags.wikimedia_commons && COMMONS_FILE_REGEX.test(tags.wikimedia_commons))
-            feature.properties.picture = tags.wikimedia_commons;
-        else if (tags.image && COMMONS_FILE_REGEX.test(tags.image))
-            feature.properties.picture = tags.image;
-
-        const linkedEntities: LinkedEntity[] = [];
-        if (!!this.preset?.osm_text_key || !!this.preset.osm_description_key) {
-            const linkedNames = this.preset.osm_text_key ? tags[this.preset.osm_text_key]?.split(";") : undefined,
-                linkedDescriptions = this.preset.osm_description_key ? tags[this.preset.osm_description_key]?.split(";") : undefined;
-            if (linkedNames) {
-                linkedEntities.push(...this.textLinkedEntities(site, linkedNames, linkedDescriptions, osm_type, osm_id));
-            } else if (linkedDescriptions) {
-                linkedEntities.push(...this.textLinkedEntities(site, linkedDescriptions, undefined, osm_type, osm_id));
-            }
-
-            if (feature.properties.relations && this.preset?.relation_propagation_role) {
-                const relationsWithLinkedNames = feature.properties.relations.filter(rel => (
-                    rel.role &&
-                    this.preset.relation_propagation_role === rel.role &&
-                    ((!!this.preset.osm_text_key && !!rel.reltags[this.preset.osm_text_key]) || (!!this.preset.osm_description_key && !!rel.reltags[this.preset.osm_description_key]))
-                ));
-                relationsWithLinkedNames.forEach(rel => {
-                    const relationLinkedNames = this.preset.osm_text_key ? rel.reltags[this.preset.osm_text_key]?.split(";") : undefined,
-                        relationLinkedDescriptions = this.preset.osm_description_key ? rel.reltags[this.preset.osm_description_key]?.split(";") : undefined;
-                    if (relationLinkedNames)
-                        linkedEntities.push(...this.textLinkedEntities(site, relationLinkedNames, relationLinkedDescriptions, "relation", rel.rel));
-                    else if (relationLinkedDescriptions)
-                        linkedEntities.push(...this.textLinkedEntities(site, relationLinkedDescriptions, undefined, "relation", rel.rel));
-                });
-            }
-        }
-
-        osm_keys.forEach(key => {
-            linkedEntities.push(
-                ...tags[key]
-                    ?.split(";")
-                    ?.filter(value => WIKIDATA_QID_REGEX.test(value))
-                    ?.map<LinkedEntity>(value => ({
-                        from_osm_instance: site,
-                        from_osm_id: osm_id,
-                        from_osm_type: osm_type,
-                        from_wikidata: false,
-                        propagated: false,
-                        wikidata: value
-                    })) ?? []);
-
-            if (!!this.preset.relation_propagation_role || !!this.preset.relation_propagation_type) {
-                feature.properties
-                    ?.relations
-                    ?.forEach(rel => {
-                        const propagateByType = !!rel.reltags?.type && this.preset.relation_propagation_type === rel.reltags?.type,
-                            propagateByRole = !!rel.role && this.preset.relation_propagation_role === rel.role;
-                        if (!propagateByType && !propagateByRole) return; // No need to propagate anything
-
-                        const linkedEntityQIDs = rel.reltags[key],
-                            validLinkedQIDs = !!linkedEntityQIDs && WIKIDATA_QID_REGEX.test(linkedEntityQIDs);
-                        if (!validLinkedQIDs) return; // Secondary wikidata tag not available on the relation or invalid => No linked entity to propagate
-
-                        console.debug("Overpass transformFeature propagating linked entity from relation", { feature, rel });
-                        linkedEntityQIDs
-                            .split(";")
-                            .filter(value => WIKIDATA_QID_REGEX.test(value))
-                            .reduce((acc, value) => {
-                                if (acc.some(e => e.wikidata === value)) {
-                                    console.debug("Skipping duplicate linked entity from relation:", { value, feature });
-                                } else {
-                                    acc.push({
-                                        from_osm_instance: site,
-                                        from_osm_id: rel.rel,
-                                        from_osm_type: "relation",
-                                        from_wikidata: false,
-                                        propagated: false,
-                                        wikidata: value,
-                                    });
-                                }
-                                return acc;
-                            }, linkedEntities);
-
-                        // Propagate names
-                        Object.keys(rel.reltags)
-                            .filter(nameKey => nameKey.startsWith("name"))
-                            .forEach(nameKey => tags[nameKey] ??= rel.reltags[nameKey]);
-                        tags.description ??= rel.reltags.description;
-
-                        // Propagate primary wikidata tag
-                        if (rel.reltags.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata))
-                            feature.properties!.wikidata ??= rel.reltags.wikidata;
-                    });
-            }
-        });
-
-        if (this.preset.relation_member_role) {
-            feature.properties.relations
-                ?.filter(rel => rel.role === this.preset.relation_member_role)
-                ?.forEach(rel => {
-                    const relWikidataQID = rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
-                        entityAlreadyLinked = !!relWikidataQID && linkedEntities.some(e => e.wikidata === relWikidataQID);
-                    if (!entityAlreadyLinked) {
-                        linkedEntities.push({
-                            name: rel.reltags?.name,
-                            description: rel.reltags?.description,
-                            birth_date: rel.reltags?.born,
-                            birth_date_precision: DatePrecision.day,
-                            birth_place: rel.reltags?.birthplace,
-                            death_date: rel.reltags?.died,
-                            death_date_precision: DatePrecision.day,
-                            death_place: rel.reltags?.deathplace,
-                            wikidata: relWikidataQID,
-                            from_osm_instance: site,
-                            from_osm_type: "relation",
-                            from_osm_id: rel.rel,
-                            from_wikidata: false,
-                            osm_wd_join_field: "OSM"
-                        });
-                    }
-                });
-        }
-
-        feature.properties.linked_entities = linkedEntities.length ? linkedEntities : undefined;
-        feature.properties.linked_entity_count = linkedEntities.length;
-    }
-
-    private textLinkedEntities(site: OsmInstance, names: string[], descriptions?: string[], osm_type?: OsmType, osm_id?: number): LinkedEntity[] {
-        return names.map((name, i) => ({
-            name: name,
-            description: descriptions?.[i],
-            from_osm_instance: site,
-            from_osm_id: osm_id,
-            from_osm_type: osm_type,
-            from_wikidata: false,
-            propagated: false
-        }));
-    }
-
     private buildOverpassQuery(
         wd_keys: string[],
         bbox: BBox,
@@ -415,7 +161,7 @@ export class OverpassService implements MapService {
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
+        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, bbox });
         let query = `
 [out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
 (

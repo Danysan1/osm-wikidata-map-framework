@@ -3,11 +3,12 @@ import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
 import { SparqlApi, SparqlBackend, SparqlResponse, SparqlResponseBindingValue } from "../../generated/sparql/api";
 import { Configuration } from "../../generated/sparql/configuration";
-import { LinkedEntity, OsmInstance, OsmType } from "../../model/LinkedEntity";
+import { LinkedEntity, OsmType } from "../../model/LinkedEntity";
 import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import type { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
+import { OSM_INSTANCE } from "@/src/config";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -41,7 +42,7 @@ export class QLeverMapService implements MapService {
         db?: MapDatabase,
         bbox?: BBox,
         resolveQuery?: (type: string) => Promise<string>,
-        basePath = 'https://qlever.cs.uni-freiburg.de/api'
+        basePath = process.env.NEXT_PUBLIC_OWMF_qlever_instance_url
     ) {
         this.preset = preset;
         this.maxElements = maxElements;
@@ -57,12 +58,16 @@ export class QLeverMapService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
+        if (!process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url || !process.env.NEXT_PUBLIC_OWMF_qlever_instance_url)
+            return false;
+
         if (!this.preset.wikidata_indirect_property && ["reverse", "qualifier", "indirect"].some(x => backEndID.includes(x)))
             return false;
-        else if (!this.preset.osm_wikidata_properties && backEndID.includes("_direct"))
+
+        if (!this.preset.osm_wikidata_properties && backEndID.includes("_direct"))
             return false;
-        else
-            return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)|(ohm_[_a-z]+))$/.test(backEndID);
+
+        return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+))$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
@@ -77,13 +82,9 @@ export class QLeverMapService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        let backend: SparqlBackend, site: OsmInstance | undefined;
+        let backend: SparqlBackend;
         if (backEndID.startsWith("qlever_osm")) {
             backend = SparqlBackend.OsmPlanet;
-            site = OsmInstance.OpenStreetMap
-        } else if (process.env.enable_open_historical_map === "true" && backEndID.startsWith("qlever_ohm")) {
-            backend = SparqlBackend.OhmPlanet;
-            site = OsmInstance.OpenHistoricalMap;
         } else {
             backend = "wikidata";
         }
@@ -101,13 +102,13 @@ export class QLeverMapService implements MapService {
         const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
-            features: ret.results.bindings.reduce(this.buildFeatureReducer(site), []),
+            features: ret.results.bindings.reduce(this.buildFeatureReducer(), []),
             timestamp: new Date().toISOString(),
             sourcePresetID: this.preset.id,
             backEndID: backEndID,
             onlyCentroids: onlyCentroids,
             language: language,
-            site: site,
+            osmInstance: backEndID.includes("osm") ? OSM_INSTANCE : undefined,
             year: year,
             truncated: ret.results.bindings.length === this.maxElements,
         };
@@ -256,7 +257,7 @@ export class QLeverMapService implements MapService {
             ).toFixed(4));
     }
 
-    private buildFeatureReducer(site?: OsmInstance) {
+    private buildFeatureReducer() {
         return (acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] => {
             if (!row.location?.value) {
                 console.warn("Invalid response from Wikidata (no location)", row);
@@ -289,9 +290,9 @@ export class QLeverMapService implements MapService {
                 if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
                     console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
                 } else {
-                    const feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value);
-                    let from_osm_instance: OsmInstance | undefined = row.from_osm?.value === 'true' ? site : undefined,
-                        osm_id: number | undefined,
+                    const feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
+                        from_osm_instance = row.from_osm?.value === 'true' ? OSM_INSTANCE : undefined;
+                    let osm_id: number | undefined,
                         osm_type: OsmType | undefined;
                     if (row.osm_rel?.value) {
                         osm_type = "relation";
@@ -305,7 +306,6 @@ export class QLeverMapService implements MapService {
                     } else if (row.osm?.value) {
                         const splits = /(\w+\.org)\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
                         if (splits?.length === 4) {
-                            from_osm_instance = splits[1] as OsmInstance;
                             osm_type = splits[2] as OsmType;
                             osm_id = parseInt(splits[3]);
                         }
@@ -340,7 +340,7 @@ export class QLeverMapService implements MapService {
         geometry: Point,
         from_wikidata: boolean,
         feature_wd_id?: string,
-        osm_instance?: OsmInstance,
+        from_osm_instance?: string,
         osm_id?: number,
         osm_type?: OsmType,
         linkedEntity?: LinkedEntity
@@ -361,10 +361,10 @@ export class QLeverMapService implements MapService {
         const from_wikidata_entity = feature_wd_id ? feature_wd_id : linkedEntity?.from_wikidata_entity,
             from_wikidata_prop = feature_wd_id ? "P625" : linkedEntity?.from_wikidata_prop;
         let id;
-        if (osm_instance && from_wikidata)
-            id = `${osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
-        else if (osm_instance)
-            id = `${osm_instance}/${osm_type}/${osm_id}`;
+        if (from_osm_instance && from_wikidata)
+            id = `${from_osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
+        else if (from_osm_instance)
+            id = `${from_osm_instance}/${osm_type}/${osm_id}`;
         else
             id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
 
@@ -373,7 +373,7 @@ export class QLeverMapService implements MapService {
             linkedDescription = row.etymology_description?.value;
         if (!!linkedName || !!linkedDescription) {
             linkedEntities.push({
-                from_osm_instance: osm_instance,
+                from_osm_instance: from_osm_instance,
                 from_osm_id: osm_id,
                 from_osm_type: osm_type,
                 from_wikidata: false,
@@ -392,7 +392,7 @@ export class QLeverMapService implements MapService {
                 commons: itemCommons,
                 linked_entities: linkedEntities.length ? linkedEntities : undefined,
                 linked_entity_count: linkedEntities.length,
-                from_osm_instance: osm_instance,
+                from_osm_instance: from_osm_instance,
                 from_wikidata: from_wikidata,
                 from_wikidata_entity,
                 from_wikidata_prop,
@@ -402,10 +402,8 @@ export class QLeverMapService implements MapService {
                     name: row.itemLabel?.value,
                     website: row.website?.value,
                 },
-                ohm_id: osm_instance === OsmInstance.OpenHistoricalMap ? osm_id : undefined,
-                ohm_type: osm_instance === OsmInstance.OpenHistoricalMap ? osm_type : undefined,
-                osm_id: osm_instance === OsmInstance.OpenStreetMap ? osm_id : undefined,
-                osm_type: osm_instance === OsmInstance.OpenStreetMap ? osm_type : undefined,
+                osm_id,
+                osm_type,
                 picture: itemPicture,
                 wikidata: feature_wd_id,
                 wikipedia: row.wikipedia?.value,

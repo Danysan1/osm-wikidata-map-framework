@@ -6,21 +6,18 @@ import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingCon
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import overpassLogo from "@/src/img/Overpass-turbo.svg";
-import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
-import { OsmInstance } from "@/src/model/LinkedEntity";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
 import {
   DataDrivenPropertyValueSpecification,
+  LngLatBoundsLike,
   RequestTransformFunction,
   addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
-import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { Protocol } from "pmtiles";
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,8 +39,7 @@ import { InfoControl } from "../../controls/InfoControl";
 import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
 import { ProjectionControl } from "../../controls/ProjectionControl";
-import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/QLeverQueryLinkControl";
-import { QueryLinkControl } from "../../controls/QueryLinkControl";
+import { QueryLinkControls } from "../../controls/QueryLinkControls/QueryLinkControls";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
 import { StatisticsColorControl } from "../../controls/StatisticsColorControl/StatisticsColorControl";
 import { FeaturePopup } from "../../popup/FeaturePopup";
@@ -54,6 +50,16 @@ import { PMTilesSource } from "../PMTilesSource";
 
 const PMTILES_PREFIX = "pmtiles",
   MAX_ZOOM = 19,
+  BOUNDS: LngLatBoundsLike | undefined =
+    process.env.NEXT_PUBLIC_OWMF_min_lon &&
+      process.env.NEXT_PUBLIC_OWMF_min_lat &&
+      process.env.NEXT_PUBLIC_OWMF_max_lon &&
+      process.env.NEXT_PUBLIC_OWMF_max_lat ? [
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_min_lon),
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_min_lat),
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_max_lon),
+      parseFloat(process.env.NEXT_PUBLIC_OWMF_max_lat),
+    ] : undefined,
   FALLBACK_COLOR = "#3bb2d0",
   POINT_LAYER = "layer_point",
   POINT_TAP_AREA_LAYER = "layer_point_tapArea",
@@ -98,9 +104,9 @@ export const OwmfMap = () => {
       () =>
         process.env.NEXT_PUBLIC_OWMF_use_background_color === "true"
           ? {
-              backgroundColor: sourcePreset?.background_color ?? "#ffffff",
-              "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
-            }
+            backgroundColor: sourcePreset?.background_color ?? "#ffffff",
+            "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
+          }
           : undefined,
       [sourcePreset?.background_color]
     ),
@@ -319,6 +325,7 @@ export const OwmfMap = () => {
       latitude={mapLat}
       longitude={mapLon}
       zoom={mapZoom}
+      maxBounds={BOUNDS}
       maxZoom={MAX_ZOOM}
       onMove={onMoveHandler}
       transformRequest={requestTransformFunction}
@@ -368,36 +375,7 @@ export const OwmfMap = () => {
         position="top-right"
         setOpenFeature={setOpenFeature}
       />
-      <QueryLinkControl
-        icon={overpassLogo as StaticImport}
-        title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
-        sourceIDs={geoJsonSourceIDs}
-        mapEventField="overpass_query"
-        site={OsmInstance.OpenStreetMap}
-        baseURL="https://overpass-turbo.eu/?Q="
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-      <QueryLinkControl
-        icon={overpassLogo as StaticImport}
-        title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
-        sourceIDs={geoJsonSourceIDs}
-        mapEventField="overpass_query"
-        site={OsmInstance.OpenHistoricalMap}
-        baseURL="https://openhistoricalmap.github.io/overpass-turbo/?Q="
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-      <QueryLinkControl
-        icon={wikidataLogo as StaticImport}
-        title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
-        sourceIDs={geoJsonSourceIDs}
-        mapEventField="wdqs_query"
-        baseURL="https://query-main.wikidata.org/#"
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-      <QLeverQueryLinkControls
+      <QueryLinkControls
         sourceIDs={geoJsonSourceIDs}
         minZoomLevel={minZoomLevel}
         position="top-right"

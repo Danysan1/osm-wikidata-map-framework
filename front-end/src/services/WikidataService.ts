@@ -7,9 +7,9 @@ export class WikidataService {
     public static readonly WD_PROPERTY_P_PREFIX = "http://www.wikidata.org/prop/";
     protected readonly api: SparqlApi;
 
-    public constructor(basePath = process.env.NEXT_PUBLIC_OWMF_wikidata_endpoint) {
+    public constructor(basePath = process.env.NEXT_PUBLIC_OWMF_wikibase_sparql_endpoint_url) {
         this.api = new SparqlApi(new Configuration({
-            basePath: basePath?.length ? basePath : 'https://query-main.wikidata.org',
+            basePath,
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // In theory it should be set (https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy) but in practice it causes a CORS error
         }));
     }

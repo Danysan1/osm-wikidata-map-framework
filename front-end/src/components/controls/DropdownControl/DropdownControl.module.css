@@ -3,6 +3,7 @@
   margin: 5px;
   width: 93%;
   max-width: 95%;
+  padding-inline-end: 3em;
 }
 
 .control .title {

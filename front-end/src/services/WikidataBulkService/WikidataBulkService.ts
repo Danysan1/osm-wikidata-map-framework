@@ -17,7 +17,7 @@ export class WikidataBulkService {
     constructor(useQLever = true) {
         this.backend = useQLever ? "wikidata" : "sparql";
         this.api = new SparqlApi(new Configuration({
-            basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query-main.wikidata.org",
+            basePath: useQLever ? "https://qlever.dev/api" : "https://query-main.wikidata.org",
             baseOptions: {
                 headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // Must be set: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
             }

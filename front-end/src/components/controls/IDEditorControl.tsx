@@ -17,11 +17,11 @@ interface IDEditorControlProps {
 export const IDEditorControl: FC<IDEditorControlProps> = (props) => {
   const { lon, lat, zoom, backEndID } = useUrlFragmentContext(),
     url = useMemo(() => {
-      if (backEndID.includes("osm") || backEndID.includes("pmtiles"))
-        return `https://www.openstreetmap.org/edit?editor=id#map=${zoom.toFixed()}/${lat}/${lon}`;
-      else if (process.env.enable_open_historical_map === "true" && backEndID.includes("ohm"))
-        return `https://openhistoricalmap.org/edit?editor=id#map=${zoom.toFixed()}/${lat}/${lon}`;
-      else return undefined;
+      if (backEndID.includes("osm") || backEndID.includes("pmtiles")) {
+        return `${process.env.NEXT_PUBLIC_OWMF_osm_instance_url}/edit?editor=id#map=${zoom.toFixed()}/${lat}/${lon}`;
+      } else {
+        return undefined;
+      }
     }, [backEndID, lat, lon, zoom]);
 
   return (
