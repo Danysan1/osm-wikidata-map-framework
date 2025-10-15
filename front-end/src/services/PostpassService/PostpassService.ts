@@ -128,13 +128,13 @@ export class PostpassService extends BaseOverpassService {
                 filter_value = filter_split[1];
 
             if (!osm_wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
-                const filter_clause = filter_value ? `tags->>'${filter_key}'='${filter_value}'` : `tags ? '${filter_key}'`;
-                let non_filter_wd_clause = non_filter_wd_keys.map(key => `tags ? '${key}'`).join(" OR ");
+                const filter_clause = filter_value ? `tags->>'${filter_key}'='${filter_value}'` : `tags ? '${filter_key}'`,
+                    non_filter_wd_clauses = non_filter_wd_keys.map(key => `tags ? '${key}'`);
                 if (osm_text_key && !text_etymology_key_is_filter)
-                    non_filter_wd_clause += `tags ? '${osm_text_key}'`;
+                    non_filter_wd_clauses.push(`tags ? '${osm_text_key}'`);
                 if (use_wikidata)
-                    non_filter_wd_clause += `tags ? 'wikidata'`;
-                tagFilters.push(non_filter_wd_clause ? `(${filter_clause} AND (${non_filter_wd_clause}))` : filter_clause);
+                    non_filter_wd_clauses.push(`tags ? 'wikidata'`);
+                tagFilters.push(non_filter_wd_clauses ? `(${filter_clause} AND (${non_filter_wd_clauses.join(" OR ")}))` : filter_clause);
             }
         });
         console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys: osm_wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, tagFilters });
