@@ -275,7 +275,7 @@ export class PostpassService extends BaseOverpassService {
         year: number
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
-        const notTooBig = this.preset.ignore_big_elements ? "NOT tags ? 'sqkm' AND NOT tags ? 'boundary' AND (NOT tags ? 'type' OR tags->>'type'!='boundary')" : "",
+        const notTooBig = this.preset.ignore_big_elements ? "AND NOT tags ? 'sqkm' AND NOT tags ? 'boundary' AND (NOT tags ? 'type' OR tags->>'type'!='boundary')" : "",
             dateFilter = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ?
                 // Filter for openstreetmap.org or openhistoricalmap.org in the current year
                 "NOT tags ? 'end_date' AND (NOT tags ? 'route' OR tags->>'route'!='historic')"
@@ -307,7 +307,7 @@ export class PostpassService extends BaseOverpassService {
                     non_filter_wd_clause += `tags ? '${osm_text_key}'`;
                 if (use_wikidata)
                     non_filter_wd_clause += `tags ? 'wikidata'`;
-                tagFilters += ` OR (${filter_clause} AND (${non_filter_wd_clause}))`;
+                tagFilters += non_filter_wd_clause ? ` OR (${filter_clause} AND (${non_filter_wd_clause}))` : ` OR ${filter_clause}`;
             }
         });
         console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys: osm_wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, tagFilters });
@@ -319,10 +319,10 @@ export class PostpassService extends BaseOverpassService {
 -- Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
 -- Year: ${year}
 -- Max elements: ${this.maxElements ?? "NONE"}
-SELECT osm_id, tags, geom 
-FROM postpass_pointpolygon
+SELECT osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"} 
+FROM postpass_pointlinepolygon
 WHERE ${dateFilter}
-AND ${notTooBig}
+${notTooBig}
 AND (${tagFilters})
 AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_MakePoint(${bbox[2]},${bbox[3]})), 4326)
 `;
