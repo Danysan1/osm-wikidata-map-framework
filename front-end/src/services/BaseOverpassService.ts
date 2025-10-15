@@ -1,11 +1,11 @@
+import { OSM_INSTANCE } from "@/src/config";
 import type { BBox } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
-import { osmKeyToKeyID, createFeatureTags, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
+import { DatePrecision, LinkedEntity, OsmType, parseOsmType } from "../model/LinkedEntity";
+import { createFeatureTags, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import type { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
-import { DatePrecision, LinkedEntity, OsmType, parseOsmType } from "../model/LinkedEntity";
 import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "./WikimediaCommonsService";
-import { OSM_INSTANCE } from "@/src/config";
 
 const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 
@@ -41,7 +41,14 @@ export abstract class BaseOverpassService implements MapService {
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         language = ''; // Not used in Overpass query
 
-        const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
+        const trueBBox = bbox.map(coord => {
+            if (coord < -180)
+                return coord + 360;
+            else if (coord > 180)
+                return coord - 360;
+            else
+                return coord;
+        }) as BBox;
         if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
             console.warn("BaseOverpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
             return { type: "FeatureCollection", features: [] };

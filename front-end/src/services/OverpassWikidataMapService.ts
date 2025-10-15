@@ -35,7 +35,7 @@ export class OverpassWikidataMapService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        console.debug("No cached response found, fetching from Overpass & Wikidata", { sourcePresetID: this.preset?.id, backEndID, onlyCentroids, bbox, language });
+        console.debug("Overpass+Wikidata: No cached response found, fetching from Overpass & Wikidata", { sourcePresetID: this.preset?.id, backEndID, onlyCentroids, bbox, language });
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         if (!overpassBackEndID || !wikidataBackEndID)
             throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);

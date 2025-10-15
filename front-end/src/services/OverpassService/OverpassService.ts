@@ -1,9 +1,9 @@
+import { OSM_INSTANCE } from "@/src/config";
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { OverpassJson } from "overpass-ts";
 import { type OwmfResponse } from "../../model/OwmfResponse";
 import { BaseOverpassService } from "../BaseOverpassService";
-import { OSM_INSTANCE } from "@/src/config";
 
 /**
  * Service that handles the creation of Overpass QL queries and the execution of them on the appropriate instance of Overpass
@@ -161,7 +161,7 @@ export class OverpassService extends BaseOverpassService {
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
+        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, bbox });
         let query = `
 [out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
 (
