@@ -1,11 +1,7 @@
 import type { BBox } from "geojson";
-import { DatePrecision, LinkedEntity, OsmType } from "../../model/LinkedEntity";
-import { createFeatureTags, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
-import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "../WikimediaCommonsService";
+import { type OwmfResponse } from "../../model/OwmfResponse";
 import { BaseOverpassService } from "../BaseOverpassService";
 import { OSM_INSTANCE } from "@/src/config";
-
-const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 
 /**
  * Service that handles the creation of Postpass SQL queries and the execution of them on the appropriate instance of Postpass
@@ -70,7 +66,7 @@ export class PostpassService extends BaseOverpassService {
 
         const timerID = new Date().getMilliseconds();
         console.time(`postpass_query_${timerID}`);
-        const query = this.buildOverpassQuery(osm_wikidata_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
+        const query = this.buildPostpassSqlQuery(osm_wikidata_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
             res = await fetch(process.env.NEXT_PUBLIC_OWMF_postpass_api_url!, {
                 method: "POST",
                 body: new URLSearchParams({ 'data': query })
@@ -97,176 +93,7 @@ export class PostpassService extends BaseOverpassService {
         return out;
     }
 
-    private transformFeature(feature: OwmfFeature, osm_keys: string[]) {
-        if (!feature.properties)
-            feature.properties = {};
-
-        // osmtogeojson initializes feature.properties.id with the full OSM ID (osm_type/osm_id)
-        const full_osm_props_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
-            full_osm_base_id = typeof feature.id === "string" && feature.id.includes("/") ? feature.id : undefined,
-            full_osm_id = full_osm_base_id ?? full_osm_props_id,
-            osmSplit = full_osm_id?.split("/"),
-            osm_type = osmSplit?.length ? osmSplit[0] as OsmType : undefined,
-            osm_id = osmSplit?.length ? parseInt(osmSplit[1]) : undefined,
-            tags = createFeatureTags(feature);
-        feature.id = `${OSM_INSTANCE}/${full_osm_id}`;
-        feature.properties.id = feature.id; // Copying the ID as sometimes Maplibre erases feature.id
-        feature.properties.from_wikidata = false;
-        feature.properties.from_osm_instance = OSM_INSTANCE;
-        feature.properties.osm_id = osm_id;
-        feature.properties.osm_type = osm_type;
-
-        if (tags.height)
-            feature.properties.render_height = parseInt(tags.height);
-        else if (tags["building:levels"])
-            feature.properties.render_height = parseInt(tags["building:levels"]) * 4;
-        else if (tags.building)
-            feature.properties.render_height = 6;
-
-        if (tags.wikidata && WIKIDATA_QID_REGEX.test(tags.wikidata))
-            feature.properties.wikidata = tags.wikidata
-
-        if (tags.wikipedia)
-            feature.properties.wikipedia = tags.wikipedia;
-
-        if (tags.wikimedia_commons)
-            feature.properties.commons = COMMONS_CATEGORY_REGEX.exec(tags.wikimedia_commons)?.at(1);
-
-        if (tags.wikimedia_commons && COMMONS_FILE_REGEX.test(tags.wikimedia_commons))
-            feature.properties.picture = tags.wikimedia_commons;
-        else if (tags.image && COMMONS_FILE_REGEX.test(tags.image))
-            feature.properties.picture = tags.image;
-
-        const linkedEntities: LinkedEntity[] = [];
-        if (!!this.preset?.osm_text_key || !!this.preset.osm_description_key) {
-            const linkedNames = this.preset.osm_text_key ? tags[this.preset.osm_text_key]?.split(";") : undefined,
-                linkedDescriptions = this.preset.osm_description_key ? tags[this.preset.osm_description_key]?.split(";") : undefined;
-            if (linkedNames) {
-                linkedEntities.push(...this.textLinkedEntities(linkedNames, linkedDescriptions, osm_type, osm_id));
-            } else if (linkedDescriptions) {
-                linkedEntities.push(...this.textLinkedEntities(linkedDescriptions, undefined, osm_type, osm_id));
-            }
-
-            if (feature.properties.relations && this.preset?.relation_propagation_role) {
-                const relationsWithLinkedNames = feature.properties.relations.filter(rel => (
-                    rel.role &&
-                    this.preset.relation_propagation_role === rel.role &&
-                    ((!!this.preset.osm_text_key && !!rel.reltags[this.preset.osm_text_key]) || (!!this.preset.osm_description_key && !!rel.reltags[this.preset.osm_description_key]))
-                ));
-                relationsWithLinkedNames.forEach(rel => {
-                    const relationLinkedNames = this.preset.osm_text_key ? rel.reltags[this.preset.osm_text_key]?.split(";") : undefined,
-                        relationLinkedDescriptions = this.preset.osm_description_key ? rel.reltags[this.preset.osm_description_key]?.split(";") : undefined;
-                    if (relationLinkedNames)
-                        linkedEntities.push(...this.textLinkedEntities(relationLinkedNames, relationLinkedDescriptions, "relation", rel.rel));
-                    else if (relationLinkedDescriptions)
-                        linkedEntities.push(...this.textLinkedEntities(relationLinkedDescriptions, undefined, "relation", rel.rel));
-                });
-            }
-        }
-
-        osm_keys.forEach(key => {
-            linkedEntities.push(
-                ...tags[key]
-                    ?.split(";")
-                    ?.filter(value => WIKIDATA_QID_REGEX.test(value))
-                    ?.map<LinkedEntity>(value => ({
-                        from_osm_instance: OSM_INSTANCE,
-                        from_osm_id: osm_id,
-                        from_osm_type: osm_type,
-                        from_wikidata: false,
-                        propagated: false,
-                        wikidata: value
-                    })) ?? []);
-
-            if (!!this.preset.relation_propagation_role || !!this.preset.relation_propagation_type) {
-                feature.properties
-                    ?.relations
-                    ?.forEach(rel => {
-                        const propagateByType = !!rel.reltags?.type && this.preset.relation_propagation_type === rel.reltags?.type,
-                            propagateByRole = !!rel.role && this.preset.relation_propagation_role === rel.role;
-                        if (!propagateByType && !propagateByRole) return; // No need to propagate anything
-
-                        const linkedEntityQIDs = rel.reltags[key],
-                            validLinkedQIDs = !!linkedEntityQIDs && WIKIDATA_QID_REGEX.test(linkedEntityQIDs);
-                        if (!validLinkedQIDs) return; // Secondary wikidata tag not available on the relation or invalid => No linked entity to propagate
-
-                        console.debug("Postpass transformFeature propagating linked entity from relation", { feature, rel });
-                        linkedEntityQIDs
-                            .split(";")
-                            .filter(value => WIKIDATA_QID_REGEX.test(value))
-                            .reduce((acc, value) => {
-                                if (acc.some(e => e.wikidata === value)) {
-                                    console.debug("Skipping duplicate linked entity from relation:", { value, feature });
-                                } else {
-                                    acc.push({
-                                        from_osm_instance: OSM_INSTANCE,
-                                        from_osm_id: rel.rel,
-                                        from_osm_type: "relation",
-                                        from_wikidata: false,
-                                        propagated: false,
-                                        wikidata: value,
-                                    });
-                                }
-                                return acc;
-                            }, linkedEntities);
-
-                        // Propagate names
-                        Object.keys(rel.reltags)
-                            .filter(nameKey => nameKey.startsWith("name"))
-                            .forEach(nameKey => tags[nameKey] ??= rel.reltags[nameKey]);
-                        tags.description ??= rel.reltags.description;
-
-                        // Propagate primary wikidata tag
-                        if (rel.reltags.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata))
-                            feature.properties!.wikidata ??= rel.reltags.wikidata;
-                    });
-            }
-        });
-
-        if (this.preset.relation_member_role) {
-            feature.properties.relations
-                ?.filter(rel => rel.role === this.preset.relation_member_role)
-                ?.forEach(rel => {
-                    const relWikidataQID = rel.reltags?.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata) ? rel.reltags.wikidata : undefined,
-                        entityAlreadyLinked = !!relWikidataQID && linkedEntities.some(e => e.wikidata === relWikidataQID);
-                    if (!entityAlreadyLinked) {
-                        linkedEntities.push({
-                            name: rel.reltags?.name,
-                            description: rel.reltags?.description,
-                            birth_date: rel.reltags?.born,
-                            birth_date_precision: DatePrecision.day,
-                            birth_place: rel.reltags?.birthplace,
-                            death_date: rel.reltags?.died,
-                            death_date_precision: DatePrecision.day,
-                            death_place: rel.reltags?.deathplace,
-                            wikidata: relWikidataQID,
-                            from_osm_instance: OSM_INSTANCE,
-                            from_osm_type: "relation",
-                            from_osm_id: rel.rel,
-                            from_wikidata: false,
-                            osm_wd_join_field: "OSM"
-                        });
-                    }
-                });
-        }
-
-        feature.properties.linked_entities = linkedEntities.length ? linkedEntities : undefined;
-        feature.properties.linked_entity_count = linkedEntities.length;
-    }
-
-    private textLinkedEntities(names: string[], descriptions?: string[], osm_type?: OsmType, osm_id?: number): LinkedEntity[] {
-        return names.map((name, i) => ({
-            name: name,
-            description: descriptions?.[i],
-            from_osm_instance: OSM_INSTANCE,
-            from_osm_id: osm_id,
-            from_osm_type: osm_type,
-            from_wikidata: false,
-            propagated: false
-        }));
-    }
-
-    private buildOverpassQuery(
+    private buildPostpassSqlQuery(
         osm_wd_keys: string[],
         bbox: BBox,
         osm_text_key: string | undefined,
@@ -319,7 +146,7 @@ export class PostpassService extends BaseOverpassService {
 -- Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
 -- Year: ${year}
 -- Max elements: ${this.maxElements ?? "NONE"}
-SELECT osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"} 
+SELECT osm_type, osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"} 
 FROM postpass_pointlinepolygon
 WHERE ${dateFilter}
 ${notTooBig}

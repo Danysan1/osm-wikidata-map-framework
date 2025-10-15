@@ -1,6 +1,21 @@
 export type OsmType = 'node' | 'way' | 'relation';
 export type OsmWdJoinField = 'OSM' | 'P11693' | 'P10689' | 'P402';
 
+export function parseOsmType(text?: string): OsmType | undefined {
+    if (!text)
+        return undefined;
+
+    const lower = text?.toLowerCase();
+    if (lower === "node" || lower === "n")
+        return "node";
+    if (lower === "way" || lower === "w")
+        return "way";
+    if (lower === "relation" || lower === "rel" || lower === "r")
+        return "relation";
+
+    return undefined;
+}
+
 /**
  * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
  */
