@@ -31,7 +31,7 @@ export const QueryLinkControls: React.FC<QueryLinkControlsProps> = ({ sourceIDs,
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={sourceIDs}
         mapEventField="postpass_query"
-        baseURL={`${process.env.NEXT_PUBLIC_OWMF_overpass_turbo_url}?Q=`}
+        baseURL={`${process.env.NEXT_PUBLIC_OWMF_overpass_turbo_url}?Q={{data%3Asql%2Cserver%3D${encodeURIComponent(process.env.NEXT_PUBLIC_OWMF_postpass_api_url?.replace("interpreter",""))}}}`}
         minZoomLevel={minZoomLevel}
         position="top-right"
       />}
