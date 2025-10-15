@@ -35,7 +35,7 @@ SELECT
     (true AS ?from_wikidata)
     (SAMPLE(?osm_location) AS ?location)
 WHERE {
-    SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+    SERVICE <https://qlever.dev/api/wikidata> {
         # VALUES (?_from_p ?_from_ps) { ${directPropertyValues} } # TODO Use VALUES when supported by QLever
         # ?item p:P625 ?locationStatement;
         #       ?_from_p ?stmt.
