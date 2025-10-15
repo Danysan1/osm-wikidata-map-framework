@@ -116,11 +116,11 @@ export class PostpassService extends BaseOverpassService {
             filter_wd_keys = filter_tags ? osm_wd_keys.filter(key => filter_tags.includes(key)) : osm_wd_keys,
             non_filter_wd_keys = osm_wd_keys.filter(key => !filter_tags?.includes(key));
 
-        let tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`).join(" OR ");
+        const tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
         if (text_etymology_key_is_filter)
-            tagFilters += ` OR tags ? '${osm_text_key}'`;
+            tagFilters.push(`tags ? '${osm_text_key}'`);
         if (use_wikidata && !filter_tags && !osm_text_key)
-            tagFilters += ` OR tags ? 'wikidata'`;
+            tagFilters.push(`tags ? 'wikidata'`);
 
         filter_tags?.forEach(filter_tag => {
             const filter_split = filter_tag.split("="),
@@ -134,7 +134,7 @@ export class PostpassService extends BaseOverpassService {
                     non_filter_wd_clause += `tags ? '${osm_text_key}'`;
                 if (use_wikidata)
                     non_filter_wd_clause += `tags ? 'wikidata'`;
-                tagFilters += non_filter_wd_clause ? ` OR (${filter_clause} AND (${non_filter_wd_clause}))` : ` OR ${filter_clause}`;
+                tagFilters.push(non_filter_wd_clause ? `(${filter_clause} AND (${non_filter_wd_clause}))` : filter_clause);
             }
         });
         console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys: osm_wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, tagFilters });
@@ -150,7 +150,7 @@ SELECT osm_type, osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"}
 FROM postpass_pointlinepolygon
 WHERE ${dateFilter}
 ${notTooBig}
-AND (${tagFilters})
+AND (${tagFilters.join(" OR ")})
 AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_MakePoint(${bbox[2]},${bbox[3]})), 4326)
 `;
 

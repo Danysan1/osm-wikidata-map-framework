@@ -67,7 +67,7 @@ export class QLeverMapService implements MapService {
         if (!this.preset.osm_wikidata_properties && backEndID.includes("_direct"))
             return false;
 
-        return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)|(ohm_[_a-z]+))$/.test(backEndID);
+        return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+))$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {

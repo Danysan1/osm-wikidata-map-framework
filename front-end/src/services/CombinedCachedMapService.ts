@@ -38,7 +38,8 @@ export class CombinedCachedMapService implements MapService {
             overpassService,
             postpassService,
             wikidataService,
-            new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db)
+            new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db),
+            new OverpassWikidataMapService(sourcePreset, postpassService, wikidataService, db)
         )
         if (process.env.NEXT_PUBLIC_OWMF_qlever_instance_url)
             this.services.push(new QLeverMapService(sourcePreset, maxElements, maxRelationMembers, db, bbox));
