@@ -173,6 +173,31 @@ export type ActionType = typeof ActionType[keyof typeof ActionType];
 /**
  * 
  * @export
+ * @interface CategoryMember
+ */
+export interface CategoryMember {
+    /**
+     * 
+     * @type {number}
+     * @memberof CategoryMember
+     */
+    'pageid'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof CategoryMember
+     */
+    'ns'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof CategoryMember
+     */
+    'title'?: string;
+}
+/**
+ * 
+ * @export
  * @interface CommonsApiResponse
  */
 export interface CommonsApiResponse {
@@ -195,6 +220,12 @@ export interface CommonsApiResponseQuery {
      * @memberof CommonsApiResponseQuery
      */
     'pages'?: { [key: string]: Page; };
+    /**
+     * 
+     * @type {Array<CategoryMember>}
+     * @memberof CommonsApiResponseQuery
+     */
+    'categorymembers'?: Array<CategoryMember>;
 }
 /**
  * 
@@ -361,12 +392,16 @@ export const CommonsApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} [origin] When accessing the API using a cross-domain AJAX request (CORS), set this to the originating domain. This must be included in any pre-flight request, and therefore must be part of the request URI (not the POST body).
          * @param {string} [prop] 
          * @param {string} [titles] 
+         * @param {ApiCallListEnum} [list] 
+         * @param {ApiCallCmtypeEnum} [cmtype] 
+         * @param {number} [cmlimit] 
+         * @param {string} [cmtitle] 
          * @param {string} [uselang] Language to use for message translations.
          * @param {string} [variant] Variant of the language. Only works if the base language supports variant conversion.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCall: async (action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, uselang?: string, variant?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiCall: async (action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, list?: ApiCallListEnum, cmtype?: ApiCallCmtypeEnum, cmlimit?: number, cmtitle?: string, uselang?: string, variant?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'action' is not null or undefined
             assertParamExists('apiCall', 'action', action)
             const localVarPath = `/api.php`;
@@ -413,6 +448,22 @@ export const CommonsApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['titles'] = titles;
             }
 
+            if (list !== undefined) {
+                localVarQueryParameter['list'] = list;
+            }
+
+            if (cmtype !== undefined) {
+                localVarQueryParameter['cmtype'] = cmtype;
+            }
+
+            if (cmlimit !== undefined) {
+                localVarQueryParameter['cmlimit'] = cmlimit;
+            }
+
+            if (cmtitle !== undefined) {
+                localVarQueryParameter['cmtitle'] = cmtitle;
+            }
+
             if (uselang !== undefined) {
                 localVarQueryParameter['uselang'] = uselang;
             }
@@ -453,13 +504,17 @@ export const CommonsApiFp = function(configuration?: Configuration) {
          * @param {string} [origin] When accessing the API using a cross-domain AJAX request (CORS), set this to the originating domain. This must be included in any pre-flight request, and therefore must be part of the request URI (not the POST body).
          * @param {string} [prop] 
          * @param {string} [titles] 
+         * @param {ApiCallListEnum} [list] 
+         * @param {ApiCallCmtypeEnum} [cmtype] 
+         * @param {number} [cmlimit] 
+         * @param {string} [cmtitle] 
          * @param {string} [uselang] Language to use for message translations.
          * @param {string} [variant] Variant of the language. Only works if the base language supports variant conversion.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiCall(action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, uselang?: string, variant?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommonsApiResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCall(action, format, maxlag, iiextmetadatafilter, iiprop, origin, prop, titles, uselang, variant, options);
+        async apiCall(action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, list?: ApiCallListEnum, cmtype?: ApiCallCmtypeEnum, cmlimit?: number, cmtitle?: string, uselang?: string, variant?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommonsApiResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiCall(action, format, maxlag, iiextmetadatafilter, iiprop, origin, prop, titles, list, cmtype, cmlimit, cmtitle, uselang, variant, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CommonsApi.apiCall']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -485,13 +540,17 @@ export const CommonsApiFactory = function (configuration?: Configuration, basePa
          * @param {string} [origin] When accessing the API using a cross-domain AJAX request (CORS), set this to the originating domain. This must be included in any pre-flight request, and therefore must be part of the request URI (not the POST body).
          * @param {string} [prop] 
          * @param {string} [titles] 
+         * @param {ApiCallListEnum} [list] 
+         * @param {ApiCallCmtypeEnum} [cmtype] 
+         * @param {number} [cmlimit] 
+         * @param {string} [cmtitle] 
          * @param {string} [uselang] Language to use for message translations.
          * @param {string} [variant] Variant of the language. Only works if the base language supports variant conversion.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCall(action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, uselang?: string, variant?: string, options?: any): AxiosPromise<CommonsApiResponse> {
-            return localVarFp.apiCall(action, format, maxlag, iiextmetadatafilter, iiprop, origin, prop, titles, uselang, variant, options).then((request) => request(axios, basePath));
+        apiCall(action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, list?: ApiCallListEnum, cmtype?: ApiCallCmtypeEnum, cmlimit?: number, cmtitle?: string, uselang?: string, variant?: string, options?: any): AxiosPromise<CommonsApiResponse> {
+            return localVarFp.apiCall(action, format, maxlag, iiextmetadatafilter, iiprop, origin, prop, titles, list, cmtype, cmlimit, cmtitle, uselang, variant, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -514,16 +573,36 @@ export class CommonsApi extends BaseAPI {
      * @param {string} [origin] When accessing the API using a cross-domain AJAX request (CORS), set this to the originating domain. This must be included in any pre-flight request, and therefore must be part of the request URI (not the POST body).
      * @param {string} [prop] 
      * @param {string} [titles] 
+     * @param {ApiCallListEnum} [list] 
+     * @param {ApiCallCmtypeEnum} [cmtype] 
+     * @param {number} [cmlimit] 
+     * @param {string} [cmtitle] 
      * @param {string} [uselang] Language to use for message translations.
      * @param {string} [variant] Variant of the language. Only works if the base language supports variant conversion.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CommonsApi
      */
-    public apiCall(action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, uselang?: string, variant?: string, options?: RawAxiosRequestConfig) {
-        return CommonsApiFp(this.configuration).apiCall(action, format, maxlag, iiextmetadatafilter, iiprop, origin, prop, titles, uselang, variant, options).then((request) => request(this.axios, this.basePath));
+    public apiCall(action: ActionType, format?: string, maxlag?: number, iiextmetadatafilter?: string, iiprop?: string, origin?: string, prop?: string, titles?: string, list?: ApiCallListEnum, cmtype?: ApiCallCmtypeEnum, cmlimit?: number, cmtitle?: string, uselang?: string, variant?: string, options?: RawAxiosRequestConfig) {
+        return CommonsApiFp(this.configuration).apiCall(action, format, maxlag, iiextmetadatafilter, iiprop, origin, prop, titles, list, cmtype, cmlimit, cmtitle, uselang, variant, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
+/**
+ * @export
+ */
+export const ApiCallListEnum = {
+    Categorymembers: 'categorymembers'
+} as const;
+export type ApiCallListEnum = typeof ApiCallListEnum[keyof typeof ApiCallListEnum];
+/**
+ * @export
+ */
+export const ApiCallCmtypeEnum = {
+    File: 'file',
+    Subcat: 'subcat',
+    Page: 'page'
+} as const;
+export type ApiCallCmtypeEnum = typeof ApiCallCmtypeEnum[keyof typeof ApiCallCmtypeEnum];
 
 

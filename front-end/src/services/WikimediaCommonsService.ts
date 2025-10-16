@@ -58,4 +58,18 @@ export class WikimediaCommonsService {
         console.debug("Commons fetchMetadata", { imgName, pages, metadata });
         return metadata;
     }
+
+    /**
+     * 
+     * @param category Category name, e.g. "Category:Maps" (NON URLencoded)
+     * @see https://commons.wikimedia.org/wiki/Commons:API/MediaWiki#Get_files_in_a_particular_category
+     * @see https://www.mediawiki.org/wiki/API:Categorymembers
+     */
+    async getFilesInCategory(category: string, limit = 5): Promise<string[]> {
+        const res: CommonsApiResponse = (await this.api.apiCall(
+            "query", "json", undefined, undefined, undefined, "*", undefined, undefined, "categorymembers", "file", limit, category
+        )).data;
+        console.debug("Commons getFilesInCategory", { category, limit, res });
+        return res.query?.categorymembers?.filter(cm => cm.title)?.map(cm => cm.title!) || [];
+    }
 }

@@ -65,6 +65,30 @@ paths:
           example: File:Example.jpg
           schema:
             type: string
+        - name: list
+          in: query
+          schema:
+            type: string
+            enum:
+              - categorymembers
+        - name: cmtype
+          in: query
+          schema:
+            type: string
+            enum:
+              - file
+              - subcat
+              - page
+        - name: cmlimit
+          in: query
+          example: 10
+          schema:
+            type: integer
+        - name: cmtitle
+          in: query
+          example: Category:Maps
+          schema:
+            type: string
         - name: uselang
           in: query
           example: en
@@ -238,6 +262,11 @@ components:
               type: object
               additionalProperties:
                 $ref: "#/components/schemas/Page"
+            categorymembers:
+              type: array
+              items:
+                $ref: "#/components/schemas/CategoryMember"
+                    
     Page:
       type: object
       properties:
@@ -295,3 +324,13 @@ components:
           type: string
         hidden:
           type: boolean
+
+    CategoryMember:
+      type: object
+      properties:
+        pageid:
+          type: integer
+        ns:
+          type: integer
+        title:
+          type: string

@@ -57,7 +57,6 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
     } else if (featureI18n?.alt_name && featureI18n.alt_name !== "null") {
       setMainName(featureI18n.alt_name);
     } else if (props?.wikidata) {
-      setMainName(undefined);
       const labelService = new WikidataLabelService();
       labelService
         .getSomeLabelFromWikidataID(props.wikidata, i18n.language)
@@ -70,8 +69,8 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
         .catch(() => {
           console.warn("Failed getting label from Wikidata", { qid: props.wikidata });
         });
-    } else {
-      setMainName(undefined);
+    } else if (featureI18n?.ref && featureI18n.ref !== "null") {
+      setMainName(featureI18n.ref);
     }
   }, [featureI18n, i18n.language, props]);
 

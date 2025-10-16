@@ -1,10 +1,14 @@
 import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
+import {
+  COMMONS_CATEGORY_REGEX,
+  COMMONS_FILE_REGEX,
+  WikimediaCommonsService,
+} from "@/src/services/WikimediaCommonsService";
 import { FC, useEffect, useState } from "react";
 import { IIIFImages } from "../IIIFImages/IIIFImages";
 import { CommonsImage } from "./CommonsImage";
 import { PanoramaxImage } from "./PanoramaxImage";
-import { COMMONS_FILE_REGEX } from "@/src/services/WikimediaCommonsService";
 
 const PANORAMAX_UUID_REGEX = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/;
 
@@ -42,13 +46,23 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
         .catch(() => {
           console.warn("Failed getting image from Wikidata", feature);
         });
+    } else if (feature.commons && COMMONS_CATEGORY_REGEX.test(feature.commons)) {
+      const commonsService = new WikimediaCommonsService();
+      commonsService
+        .getFilesInCategory(feature.commons, 1)
+        .then((files) => {
+          if (files.length) setCommons(files[0]);
+        })
+        .catch(() => {
+          console.warn("Failed getting files from Commons category", feature.commons);
+        });
     } else {
       console.debug("FeatureImages: No Commons image available", feature.wikidata);
     }
   }, [feature]);
 
   return (
-    (!!commons || !!panoramaxUUID) && (
+    (!!commons || !!panoramaxUUID || !!feature.iiif_url) && (
       <div className={className}>
         {commons && <CommonsImage name={commons} />}
         {panoramaxUUID && <PanoramaxImage uuid={panoramaxUUID} />}
