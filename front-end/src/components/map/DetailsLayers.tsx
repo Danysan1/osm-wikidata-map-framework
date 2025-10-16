@@ -9,7 +9,7 @@ const LOW_ZOOM_POINT_RADIUS = 2,
     MID_ZOOM_LINE_WIDTH = 12,
     HIGH_ZOOM_LINE_WIDTH = 32,
     POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
-    POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
+    POLYGON_BORDER_HIGH_ZOOM_WIDTH = 4,
     COUNTRY_MAX_ZOOM = 5,
     COUNTRY_ADMIN_LEVEL = 2,
     STATE_MAX_ZOOM = 7,
@@ -204,8 +204,16 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
             paint={{
                 'line-color': color,
                 'line-opacity': 0.6,
-                'line-width': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH],
-                'line-offset': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH / 2, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2], // https://maplibre.org/maplibre-style-spec/layers/#paint-line-line-offset
+                'line-width': [
+                    "step", ["zoom"], 
+                    POLYGON_BORDER_LOW_ZOOM_WIDTH, 
+                    CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH
+                ],
+                'line-offset': [
+                    "step", ["zoom"],
+                    POLYGON_BORDER_LOW_ZOOM_WIDTH / 2,
+                    CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2
+                ], // https://maplibre.org/maplibre-style-spec/layers/#paint-line-line-offset
             }} />
 
         <Layer id={polygonFillLayerID}
