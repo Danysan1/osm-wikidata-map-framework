@@ -70,6 +70,6 @@ export class WikimediaCommonsService {
             "query", "json", undefined, undefined, undefined, "*", undefined, undefined, "categorymembers", "file", limit, category
         )).data;
         console.debug("Commons getFilesInCategory", { category, limit, res });
-        return res.query?.categorymembers?.filter(cm => cm.title)?.map(cm => cm.title!) || [];
+        return res.query?.categorymembers?.filter(cm => cm.title)?.map(cm => cm.title!) ?? [];
     }
 }
