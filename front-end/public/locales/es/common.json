@@ -32,14 +32,14 @@
     },
     "preset": {
         "choose_preset": "Elija preestablecido",
-        "aircraft": "Aeronaves",
+        "aircraft": "Aviones",
         "architect": "Arquitectos de construcción",
         "artist": "Autores de obras de arte",
         "base": "OSM + Wikidata",
         "brand": "Marcas",
         "burial": "Lugares de entierro",
         "etymology": "Etimologías (origen de los nombres)",
-        "glam": "GLAM (Galerías Bibliotecas Archivos Museos)",
+        "glam": "GLAM (Museos Archivos Bibliotecas)",
         "green_spaces": "Espacios verdes",
         "holy_wells": "Pozos sagrados",
         "holy_well_etymology": "Etimología de pozos sagrados",
@@ -48,7 +48,7 @@
         "network": "Redes",
         "operator": "Operadores",
         "protected_areas": "Áreas protegidas",
-        "stolperstein": "Stolpersteine"
+        "stolperstein": "Stolpersteine (Piedras de tropiezo)"
     },
     "source": {
         "choose_source": "Elija la fuente de datos",
@@ -95,7 +95,7 @@
     },
     "etymology_details": {
         "languages": "Idiomas:",
-        "more_details": "Más detalles",
+        "more_details": "Más información",
         "source": "Fuente de la entidad:",
         "propagation": "propagación",
         "propagation_title": "Descripción del mecanismo de propagación"
