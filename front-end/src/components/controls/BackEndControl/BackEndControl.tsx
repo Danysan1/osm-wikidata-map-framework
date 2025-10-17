@@ -305,6 +305,18 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         dropdownItems.push(
           buildDropdownItem("wd_base", "Wikidata P625", WDQS_GROUP_NAME)
         );
+        
+        dropdownItems.push(
+          buildDropdownItem(
+            "postpass_osm_wd+wd_base",
+            "wikidata=* + Wikidata P625",
+            POSTPASS_WDQS_GROUP_NAME
+          )
+        );
+        dropdownItems.push(
+          buildDropdownItem("postpass_osm_wd", "wikidata=*", POSTPASS_GROUP_NAME)
+        );
+
         if (qleverOsmEnable) {
           dropdownItems.push(
             buildDropdownItem(

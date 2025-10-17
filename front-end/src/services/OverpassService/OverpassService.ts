@@ -158,10 +158,10 @@ export class OverpassService extends BaseOverpassService {
                 `["start_date"](if:t["start_date"] < "${year}" && (!is_tag("end_date") || t["end_date"] >= "${year}"))`
             ],
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
-            text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
+            osm_text_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, bbox });
+
         let query = `
 [out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
 (
@@ -179,7 +179,7 @@ export class OverpassService extends BaseOverpassService {
             filter_wd_keys.forEach(
                 key => query += `nwr${commonFilters}["${key}"]; // filter & secondary wikidata key\n`
             );
-            if (text_etymology_key_is_filter)
+            if (osm_text_key_is_filter)
                 query += `nwr${commonFilters}["${osm_text_key}"]; // filter & text etymology key\n`;
             if (use_wikidata && !filter_tags && !osm_text_key)
                 query += `nwr${commonFilters}["wikidata"];\n`;
@@ -194,7 +194,7 @@ export class OverpassService extends BaseOverpassService {
                     non_filter_wd_keys.forEach(
                         key => query += `nwr${commonFilters}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
                     );
-                    if (osm_text_key && !text_etymology_key_is_filter)
+                    if (osm_text_key && !osm_text_key_is_filter)
                         query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
                     if (use_wikidata)
                         query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
@@ -211,6 +211,7 @@ export class OverpassService extends BaseOverpassService {
 ${outClause}
 `;
 
+        console.debug("buildOverpassQuery", { query, filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, bbox });
         return query;
     }
 }

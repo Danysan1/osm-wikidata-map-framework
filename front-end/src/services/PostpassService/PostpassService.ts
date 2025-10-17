@@ -1,7 +1,7 @@
+import { OSM_INSTANCE } from "@/src/config";
 import type { BBox } from "geojson";
 import { type OwmfResponse } from "../../model/OwmfResponse";
 import { BaseOverpassService } from "../BaseOverpassService";
-import { OSM_INSTANCE } from "@/src/config";
 
 /**
  * Service that handles the creation of Postpass SQL queries and the execution of them on the appropriate instance of Postpass
@@ -108,36 +108,34 @@ export class PostpassService extends BaseOverpassService {
                 "NOT tags ? 'end_date' AND (NOT tags ? 'route' OR tags->>'route'!='historic')"
                 :
                 // Filter for openhistoricalmap.org in another year
-                // See https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass#Theatres_in_a_given_year
                 `(NOT tags ? 'start_date' AND NOT tags ? 'end_date') OR (tags->>'start_date' < ${year} AND (NOT tags ? 'end_date' OR tags->>'end_date' >= ${year}))`
             ,
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
-            text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
-            filter_wd_keys = filter_tags ? osm_wd_keys.filter(key => filter_tags.includes(key)) : osm_wd_keys,
-            non_filter_wd_keys = osm_wd_keys.filter(key => !filter_tags?.includes(key));
+            osm_text_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
+            filter_wd_keys = filter_tags ? osm_wd_keys.filter(key => filter_tags.includes(key)) : osm_wd_keys;
+
+        const non_filter_wd_keys = osm_wd_keys.filter(key => !filter_tags?.includes(key)),
+            linked_entity_clauses = non_filter_wd_keys.map(key => `tags ? '${key}'`);
+        if (osm_text_key && !osm_text_key_is_filter)
+            linked_entity_clauses.push(`tags ? '${osm_text_key}'`);
+        if (use_wikidata)
+            linked_entity_clauses.push(`tags ? 'wikidata'`);
+        const linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : null;
 
         const tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
-        if (text_etymology_key_is_filter)
+        if (osm_text_key_is_filter)
             tagFilters.push(`tags ? '${osm_text_key}'`);
-        if (use_wikidata && !filter_tags && !osm_text_key)
-            tagFilters.push(`tags ? 'wikidata'`);
-
         filter_tags?.forEach(filter_tag => {
             const filter_split = filter_tag.split("="),
                 filter_key = filter_split[0],
                 filter_value = filter_split[1];
 
             if (!osm_wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
-                const filter_clause = filter_value ? `tags->>'${filter_key}'='${filter_value}'` : `tags ? '${filter_key}'`,
-                    non_filter_wd_clauses = non_filter_wd_keys.map(key => `tags ? '${key}'`);
-                if (osm_text_key && !text_etymology_key_is_filter)
-                    non_filter_wd_clauses.push(`tags ? '${osm_text_key}'`);
-                if (use_wikidata)
-                    non_filter_wd_clauses.push(`tags ? 'wikidata'`);
-                tagFilters.push(non_filter_wd_clauses ? `(${filter_clause} AND (${non_filter_wd_clauses.join(" OR ")}))` : filter_clause);
+                const filter_clause = filter_value ? `tags->>'${filter_key}'='${filter_value}'` : `tags ? '${filter_key}'`;
+                tagFilters.push(filter_clause);
             }
         });
-        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys: osm_wd_keys, filter_tags, non_filter_wd_keys, osm_text_key, tagFilters });
+
         let query = `
 -- Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
 -- Secondary Wikidata keys: ${osm_wd_keys.length ? osm_wd_keys.join(", ") : "NONE"}
@@ -150,6 +148,7 @@ SELECT osm_type, osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"}
 FROM postpass_pointlinepolygon
 WHERE ${dateFilter}
 ${notTooBig}
+${linked_entity_clause}
 AND (${tagFilters.join(" OR ")})
 AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_MakePoint(${bbox[2]},${bbox[3]})), 4326)
 `;
@@ -157,6 +156,7 @@ AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_Make
         if (this.maxElements)
             query += `LIMIT ${this.maxElements}`
 
+        console.debug("buildPostpassSqlQuery", { query, filter_wd_keys, non_filter_wd_keys, filter_tags, osm_text_key, linked_entity_clause, tagFilters });
         return query;
     }
 }

@@ -1,0 +1,6 @@
+{
+  "background_color": "hsl(300, 100%, 96%)",
+  "feature_filter_classes": ["Q1030034", "Q1007870", "Q7075", "Q56648173", "Q33506"],
+  "osm_filter_tags": ["tourism=gallery", "amenity=library", "government=archive", "tourism=museum"],
+  "use_min_zoom_level": true
+}

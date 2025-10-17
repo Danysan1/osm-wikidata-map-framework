@@ -50,74 +50,74 @@ Q375011,religious festival,Events,#ff3333
 Q60075825,Christian holy day,Events,#ff3333
 Q15275719,recurring event,Events,#ff3333
 Q168983,conflagration,Events,#ff3333
-Q16560,palace,Buildings,#ffcc33
-Q41176,building,Buildings,#ffcc33
-Q23413,castle,Buildings,#ffcc33
-Q751876,château,Buildings,#ffcc33
-Q684740,real property,Buildings,#ffcc33
-Q811979,architectural structure,Buildings,#ffcc33
-Q1516079,cultural heritage ensemble,Buildings,#ffcc33
-Q33506,museum,Buildings,#ffcc33
-Q16970,church,Buildings,#ffcc33
-Q233324,seminary,Buildings,#ffcc33
-Q160742,abbey,Buildings,#ffcc33
-Q817056,benedictine abbey,Buildings,#ffcc33
-Q163687,basilica,Buildings,#ffcc33
-Q120560,minor basilica,Buildings,#ffcc33
-Q44613,monastery,Buildings,#ffcc33
-Q1564373,mission complex,Buildings,#ffcc33
-Q179700,statue,Buildings,#ffcc33
-Q1779653,colossal statue,Buildings,#ffcc33
-Q3918,university,Buildings,#ffcc33
-Q1785071,fort,Buildings,#ffcc33
-Q1426271,route nationale,Buildings,#ffcc33
-Q19796778,route départementale,Buildings,#ffcc33
-Q3950,villa,Buildings,#ffcc33
-Q24354,theater,Buildings,#ffcc33
-Q153562,opera house,Buildings,#ffcc33
-Q18225059,Italian theater,Buildings,#ffcc33
-Q14752696,ancient Roman structure,Buildings,#ffcc33
-Q82117,city gate,Buildings,#ffcc33
-Q11303,skyscraper,Buildings,#ffcc33
-Q1088552,Catholic church building,Buildings,#ffcc33
-Q34442,road,Buildings,#ffcc33
-Q2977,cathedral,Buildings,#ffcc33
-Q19899465,former church,Buildings,#ffcc33
-Q317557,parish church,Buildings,#ffcc33
-Q44782,port,Buildings,#ffcc33
-Q7493941,shelter,Buildings,#ffcc33
-Q1223230,Roman bridge,Buildings,#ffcc33
-Q83620,thoroughfare,Buildings,#ffcc33
-Q15848826,city palace,Buildings,#ffcc33
-Q143912,triumphal arch,Buildings,#ffcc33
-Q2087181,house museum,Buildings,#ffcc33
-Q489357,farmhouse,Buildings,#ffcc33
-Q1076486,sports venue,Buildings,#ffcc33
-Q200023,swimming center,Buildings,#ffcc33
-Q483110,stadium,Buildings,#ffcc33
-Q19860854,destroyed building or structure,Buildings,#ffcc33
-Q245016,military base,Buildings,#ffcc33
-Q1497375,architectural ensemble,Buildings,#ffcc33
-Q18247357,group of structures or buildings,Buildings,#ffcc33
-Q158555,cable-stayed bridge,Buildings,#ffcc33
-Q12280,bridge,Buildings,#ffcc33
-Q1436181,maison de plaisance,Buildings,#ffcc33
-Q595452,baseball venue,Buildings,#ffcc33
-Q1440300,observation tower,Buildings,#ffcc33
-Q12518,tower,Buildings,#ffcc33
-Q12570,suspension bridge,Buildings,#ffcc33
-Q911663,bascule bridge,Buildings,#ffcc33
-Q158438,arch bridge,Buildings,#ffcc33
-Q1735471,box girder bridge,Buildings,#ffcc33
-Q12042110,steel bridge,Buildings,#ffcc33
-Q537127,road bridge,Buildings,#ffcc33
-Q52177058,civic building,Buildings,#ffcc33
-Q16831714,government building,Buildings,#ffcc33
-Q25550691,town hall,Buildings,#ffcc33
-Q35112127,historic building,Buildings,#ffcc33
-Q62447,aerodrome,Buildings,#ffcc33
-Q1248784,airport,Buildings,#ffcc33
-Q644371,international airport,Buildings,#ffcc33
+Q16560,palace,Buildings,#ff9933
+Q41176,building,Buildings,#ff9933
+Q23413,castle,Buildings,#ff9933
+Q751876,château,Buildings,#ff9933
+Q684740,real property,Buildings,#ff9933
+Q811979,architectural structure,Buildings,#ff9933
+Q1516079,cultural heritage ensemble,Buildings,#ff9933
+Q33506,museum,Buildings,#ff9933
+Q16970,church,Buildings,#ff9933
+Q233324,seminary,Buildings,#ff9933
+Q160742,abbey,Buildings,#ff9933
+Q817056,benedictine abbey,Buildings,#ff9933
+Q163687,basilica,Buildings,#ff9933
+Q120560,minor basilica,Buildings,#ff9933
+Q44613,monastery,Buildings,#ff9933
+Q1564373,mission complex,Buildings,#ff9933
+Q179700,statue,Buildings,#ff9933
+Q1779653,colossal statue,Buildings,#ff9933
+Q3918,university,Buildings,#ff9933
+Q1785071,fort,Buildings,#ff9933
+Q1426271,route nationale,Buildings,#ff9933
+Q19796778,route départementale,Buildings,#ff9933
+Q3950,villa,Buildings,#ff9933
+Q24354,theater,Buildings,#ff9933
+Q153562,opera house,Buildings,#ff9933
+Q18225059,Italian theater,Buildings,#ff9933
+Q14752696,ancient Roman structure,Buildings,#ff9933
+Q82117,city gate,Buildings,#ff9933
+Q11303,skyscraper,Buildings,#ff9933
+Q1088552,Catholic church building,Buildings,#ff9933
+Q34442,road,Buildings,#ff9933
+Q2977,cathedral,Buildings,#ff9933
+Q19899465,former church,Buildings,#ff9933
+Q317557,parish church,Buildings,#ff9933
+Q44782,port,Buildings,#ff9933
+Q7493941,shelter,Buildings,#ff9933
+Q1223230,Roman bridge,Buildings,#ff9933
+Q83620,thoroughfare,Buildings,#ff9933
+Q15848826,city palace,Buildings,#ff9933
+Q143912,triumphal arch,Buildings,#ff9933
+Q2087181,house museum,Buildings,#ff9933
+Q489357,farmhouse,Buildings,#ff9933
+Q1076486,sports venue,Buildings,#ff9933
+Q200023,swimming center,Buildings,#ff9933
+Q483110,stadium,Buildings,#ff9933
+Q19860854,destroyed building or structure,Buildings,#ff9933
+Q245016,military base,Buildings,#ff9933
+Q1497375,architectural ensemble,Buildings,#ff9933
+Q18247357,group of structures or buildings,Buildings,#ff9933
+Q158555,cable-stayed bridge,Buildings,#ff9933
+Q12280,bridge,Buildings,#ff9933
+Q1436181,maison de plaisance,Buildings,#ff9933
+Q595452,baseball venue,Buildings,#ff9933
+Q1440300,observation tower,Buildings,#ff9933
+Q12518,tower,Buildings,#ff9933
+Q12570,suspension bridge,Buildings,#ff9933
+Q911663,bascule bridge,Buildings,#ff9933
+Q158438,arch bridge,Buildings,#ff9933
+Q1735471,box girder bridge,Buildings,#ff9933
+Q12042110,steel bridge,Buildings,#ff9933
+Q537127,road bridge,Buildings,#ff9933
+Q52177058,civic building,Buildings,#ff9933
+Q16831714,government building,Buildings,#ff9933
+Q25550691,town hall,Buildings,#ff9933
+Q35112127,historic building,Buildings,#ff9933
+Q62447,aerodrome,Buildings,#ff9933
+Q1248784,airport,Buildings,#ff9933
+Q644371,international airport,Buildings,#ff9933
 Q8502,mountain,Nature,#99ff33
 Q46831,mountain range,Nature,#99ff33
 Q3777462,alpine group,Nature,#99ff33
@@ -166,68 +166,68 @@ Q11344,chemical element,Nature,#99ff33
 Q9019918,endorheic lake,Nature,#99ff33
 Q1061151,massif,Nature,#99ff33
 Q22675015,type of quantum particle,Nature,#99ff33
-Q1414991,area,Locations,#33ff66
-Q1620908,historical region,Locations,#33ff66
-Q35657,U.S. state,Locations,#33ff66
-Q3336843,nation within the UK,Locations,#33ff66
-Q36784,region of France,Locations,#33ff66
-Q6256,country,Locations,#33ff66
-Q99541706,historical unrecognized state,Locations,#33ff66
-Q5107,continent,Locations,#33ff66
-Q17199338,fictional continent,Locations,#33ff66
-Q3920906,ethnic territory,Locations,#33ff66
-Q11081619,land,Locations,#33ff66
-Q23442,island,Locations,#33ff66
-Q54050,hill,Locations,#33ff66
-Q570116,tourist attraction,Locations,#33ff66
-Q174782,square,Locations,#33ff66
-Q262166,municipality of Germany,Locations,#33ff66
-Q79007,street,Locations,#33ff66
-Q7245083,principal meridian,Locations,#33ff66
-Q32099,meridian,Locations,#33ff66
-Q146591,circle of latitude,Locations,#33ff66
-Q82794,geographic region,Locations,#33ff66
-Q14524493,terrain,Locations,#33ff66
-Q13691,artificial island,Locations,#33ff66
-Q3624078,sovereign state,Locations,#33ff66
-Q5255892,democratic republic,Locations,#33ff66
-Q1520223,constitutional republic,Locations,#33ff66
-Q512187,federal republic,Locations,#33ff66
-Q1088391,rump state,Locations,#33ff66
-Q51576574,Mediterranean country,Locations,#33ff66
-Q7270,republic,Locations,#33ff66
-Q3455524,administrative region,Locations,#33ff66
-Q56061,administrative division,Locations,#33ff66
-Q16110,region of Italy,Locations,#33ff66
-Q253019,Ortsteil,Locations,#33ff66
-Q387917,administrative territorial entity of Germany,Locations,#33ff66
-Q34876,province,Locations,#33ff66
-Q532,village,Locations,#33ff66
-Q839954,archaeological site,Locations,#33ff66
-Q22746,urban park,Locations,#33ff66
-Q52103661,former island,Locations,#33ff66
-Q15982170,leisure park,Locations,#33ff66
-Q7543083,avenue,Locations,#33ff66
-Q960648,point of interest,Locations,#33ff66
-Q2221906,geographic location,Locations,#33ff66
-Q3024240,historical country,Locations,#33ff66
-Q23718,cardinal direction,Locations,#33ff66
-Q133056,mountain pass,Locations,#33ff66
-Q113489728,OECD country,Locations,#33ff66
-Q6266,nation,Locations,#33ff66
-Q34763,peninsula,Locations,#33ff66
-Q3502482,cultural region,Locations,#33ff66
-Q1710033,italian autonomous region with special statute,Locations,#33ff66
-Q15089,province of Italy,Locations,#33ff66
-Q15110,metropolitan city of Italy,Locations,#33ff66
-Q137535,county of Iran,Locations,#33ff66
-Q1414991,area,Locations,#33ff66
-Q28575,county,Locations,#33ff66
-Q154547,duchy,Locations,#33ff66
-Q10864048,first-level administrative division,Locations,#33ff66
-Q19832712,historical administrative division,Locations,#33ff66
-Q107390,federated state,Locations,#33ff66
-Q180673,ceremonial county of England,Locations,#33ff66
+Q1414991,area,Locations,#33ff99
+Q1620908,historical region,Locations,#33ff99
+Q35657,U.S. state,Locations,#33ff99
+Q3336843,nation within the UK,Locations,#33ff99
+Q36784,region of France,Locations,#33ff99
+Q6256,country,Locations,#33ff99
+Q99541706,historical unrecognized state,Locations,#33ff99
+Q5107,continent,Locations,#33ff99
+Q17199338,fictional continent,Locations,#33ff99
+Q3920906,ethnic territory,Locations,#33ff99
+Q11081619,land,Locations,#33ff99
+Q23442,island,Locations,#33ff99
+Q54050,hill,Locations,#33ff99
+Q570116,tourist attraction,Locations,#33ff99
+Q174782,square,Locations,#33ff99
+Q262166,municipality of Germany,Locations,#33ff99
+Q79007,street,Locations,#33ff99
+Q7245083,principal meridian,Locations,#33ff99
+Q32099,meridian,Locations,#33ff99
+Q146591,circle of latitude,Locations,#33ff99
+Q82794,geographic region,Locations,#33ff99
+Q14524493,terrain,Locations,#33ff99
+Q13691,artificial island,Locations,#33ff99
+Q3624078,sovereign state,Locations,#33ff99
+Q5255892,democratic republic,Locations,#33ff99
+Q1520223,constitutional republic,Locations,#33ff99
+Q512187,federal republic,Locations,#33ff99
+Q1088391,rump state,Locations,#33ff99
+Q51576574,Mediterranean country,Locations,#33ff99
+Q7270,republic,Locations,#33ff99
+Q3455524,administrative region,Locations,#33ff99
+Q56061,administrative division,Locations,#33ff99
+Q16110,region of Italy,Locations,#33ff99
+Q253019,Ortsteil,Locations,#33ff99
+Q387917,administrative territorial entity of Germany,Locations,#33ff99
+Q34876,province,Locations,#33ff99
+Q532,village,Locations,#33ff99
+Q839954,archaeological site,Locations,#33ff99
+Q22746,urban park,Locations,#33ff99
+Q52103661,former island,Locations,#33ff99
+Q15982170,leisure park,Locations,#33ff99
+Q7543083,avenue,Locations,#33ff99
+Q960648,point of interest,Locations,#33ff99
+Q2221906,geographic location,Locations,#33ff99
+Q3024240,historical country,Locations,#33ff99
+Q23718,cardinal direction,Locations,#33ff99
+Q133056,mountain pass,Locations,#33ff99
+Q113489728,OECD country,Locations,#33ff99
+Q6266,nation,Locations,#33ff99
+Q34763,peninsula,Locations,#33ff99
+Q3502482,cultural region,Locations,#33ff99
+Q1710033,italian autonomous region with special statute,Locations,#33ff99
+Q15089,province of Italy,Locations,#33ff99
+Q15110,metropolitan city of Italy,Locations,#33ff99
+Q137535,county of Iran,Locations,#33ff99
+Q1414991,area,Locations,#33ff99
+Q28575,county,Locations,#33ff99
+Q154547,duchy,Locations,#33ff99
+Q10864048,first-level administrative division,Locations,#33ff99
+Q19832712,historical administrative division,Locations,#33ff99
+Q107390,federated state,Locations,#33ff99
+Q180673,ceremonial county of England,Locations,#33ff99
 Q5,human,People,#33ffff
 Q21070568,human who may be fictional,People,#33ffff
 Q14073567,sibling duo,People,#33ffff
@@ -276,70 +276,70 @@ Q43115,saint,People,#33ffff
 Q3117863,isolated human group,People,#33ffff
 Q2472587,people,People,#33ffff
 Q22947,inhabitant,People,#33ffff
-Q515,city,Human settlements,#3366ff
-Q1549591,big city,Human settlements,#3366ff
-Q1187811,college town,Human settlements,#3366ff
-Q134626,district capital,Human settlements,#3366ff
-Q208511,global city,Human settlements,#3366ff
-Q702492,urban area,Human settlements,#3366ff
-Q956214,chef-lieu,Human settlements,#3366ff
-Q1637706,million city,Human settlements,#3366ff
-Q747074,comune of Italy,Human settlements,#3366ff
-Q484170,commune of France,Human settlements,#3366ff
-Q42744322,urban municipality of Germany,Human settlements,#3366ff
-Q15105893,town in Croatia,Human settlements,#3366ff
-Q2264924,port settlement,Human settlements,#3366ff
-Q15661340,ancient city,Human settlements,#3366ff
-Q902814,border town,Human settlements,#3366ff
-Q5119,capital,Human settlements,#3366ff
-Q2202509,roman city,Human settlements,#3366ff
-Q3957,town,Human settlements,#3366ff
-Q486972,human settlement,Human settlements,#3366ff
-Q4946461,spa-town,Human settlements,#3366ff
-Q15135589,religious site,Human settlements,#3366ff
-Q15303838,municipality seat,Human settlements,#3366ff
-Q123705,neighborhood,Human settlements,#3366ff
-Q7315416,residence park,Human settlements,#3366ff
-Q5084,hamlet,Human settlements,#3366ff
-Q181307,lieu-dit,Human settlements,#3366ff
-Q61763947,municipality of Aragon,Human settlements,#3366ff
-Q493522,municipality of Belgium,Human settlements,#3366ff
-Q2198484,municipal district,Human settlements,#3366ff
-Q18511725,market town,Human settlements,#3366ff
-Q1134686,frazione,Human settlements,#3366ff
-Q1093829,city of the United States,Human settlements,#3366ff
-Q62049,county seat,Human settlements,#3366ff
-Q131263,barracks,Human settlements,#3366ff
-Q15632166,city part of Cologne,Human settlements,#3366ff
-Q707813,Hanseatic city,Human settlements,#3366ff
-Q35034452,locality of Berlin,Human settlements,#3366ff
-Q70208,municipality of Switzerland,Human settlements,#3366ff
-Q1852178,locality of Düsseldorf,Human settlements,#3366ff
-Q2039348,municipality of the Netherlands,Human settlements,#3366ff
-Q2983893,quarter,Human settlements,#3366ff
-Q5327369,chōchō,Human settlements,#3366ff
-Q3558970,village of Poland,Human settlements,#3366ff
-Q188509,suburb,Human settlements,#3366ff
-Q200250,metropolis,Human settlements,#3366ff
-Q2074737,municipality of Spain,Human settlements,#3366ff
-Q5153359,municipality of the Czech Republic,Human settlements,#3366ff
-Q133442,city-state,Human settlements,#3366ff
-Q148837,polis,Human settlements,#3366ff
-Q51929311,largest city,Human settlements,#3366ff
-Q50330360,second largest city,Human settlements,#3366ff
-Q116457956,non-urban municipality in Germany,Human settlements,#3366ff
-Q13220204,second-level administrative division,Human settlements,#3366ff
-Q11618417,local administrative unit of 2nd level,Human settlements,#3366ff
-Q1852859,cadastral populated place in the Netherlands,Human settlements,#3366ff
-Q1392581,cycling city,Human settlements,#3366ff
-Q14770218,cantonal capital of Switzerland,Human settlements,#3366ff
-Q5195043,borough,Human settlements,#3366ff
-Q408804,borough of New York City,Human settlements,#3366ff
-Q287414,neighborhood in New York City,Human settlements,#3366ff
-Q1093829,city in the United States,Human settlements,#3366ff
-Q3301053,consolidated city-county,Human settlements,#3366ff
-Q15284,municipality,Human settlements,#3366ff
-Q57058,municipality of Croatia,Human settlements,#3366ff
+Q515,city,Human settlements,#3399ff
+Q1549591,big city,Human settlements,#3399ff
+Q1187811,college town,Human settlements,#3399ff
+Q134626,district capital,Human settlements,#3399ff
+Q208511,global city,Human settlements,#3399ff
+Q702492,urban area,Human settlements,#3399ff
+Q956214,chef-lieu,Human settlements,#3399ff
+Q1637706,million city,Human settlements,#3399ff
+Q747074,comune of Italy,Human settlements,#3399ff
+Q484170,commune of France,Human settlements,#3399ff
+Q42744322,urban municipality of Germany,Human settlements,#3399ff
+Q15105893,town in Croatia,Human settlements,#3399ff
+Q2264924,port settlement,Human settlements,#3399ff
+Q15661340,ancient city,Human settlements,#3399ff
+Q902814,border town,Human settlements,#3399ff
+Q5119,capital,Human settlements,#3399ff
+Q2202509,roman city,Human settlements,#3399ff
+Q3957,town,Human settlements,#3399ff
+Q486972,human settlement,Human settlements,#3399ff
+Q4946461,spa-town,Human settlements,#3399ff
+Q15135589,religious site,Human settlements,#3399ff
+Q15303838,municipality seat,Human settlements,#3399ff
+Q123705,neighborhood,Human settlements,#3399ff
+Q7315416,residence park,Human settlements,#3399ff
+Q5084,hamlet,Human settlements,#3399ff
+Q181307,lieu-dit,Human settlements,#3399ff
+Q61763947,municipality of Aragon,Human settlements,#3399ff
+Q493522,municipality of Belgium,Human settlements,#3399ff
+Q2198484,municipal district,Human settlements,#3399ff
+Q18511725,market town,Human settlements,#3399ff
+Q1134686,frazione,Human settlements,#3399ff
+Q1093829,city of the United States,Human settlements,#3399ff
+Q62049,county seat,Human settlements,#3399ff
+Q131263,barracks,Human settlements,#3399ff
+Q15632166,city part of Cologne,Human settlements,#3399ff
+Q707813,Hanseatic city,Human settlements,#3399ff
+Q35034452,locality of Berlin,Human settlements,#3399ff
+Q70208,municipality of Switzerland,Human settlements,#3399ff
+Q1852178,locality of Düsseldorf,Human settlements,#3399ff
+Q2039348,municipality of the Netherlands,Human settlements,#3399ff
+Q2983893,quarter,Human settlements,#3399ff
+Q5327369,chōchō,Human settlements,#3399ff
+Q3558970,village of Poland,Human settlements,#3399ff
+Q188509,suburb,Human settlements,#3399ff
+Q200250,metropolis,Human settlements,#3399ff
+Q2074737,municipality of Spain,Human settlements,#3399ff
+Q5153359,municipality of the Czech Republic,Human settlements,#3399ff
+Q133442,city-state,Human settlements,#3399ff
+Q148837,polis,Human settlements,#3399ff
+Q51929311,largest city,Human settlements,#3399ff
+Q50330360,second largest city,Human settlements,#3399ff
+Q116457956,non-urban municipality in Germany,Human settlements,#3399ff
+Q13220204,second-level administrative division,Human settlements,#3399ff
+Q11618417,local administrative unit of 2nd level,Human settlements,#3399ff
+Q1852859,cadastral populated place in the Netherlands,Human settlements,#3399ff
+Q1392581,cycling city,Human settlements,#3399ff
+Q14770218,cantonal capital of Switzerland,Human settlements,#3399ff
+Q5195043,borough,Human settlements,#3399ff
+Q408804,borough of New York City,Human settlements,#3399ff
+Q287414,neighborhood in New York City,Human settlements,#3399ff
+Q1093829,city in the United States,Human settlements,#3399ff
+Q3301053,consolidated city-county,Human settlements,#3399ff
+Q15284,municipality,Human settlements,#3399ff
+Q57058,municipality of Croatia,Human settlements,#3399ff
 Q43229,organization,Organization,#9933ff
 Q4830453,business,Organization,#9933ff
 Q6881511,enterprise,Organization,#9933ff
@@ -370,9 +370,27 @@ Q270791,state-owned enterprise,Organization,#9933ff
 Q327333,government agency,Organization,#9933ff
 Q1618899,fashion label,Organization,#9933ff
 Q15712205,intercity bus company,Organization,#9933ff
-Q11424,film,Art,#ff33cc
-Q7889,video game,Art,#ff33cc
-Q4502142,visual artwork,Art,#ff33cc
-Q838948,artwork,Art,#ff33cc
-Q3305213,painting,Art,#ff33cc
-Q7725634,literary work,Art,#ff33cc
+Q11424,film,Art,#ff3399
+Q7889,video game,Art,#ff3399
+Q4502142,visual artwork,Art,#ff3399
+Q838948,artwork,Art,#ff3399
+Q3305213,painting,Art,#ff3399
+Q7725634,literary work,Art,#ff3399
+Q15056993,aircraft family,Aircraft,#ff99ff
+Q782885,first-generation jet fighter,Aircraft,#ff99ff
+Q260838,second-generation jet fighter,Aircraft,#ff99ff
+Q367911,third-generation jet fighter,Aircraft,#ff99ff
+Q1188543,fourth-generation jet fighter,Aircraft,#ff99ff
+Q560406,fifth-generation jet fighter,Aircraft,#ff99ff
+Q2165278,glider,Aircraft,#ff99ff
+Q15056995,aircraft model,Aircraft,#ff99ff
+Q210932,airliner,Aircraft,#ff99ff
+Q19762458,airliner with 4 turboprop engines,Aircraft,#ff99ff
+Q170007,supersonic aircraft,Aircraft,#ff99ff
+Q170877,bomber,Aircraft,#ff99ff
+Q753058,attack helicopter,Aircraft,#ff99ff
+Q2735392,utility helicopter,Aircraft,#ff99ff
+Q1875621,aircraft class,Aircraft,#ff99ff
+Q19832486,locomotive class,Artifact,#ffff99
+Q953960,parking meter,Artifact,#ffff99
+Q657345,ticket machine,Artifact,#ffff99
