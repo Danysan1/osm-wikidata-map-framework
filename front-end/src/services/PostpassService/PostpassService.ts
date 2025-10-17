@@ -125,6 +125,7 @@ export class PostpassService extends BaseOverpassService {
         const tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
         if (osm_text_key_is_filter)
             tagFilters.push(`tags ? '${osm_text_key}'`);
+        const same_linked_entity_clause_for_all = !tagFilters?.length;
         filter_tags?.forEach(filter_tag => {
             const filter_split = filter_tag.split("="),
                 filter_key = filter_split[0],
@@ -132,7 +133,7 @@ export class PostpassService extends BaseOverpassService {
 
             if (!osm_wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
                 const filter_clause = filter_value ? `tags->>'${filter_key}'='${filter_value}'` : `tags ? '${filter_key}'`;
-                tagFilters.push(filter_clause);
+                tagFilters.push(same_linked_entity_clause_for_all ? filter_clause : `(${filter_clause} ${linked_entity_clause})`);
             }
         });
 
@@ -148,7 +149,7 @@ SELECT osm_type, osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"}
 FROM postpass_pointlinepolygon
 WHERE ${dateFilter}
 ${notTooBig}
-${linked_entity_clause}
+${same_linked_entity_clause_for_all ? linked_entity_clause : ""}
 AND (${tagFilters.join(" OR ")})
 AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_MakePoint(${bbox[2]},${bbox[3]})), 4326)
 `;
