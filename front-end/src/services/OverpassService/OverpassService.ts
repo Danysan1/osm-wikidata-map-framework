@@ -75,13 +75,22 @@ export class OverpassService extends BaseOverpassService {
             }
         }
 
+        const trueBBox = bbox.map(coord => {
+            if (coord < -180)
+                return coord + 360;
+            else if (coord > 180)
+                return coord - 360;
+            else
+                return coord;
+        }) as BBox;
+
         const timerID = new Date().getMilliseconds();
         console.time(`overpass_query_${timerID}`);
-        const query = this.buildOverpassQuery(osm_wikidata_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year),
+        const query = this.buildOverpassQuery(osm_wikidata_keys, trueBBox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year),
             { overpassJson } = await import("overpass-ts"),
             res = await overpassJson(query, { endpoint: process.env.NEXT_PUBLIC_OWMF_overpass_api_url });
         console.timeEnd(`overpass_query_${timerID}`);
-        console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
+        console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, { bbox, trueBBox, elements: res.elements });
 
         if (!res.elements && res.remark)
             throw new Error(`Overpass API error: ${res.remark}`);

@@ -41,30 +41,22 @@ export abstract class BaseOverpassService implements MapService {
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
         language = ''; // Not used in Overpass query
 
-        const trueBBox = bbox.map(coord => {
-            if (coord < -180)
-                return coord + 360;
-            else if (coord > 180)
-                return coord - 360;
-            else
-                return coord;
-        }) as BBox;
-        if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
-            console.warn("BaseOverpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
+        if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
+            console.warn("BaseOverpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox, language });
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox, language, year);
+        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, bbox, language, year);
         if (cachedResponse)
             return cachedResponse;
 
-        console.debug("BaseOverpass: No cached response found, fetching", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
+        console.debug("BaseOverpass: No cached response found, fetching", { bbox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
         if (area < 0.000001 || (!onlyCentroids && area > 5)) {
             throw new Error(`Invalid bbox area: ${area} - ${bbox.join(",")}`);
         }
 
-        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, year);
+        const out = await this.fetchMapData(backEndID, onlyCentroids, bbox, year);
         if (onlyCentroids) {
             console.debug(`BaseOverpass found ${out.features.length} centroids`);
         } else {
