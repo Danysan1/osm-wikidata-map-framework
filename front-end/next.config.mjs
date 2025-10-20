@@ -14,8 +14,10 @@ else
 
 process.env.NEXT_PUBLIC_OWMF_version = JSON.parse(readFileSync('package.json', 'utf8')).version;
 
-if(existsSync("i18n.json"))
+if(existsSync("i18n.json")) {
+  console.log("Reading custom translations from i18n.json");
   process.env.NEXT_PUBLIC_OWMF_i18n_override = readFileSync("i18n.json", "utf8");
+}
 
 if (!process.env.NEXT_PUBLIC_OWMF_source_presets || process.env.NEXT_PUBLIC_OWMF_source_presets === "all") {
   const presetDir = join(process.cwd(), "public", "presets"),

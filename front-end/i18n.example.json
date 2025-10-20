@@ -1,32 +1,62 @@
 {
+    "cs": {
+        "app": {
+            "title": "Testovací instance OWMF",
+            "description": "Testovací instance pro OSM-Wikidata Map Framework. Všechny funkce a předvolby jsou povoleny."
+        }
+    },
     "da": {
         "app": {
-            "title": "OWMF Title DA",
-            "description": "OWMF Description DA"
+            "title": "OWMF-testinstans",
+            "description": "Testinstans for OSM-Wikidata Map Framework. Alle funktioner og forudindstillinger er aktiveret."
+        }
+    },
+    "de": {
+        "app": {
+            "title": "OWMF-Testinstanz",
+            "description": "Testinstanz für OSM-Wikidata Map Framework. Alle Funktionen und Voreinstellungen sind aktiviert."
         }
     },
     "en": {
         "app": {
-            "title": "OWMF Title EN",
-            "description": "OWMF Description EN"
+            "title": "OWMF test instance",
+            "description": "Test instance for OSM-Wikidata Map Framework. All features and presets are enabled."
         }
     },
     "es": {
         "app": {
-            "title": "OWMF Title ES",
-            "description": "OWMF Description ES"
+            "title": "Instancia de prueba de OWMF",
+            "description": "Instancia de prueba para OSM-Wikidata Map Framework. Todas las funciones y ajustes preestablecidos están habilitados."
         }
     },
     "fr": {
         "app": {
-            "title": "OWMF Title FR",
-            "description": "OWMF Description FR"
+            "title": "Instance de test OWMF",
+            "description": "Instance de test pour OSM-Wikidata Map Framework. Toutes les fonctionnalités et préréglages sont activés."
+        }
+    },
+    "hu": {
+        "app": {
+            "title": "OWMF tesztpéldány",
+            "description": "Tesztpéldány az OSM-Wikidata Map Frameworkhöz. Minden funkció és előre beállított érték engedélyezve."
         }
     },
     "it": {
         "app": {
-            "title": "OWMF Test IT",
-            "description": "OWMF Description IT"
+            "title": "Istanza di test OWMF",
+            "description": "Istanza di test per OSM-Wikidata Map Framework. Tutte le feature e i preset sono abilitati."
+        }
+    },
+    "nl": {
+        "app": {
+            "title": "OWMF-testinstantie",
+            "description": "Testinstantie voor OSM-Wikidata Map Framework. Alle functies en voorinstellingen zijn ingeschakeld."
+        }
+    },
+    "pt": {
+        "app": {
+            "title": "Instância de teste OWMF",
+            "description": "Instância de teste para o OSM-Wikidata Map Framework. Todos os recursos e predefinições estão ativados."
         }
     }
 }
