@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
 import { LinkedEntityList } from "../EtymologyList/LinkedEntityList";
-import { FeatureImages } from "../ImageWithAttribution/FeatureImage";
+import { FeatureImages } from "../ImageWithAttribution/FeatureImages";
 import { FeatureSourceRow } from "./FeatureSourceRow";
 import styles from "./FeatureView.module.css";
 

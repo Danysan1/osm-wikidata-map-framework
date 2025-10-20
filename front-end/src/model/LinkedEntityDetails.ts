@@ -10,7 +10,7 @@ export interface LinkedEntityDetails extends LinkedEntity {
     citizenship?: string;
     
     /**
-     * Name of the Wikimedia Commons category for the subject entity
+     * Name of the Wikimedia Commons category for the subject entity, beginning with Category:
      */
     commons?: string;
     

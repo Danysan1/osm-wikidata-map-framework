@@ -53,7 +53,7 @@ export const CommonsImage: FC<CommonsImageProps> = ({ name, className }) => {
     new WikimediaCommonsService()
       .fetchAttribution(decodedImg)
       .then((res) => {
-        console.debug("Fetched Commons attribution", res);
+        console.debug("Fetched Commons attribution", { decodedImg, res });
         setAttribution(res);
       })
       .catch((e) => console.error("Failed fetching Commons attribution", e));

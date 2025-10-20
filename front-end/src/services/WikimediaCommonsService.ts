@@ -66,6 +66,7 @@ export class WikimediaCommonsService {
      * @see https://www.mediawiki.org/wiki/API:Categorymembers
      */
     async getFilesInCategory(category: string, limit = 5): Promise<string[]> {
+        if(!category.startsWith("Category:")) category = `Category:${category}`;
         const res: CommonsApiResponse = (await this.api.apiCall(
             "query", "json", undefined, undefined, undefined, "*", undefined, undefined, "categorymembers", "file", limit, category
         )).data;

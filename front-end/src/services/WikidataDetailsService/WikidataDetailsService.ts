@@ -63,7 +63,7 @@ export class WikidataDetailsService extends WikidataService {
                         birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,
                         birth_place: row.birth_place?.value,
                         citizenship: row.citizenship?.value,
-                        commons: row.commons?.value,
+                        commons: row.commons?.value ? `Category:${row.commons.value}` : undefined,
                         death_date: row.death_date?.value,
                         death_date_precision: row.death_date_precision?.value ? parseInt(row.death_date_precision.value) : undefined,
                         death_place: row.death_place?.value,

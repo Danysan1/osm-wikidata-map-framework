@@ -225,7 +225,7 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         const feature_alias_wd_id = row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             commonProps: OwmfFeatureProperties = {
-                commons: row.itemCommons?.value,
+                commons: row.itemCommons?.value ? `Category:${row.itemCommons.value}` : undefined,
                 iiif_url: row.iiif?.value,
                 osm_id: osm_id,
                 osm_type: osm_type,

@@ -1,9 +1,8 @@
 import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
 import {
-  COMMONS_CATEGORY_REGEX,
   COMMONS_FILE_REGEX,
-  WikimediaCommonsService,
+  WikimediaCommonsService
 } from "@/src/services/WikimediaCommonsService";
 import { FC, useEffect, useState } from "react";
 import { IIIFImages } from "../IIIFImages/IIIFImages";
@@ -25,6 +24,21 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
 
   const [commons, setCommons] = useState<string>();
   useEffect(() => {
+    const findImageFromCommonsCategory = () => {
+      if (feature.commons) {
+        new WikimediaCommonsService()
+          .getFilesInCategory(feature.commons, 1)
+          .then((files) => {
+            if (files.length) setCommons(files[0]);
+          })
+          .catch(() => {
+            console.warn("FeatureImages: Failed getting files from Commons category", feature.commons);
+          });
+      } else {
+        console.debug("FeatureImages: No Commons image available", { wd: feature.wikidata, commons: feature.commons });
+      }
+    }
+
     if (feature.commons && COMMONS_FILE_REGEX.test(feature.commons)) {
       console.debug("FeatureImages: Found Commons image in commons", feature);
       setCommons(feature.commons);
@@ -37,27 +51,19 @@ export const FeatureImages: FC<FeatureImagesProps> = ({ feature, className }) =>
         .getCommonsImageFromWikidataID(feature.wikidata)
         .then((image) => {
           if (image) {
-            console.debug("Found image from Wikidata", { feature, image });
+            console.debug("FeatureImages: Found image from Wikidata", { feature, image });
             setCommons(image);
           } else {
-            console.debug("No Commons image found from Wikidata", feature.wikidata);
+            console.debug("FeatureImages: No Commons image found from Wikidata", feature.wikidata);
+            findImageFromCommonsCategory();
           }
         })
         .catch(() => {
-          console.warn("Failed getting image from Wikidata", feature);
-        });
-    } else if (feature.commons && COMMONS_CATEGORY_REGEX.test(feature.commons)) {
-      const commonsService = new WikimediaCommonsService();
-      commonsService
-        .getFilesInCategory(feature.commons, 1)
-        .then((files) => {
-          if (files.length) setCommons(files[0]);
-        })
-        .catch(() => {
-          console.warn("Failed getting files from Commons category", feature.commons);
+          console.warn("FeatureImages: Failed getting image from Wikidata", feature);
+          findImageFromCommonsCategory();
         });
     } else {
-      console.debug("FeatureImages: No Commons image available", feature.wikidata);
+      findImageFromCommonsCategory();
     }
   }, [feature]);
 

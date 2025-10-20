@@ -184,7 +184,7 @@ export interface OwmfFeatureProperties {
     boundary?: boolean;
 
     /**
-     * Name of the Wikimedia Commons category for this feature
+     * Name of the Wikimedia Commons category for this feature, beginning with Category:
      */
     commons?: string;
 
