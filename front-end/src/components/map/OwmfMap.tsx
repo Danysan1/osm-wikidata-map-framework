@@ -32,21 +32,21 @@ import Map, {
   StyleSpecification,
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
-import { BackEndControl } from "../../controls/BackEndControl/BackEndControl";
-import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
-import { DataTableControl } from "../../controls/DataTableControl";
-import { InfoControl } from "../../controls/InfoControl";
-import { LanguageControl } from "../../controls/LanguageControl";
-import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
-import { ProjectionControl } from "../../controls/ProjectionControl";
-import { QueryLinkControls } from "../../controls/QueryLinkControls/QueryLinkControls";
-import { SourcePresetControl } from "../../controls/SourcePresetControl";
-import { StatisticsColorControl } from "../../controls/StatisticsColorControl/StatisticsColorControl";
-import { FeaturePopup } from "../../popup/FeaturePopup";
-import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
-import { DetailsLayers } from "../DetailsLayers";
-import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
-import { PMTilesSource } from "../PMTilesSource";
+import { BackEndControl } from "../controls/BackEndControl/BackEndControl";
+import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
+import { DataTableControl } from "../controls/DataTableControl";
+import { InfoControl } from "../controls/InfoControl";
+import { LanguageControl } from "../controls/LanguageControl";
+import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
+import { ProjectionControl } from "../controls/ProjectionControl";
+import { QueryLinkControls } from "../controls/QueryLinkControls/QueryLinkControls";
+import { SourcePresetControl } from "../controls/SourcePresetControl";
+import { StatisticsColorControl } from "../controls/StatisticsColorControl/StatisticsColorControl";
+import { FeaturePopup } from "../popup/FeaturePopup";
+import { ClusteredSourceAndLayers } from "./ClusteredSourceAndLayers";
+import { DetailsLayers } from "./DetailsLayers";
+import { DetailsSourceAndLayers } from "./DetailsSourceAndLayers";
+import { PMTilesSource } from "./PMTilesSource";
 
 const PMTILES_PREFIX = "pmtiles",
   MAX_ZOOM = 19,
@@ -100,14 +100,17 @@ export const OwmfMap = () => {
       []
     ),
     [pmtilesReady, setPMTilesReady] = useState(false),
-    inlineStyle = useMemo<CSSProperties | undefined>(
-      () =>
-        process.env.NEXT_PUBLIC_OWMF_use_background_color === "true"
-          ? {
-            backgroundColor: sourcePreset?.background_color ?? "#ffffff",
-            "--owmf-background-color": sourcePreset?.background_color ?? "#ffffff",
-          }
-          : undefined,
+    inlineStyle = useMemo<CSSProperties | undefined>(() => {
+      const backgroundColor = (
+        process.env.NEXT_PUBLIC_OWMF_use_background_color === "true" ? sourcePreset?.background_color : null
+      ) ?? "#ffffff";
+      return {
+        backgroundColor: backgroundColor,
+        "--owmf-background-color": backgroundColor,
+        "--owmf-popup-width": "min(30em,90vw)",
+        "--owmf-cell-width": "min(25em,75vw)",
+      };
+    },
       [sourcePreset?.background_color]
     ),
     pmtilesActive =

@@ -5,7 +5,7 @@ import { SnackbarContextProvider } from "@/src/context/SnackbarContext";
 import { UrlFragmentContextProvider } from "@/src/context/UrlFragmentContext";
 import { loadClientI18n } from "@/src/i18n/client";
 import { useEffect, useState } from "react";
-import { OwmfMap } from "./OwmfMap/OwmfMap";
+import { OwmfMap } from "./OwmfMap";
 
 loadClientI18n().catch((e) => { throw e; });
 
