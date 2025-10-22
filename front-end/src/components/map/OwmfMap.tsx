@@ -36,6 +36,7 @@ import { BackEndControl } from "../controls/BackEndControl/BackEndControl";
 import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
 import { DataTableControl } from "../controls/DataTableControl";
 import { InfoControl } from "../controls/InfoControl";
+import { InspectControl } from "../controls/InspectControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { ProjectionControl } from "../controls/ProjectionControl";
@@ -81,6 +82,7 @@ export const OwmfMap = () => {
     [mapZoom, setMapZoom] = useState<number>(),
     [fetchedSourcePreset, setFetchedSourcePreset] = useState<SourcePreset>(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset>(),
+    sourcePresetIsReady = sourcePreset?.id === sourcePresetID,
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<OwmfFeature | undefined>(undefined),
     [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
@@ -198,7 +200,7 @@ export const OwmfMap = () => {
   ]);
 
   useEffect(() => {
-    if (sourcePreset?.id === sourcePresetID) {
+    if (sourcePresetIsReady) {
       console.log("Skipping redundant source preset fetch", {
         new: sourcePresetID,
         old: sourcePreset?.id,
@@ -218,7 +220,7 @@ export const OwmfMap = () => {
         console.error("Failed updating source preset", e);
         showSnackbar(t("snackbar.map_error"));
       });
-  }, [showSnackbar, sourcePreset?.id, sourcePresetID, t]);
+  }, [showSnackbar, sourcePreset?.id, sourcePresetID, sourcePresetIsReady, t]);
 
   // The intermediate variable fetchedSourcePreset is needed to prevent setting the wrong sourcePreset when different presets are fetched in very close succession
   useEffect(() => {
@@ -338,17 +340,17 @@ export const OwmfMap = () => {
     >
       <InfoControl position="top-left" />
       <SourcePresetControl position="top-left" />
-      {sourcePreset?.id === sourcePresetID && (
+      {sourcePresetIsReady && (
         <BackEndControl preset={sourcePreset} position="top-left" />
       )}
-      {sourcePreset?.id === sourcePresetID && sourcePreset?.mapcomplete_theme && (
+      {sourcePresetIsReady && sourcePreset?.mapcomplete_theme && (
         <MapCompleteControl
           minZoomLevel={minZoomLevel}
           mapComplete_theme={sourcePreset?.mapcomplete_theme}
           position="top-left"
         />
       )}
-      {sourcePreset?.id === sourcePresetID && (
+      {sourcePresetIsReady && (
         <StatisticsColorControl
           preset={sourcePreset}
           layerIDs={dataLayerIDs}
@@ -387,7 +389,7 @@ export const OwmfMap = () => {
       {process.env.NEXT_PUBLIC_OWMF_maptiler_key && <OwmfGeocodingControl position="bottom-left" />}
 
       <ScaleControl position="bottom-right" />
-      {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
+      {process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />}
 
       {clustersActive && (
         <ClusteredSourceAndLayers
@@ -431,7 +433,7 @@ export const OwmfMap = () => {
         </PMTilesSource>
       )}
 
-      {openFeature && sourcePreset?.id === sourcePresetID && <FeaturePopup feature={openFeature} preset={sourcePreset} onClose={closeFeaturePopup} />}
+      {openFeature && sourcePresetIsReady && <FeaturePopup feature={openFeature} preset={sourcePreset} onClose={closeFeaturePopup} />}
     </Map>
   );
 };

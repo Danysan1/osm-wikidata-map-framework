@@ -70,6 +70,7 @@
     "wikibase-rest-api-ts": "^1.2.2"
   },
   "devDependencies": {
+    "@maplibre/maplibre-gl-inspect": "^1.7.1",
     "@next/bundle-analyzer": "^15.1.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
