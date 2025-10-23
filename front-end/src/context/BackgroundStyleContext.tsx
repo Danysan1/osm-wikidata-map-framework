@@ -66,11 +66,13 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
     { showSnackbar } = useSnackbarContext(),
     [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
     style = useMemo(
-      () => BACKGROUND_STYLES.find((style) => style.id === backgroundStyleID),
+      () =>
+        BACKGROUND_STYLES.find((style) => style.id === backgroundStyleID) ??
+        BACKGROUND_STYLES[0],
       [backgroundStyleID]
     ),
     [projectionID, setProjectionID] = useState<string>(DEFAULT_PROJECTION),
-    [jsonStyleSpec, setJsonStyleSpec] = useState<string>();
+    [jsonStyleSpec, setJsonStyleSpec] = useState<{ id: string; spec: string }>();
 
   /**
    * Fetch the Maplibre style specification JSON whenever the selected style is changed
@@ -82,7 +84,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       console.debug("Fetching style", style);
       fetch(style.styleUrl)
         .then((resp) => resp.text())
-        .then((json) => setJsonStyleSpec(json))
+        .then((json) => setJsonStyleSpec({ id: style.id, spec: json }))
         .catch((e) => {
           console.error("Failed fetching json style", e);
           showSnackbar(t("snackbar.map_error"));
@@ -100,12 +102,30 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
   const updateStyleSpec = useCallback(
     (styleSpec: StyleSpecification) => {
       if (style?.keyPlaceholder && style.key) {
+        if(styleSpec.glyphs)
+            styleSpec.glyphs = styleSpec.glyphs.replace(style.keyPlaceholder, style.key);
+
+        if (Array.isArray(styleSpec.sprite))
+          styleSpec.sprite.forEach((s) =>
+            s.url = s.url.replace(style.keyPlaceholder!, style.key!)
+          );
+
         Object.values(styleSpec.sources)
           .filter((src) => src.type === "vector")
           .forEach((src) => {
             if (src.url) src.url = src.url.replace(style.keyPlaceholder!, style.key!);
             else delete src.url;
+
+            if (src.tiles) {
+              for (let i = 0; i < src.tiles.length; i++)
+                src.tiles[i] = src.tiles[i].replace(style.keyPlaceholder!, style.key!);
+            }
           });
+        console.debug("Applied style key", {
+          placeholder: style?.keyPlaceholder,
+          key: style.key,
+          styleSpec,
+        });
       }
 
       if (style?.canFilterByDate) {
@@ -190,8 +210,16 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       return;
     }
 
+    if (jsonStyleSpec.id !== backgroundStyleID) {
+      console.debug("Ignoring wrong background style", {
+        backgroundStyleID,
+        setJsonStyleSpec,
+      });
+      return;
+    }
+
     try {
-      const styleSpec = JSON.parse(jsonStyleSpec) as StyleSpecification;
+      const styleSpec = JSON.parse(jsonStyleSpec.spec) as StyleSpecification;
       updateStyleSpec(styleSpec);
       console.debug("Setting json style", styleSpec);
       setBackgroundStyle((old) => {
@@ -216,7 +244,9 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
   }, [projectionID, setBackgroundStyle]);
 
   return (
-    <BackgroundStyleContext.Provider value={{ style, backgroundStyle, projectionID, setProjectionID }}>
+    <BackgroundStyleContext.Provider
+      value={{ style, backgroundStyle, projectionID, setProjectionID }}
+    >
       {children}
     </BackgroundStyleContext.Provider>
   );

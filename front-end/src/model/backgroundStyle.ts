@@ -12,7 +12,7 @@ export interface BackgroundStyle {
     styleUrl: string;
 
     /** Placeholder text for the API key */
-    keyPlaceholder?: string;
+    keyPlaceholder?: string | RegExp;
 
     /** API key to use for this style, necessary only if keyPlaceholder is specified */
     key?: string
@@ -126,6 +126,18 @@ function openHistoricalMapStyle(id: string, text: string, ohmId: string): Backgr
     };
 }
 
+function osmfStyle(id: string, text: string, osmfId: string): BackgroundStyle {
+    return {
+        id: id,
+        styleText: text,
+        styleUrl: `https://vector.openstreetmap.org/demo/shortbread/${osmfId}.json`,
+        customFonts: ["noto_sans_regular"],
+        vendorText: "OpenStreetMap Foundation",
+        keyPlaceholder: /^\//,
+        key: "https://vector.openstreetmap.org/",
+    };
+}
+
 export const BACKGROUND_STYLES: BackgroundStyle[] = [];
 
 if (TRACESTRACK_KEY) {
@@ -169,6 +181,7 @@ if (ENABLE_STADIA) {
         {
             id: "americana",
             vendorText: "OpenStreetMap US",
+            customFonts: ["Americana-Regular"],
             styleText: "OSM Americana",
             styleUrl: "https://americanamap.org/style.json",
             keyPlaceholder: "https://tile.ourmap.us/data/v3.json",
@@ -195,6 +208,7 @@ if (MAPTILER_KEY) {
         {
             id: "liberty",
             vendorText: "Maputnik",
+            customFonts: ["Roboto Regular"],
             styleText: "OSM Liberty",
             styleUrl: "https://maputnik.github.io/osm-liberty/style.json",
             keyPlaceholder: "{key}",
@@ -230,20 +244,8 @@ if (ENABLE_OHM) {
 }
 
 if (ENABLE_OSMF) {
-    BACKGROUND_STYLES.push({
-        id: "osmf_colorful",
-        styleText: "OSMF Colorful",
-        styleUrl: "https://vector.openstreetmap.org/demo/shortbread/colorful.json",
-        vendorText: "OpenStreetMap Foundation",
-        keyPlaceholder: "\"/",
-        key: "\"https://vector.openstreetmap.org/",
-    });
-    BACKGROUND_STYLES.push({
-        id: "osmf_eclipse",
-        styleText: "OSMF Eclipse",
-        styleUrl: "https://vector.openstreetmap.org/demo/shortbread/eclipse.json",
-        vendorText: "OpenStreetMap Foundation",
-        keyPlaceholder: "\"/",
-        key: "\"https://vector.openstreetmap.org/",
-    });
+    BACKGROUND_STYLES.push(
+        osmfStyle("osmf_colorful", "Colorful", "colorful"),
+        osmfStyle("osmf_eclipse", "Eclipse", "eclipse")
+    );
 }
