@@ -6,7 +6,14 @@ import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Layer, LngLatLike, MapMouseEvent, Source, useMap } from "react-map-gl/maplibre";
+import {
+  Layer,
+  LngLatLike,
+  MapMouseEvent,
+  Source,
+  SymbolLayerSpecification,
+  useMap,
+} from "react-map-gl/maplibre";
 
 const CLUSTER_LAYER = "_layer_cluster",
   COUNT_LAYER = "_layer_count",
@@ -29,6 +36,8 @@ interface ClusteredSourceAndLayersProps {
   maxZoom: number;
 
   useLinkedEntityCount?: boolean;
+
+  customFonts?: string[];
 }
 
 /**
@@ -187,11 +196,20 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
   }, [map, onUnclusteredLayerClick, unclusteredLayerID]);
 
   useEffect(() => {
-    if(!!elementsData?.partial || !!elementsData?.truncated) {
-      console.warn("Cluster data was partial or truncated, zoom in to view all data", elementsData);
+    if (!!elementsData?.partial || !!elementsData?.truncated) {
+      console.warn(
+        "Cluster data was partial or truncated, zoom in to view all data",
+        elementsData
+      );
       // showSnackbar(t("snackbar.partial_result"), "wheat");
     }
   }, [elementsData, showSnackbar, t]);
+
+  const countLayerLayout: SymbolLayerSpecification["layout"] = {
+    "text-field": "{" + countShowFieldName + "}",
+    "text-size": 12,
+  };
+  if (props.customFonts) countLayerLayout["text-font"] = props.customFonts;
 
   return (
     elementsData && (
@@ -245,11 +263,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
           minzoom={props.minZoom ?? 1}
           maxzoom={props.maxZoom}
           filter={["has", countFieldName]}
-          layout={{
-            "text-font": ["Open Sans Regular"],
-            "text-field": "{" + countShowFieldName + "}",
-            "text-size": 12,
-          }}
+          layout={countLayerLayout}
         />
 
         <Layer

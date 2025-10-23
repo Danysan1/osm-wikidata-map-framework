@@ -3,6 +3,7 @@ import { fetchSourcePreset } from "@/src/SourcePreset/client";
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
+import { useBackgroundStyleContext } from "@/src/context/BackgroundStyleContext";
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
@@ -29,8 +30,7 @@ import Map, {
   MapSourceDataEvent,
   NavigationControl,
   ScaleControl,
-  StyleSpecification,
-  ViewStateChangeEvent,
+  ViewStateChangeEvent
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../controls/BackEndControl/BackEndControl";
 import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
@@ -85,7 +85,7 @@ export const OwmfMap = () => {
     sourcePresetIsReady = sourcePreset?.id === sourcePresetID,
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<OwmfFeature | undefined>(undefined),
-    [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
+    { style, backgroundStyle } = useBackgroundStyleContext(),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(
@@ -256,18 +256,17 @@ export const OwmfMap = () => {
    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
    */
   const mapErrorHandler = useCallback(
-    (err: ErrorEvent & { sourceId?: string }) => {
-      let errorMessage;
+    (err: ErrorEvent & { sourceId?: string, style?: unknown }) => {
       if (err.sourceId && allSourceIDs.includes(err.sourceId)) {
-        showSnackbar(
-          t("snackbar.fetch_error", "An error occurred while fetching the data")
-        );
-        errorMessage = "An error occurred while fetching " + err.sourceId;
-      } else {
+        console.warn("An error occurred while fetching a map source", err);
+        showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
+      } else if (err.style && err.error) {
+        console.warn("An error occurred while rendering the map", err.error.message, err);
         showSnackbar(t("snackbar.map_error"));
-        errorMessage = "Map error: " + err.sourceId;
+      } else {
+        console.error("Generic map error", err);
+        showSnackbar(t("snackbar.map_error"));
       }
-      console.warn(errorMessage, "error", { error: err });
     },
     [allSourceIDs, showSnackbar, t]
   );
@@ -368,8 +367,8 @@ export const OwmfMap = () => {
         position="top-right"
       />
       <FullscreenControl position="top-right" style={inlineStyle} />
-      <BackgroundStyleControl setBackgroundStyle={setBackgroundStyle} position="top-right" />
-      {process.env.NEXT_PUBLIC_OWMF_enable_projection_control === "true" && <ProjectionControl setBackgroundStyle={setBackgroundStyle} position="top-right" />}
+      <BackgroundStyleControl position="top-right" />
+      {process.env.NEXT_PUBLIC_OWMF_enable_projection_control === "true" && <ProjectionControl position="top-right" />}
       <LanguageControl position="top-right" />
       <IDEditorControl minZoomLevel={thresholdZoomLevel} position="top-right" />
       <OsmWikidataMatcherControl minZoomLevel={thresholdZoomLevel} position="top-right" />
@@ -398,6 +397,7 @@ export const OwmfMap = () => {
           minZoom={minZoomLevel}
           maxZoom={thresholdZoomLevel}
           useLinkedEntityCount={sourcePreset?.use_linked_entity_count}
+          customFonts={style?.customFonts}
         />
       )}
       {detailsActive && (

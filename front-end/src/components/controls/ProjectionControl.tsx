@@ -1,6 +1,7 @@
-import { Dispatch, FC, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useBackgroundStyleContext } from "@/src/context/BackgroundStyleContext";
+import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ControlPosition, StyleSpecification } from "react-map-gl/maplibre";
+import { ControlPosition } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
 
 export interface Projection {
@@ -19,7 +20,6 @@ const PROJECTIONS: Projection[] = [
 
 interface ProjectionControlProps {
   position?: ControlPosition;
-  setBackgroundStyle: Dispatch<SetStateAction<StyleSpecification | undefined>>;
 }
 
 /**
@@ -30,11 +30,8 @@ interface ProjectionControlProps {
  * @see https://docs.mapbox.com/mapbox-gl-js/guides/projections/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/projections/
  **/
-export const ProjectionControl: FC<ProjectionControlProps> = ({
-  position,
-  setBackgroundStyle,
-}) => {
-  const [projectionID, setProjectionID] = useState<string>("mercator"),
+export const ProjectionControl: FC<ProjectionControlProps> = ({ position }) => {
+  const { projectionID, setProjectionID } = useBackgroundStyleContext(),
     { t } = useTranslation(),
     dropdownItems = useMemo(
       () =>
@@ -43,15 +40,8 @@ export const ProjectionControl: FC<ProjectionControlProps> = ({
           text: projection.text,
           onSelect: () => setProjectionID(projection.id),
         })),
-      []
+      [setProjectionID]
     );
-
-  useEffect(() => {
-    setBackgroundStyle((old) => {
-      if (!old) return old;
-      else return { ...old, projection: { type: projectionID } };
-    });
-  }, [projectionID, setBackgroundStyle]);
 
   return (
     <DropdownControl
