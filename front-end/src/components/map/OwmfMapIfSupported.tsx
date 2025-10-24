@@ -3,6 +3,7 @@
 import { BackgroundStyleContextProvider } from "@/src/context/BackgroundStyleContext";
 import { LoadingSpinnerContextProvider } from "@/src/context/LoadingSpinnerContext";
 import { SnackbarContextProvider } from "@/src/context/SnackbarContext";
+import { SourcePresetContextProvider } from "@/src/context/SourcePresetContext";
 import { UrlFragmentContextProvider } from "@/src/context/UrlFragmentContext";
 import { loadClientI18n } from "@/src/i18n/client";
 import { useEffect, useState } from "react";
@@ -42,7 +43,9 @@ export function OwmfMapIfSupported() {
       <SnackbarContextProvider>
         <LoadingSpinnerContextProvider>
           <BackgroundStyleContextProvider>
-            <OwmfMap />
+            <SourcePresetContextProvider>
+              <OwmfMap />
+            </SourcePresetContextProvider>
           </BackgroundStyleContextProvider>
         </LoadingSpinnerContextProvider>
       </SnackbarContextProvider>

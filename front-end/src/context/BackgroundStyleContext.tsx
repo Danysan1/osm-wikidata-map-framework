@@ -1,18 +1,20 @@
 "use client";
 
 import {
-    DataDrivenPropertyValueSpecification,
-    ExpressionSpecification,
+  DataDrivenPropertyValueSpecification,
+  ExpressionSpecification,
+  RequestTransformFunction,
 } from "maplibre-gl";
+import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import {
-    FC,
-    PropsWithChildren,
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
+  FC,
+  PropsWithChildren,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 import { preload } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -39,7 +41,8 @@ function someArrayItemStartWithName(expression: unknown): boolean {
 
 interface BackgroundStyleState {
   style?: BackgroundStyle;
-  backgroundStyle?: StyleSpecification;
+  mapStyle?: StyleSpecification;
+  requestTransformFunction?: RequestTransformFunction;
   projectionID: string;
   setProjectionID: (projection: string) => void;
 }
@@ -51,6 +54,9 @@ const BackgroundStyleContext = createContext<BackgroundStyleState>({
   },
 });
 
+/**
+ * Handles the fetching and updating of the map style each time the selected style or year changes
+ */
 export const useBackgroundStyleContext = () => useContext(BackgroundStyleContext);
 
 export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -64,7 +70,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
   const { t, i18n } = useTranslation(),
     { backgroundStyleID, year } = useUrlFragmentContext(),
     { showSnackbar } = useSnackbarContext(),
-    [backgroundStyle, setBackgroundStyle] = useState<StyleSpecification>(),
+    [mapStyle, setMapStyle] = useState<StyleSpecification>(),
     style = useMemo(
       () =>
         BACKGROUND_STYLES.find((style) => style.id === backgroundStyleID) ??
@@ -72,7 +78,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       [backgroundStyleID]
     ),
     [projectionID, setProjectionID] = useState<string>(DEFAULT_PROJECTION),
-    [jsonStyleSpec, setJsonStyleSpec] = useState<{ id: string; spec: string }>();
+    [fetchedJsonStyleSpec, setFetchedJsonStyleSpec] = useState<{ id: string; spec: string }>();
 
   /**
    * Fetch the Maplibre style specification JSON whenever the selected style is changed
@@ -84,7 +90,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       console.debug("Fetching style", style);
       fetch(style.styleUrl)
         .then((resp) => resp.text())
-        .then((json) => setJsonStyleSpec({ id: style.id, spec: json }))
+        .then((json) => setFetchedJsonStyleSpec({ id: style.id, spec: json }))
         .catch((e) => {
           console.error("Failed fetching json style", e);
           showSnackbar(t("snackbar.map_error"));
@@ -102,8 +108,8 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
   const updateStyleSpec = useCallback(
     (styleSpec: StyleSpecification) => {
       if (style?.keyPlaceholder && style.key) {
-        if(styleSpec.glyphs)
-            styleSpec.glyphs = styleSpec.glyphs.replace(style.keyPlaceholder, style.key);
+        if (styleSpec.glyphs)
+          styleSpec.glyphs = styleSpec.glyphs.replace(style.keyPlaceholder, style.key);
 
         if (Array.isArray(styleSpec.sprite))
           styleSpec.sprite.forEach((s) =>
@@ -205,47 +211,64 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
    * Parse the fetched JSON style specification, update it with local settings and use it for the map
    */
   useEffect(() => {
-    if (!jsonStyleSpec) {
+    if (!fetchedJsonStyleSpec) {
       console.debug("Waiting for background style spec to be fetched");
       return;
     }
 
-    if (jsonStyleSpec.id !== backgroundStyleID) {
+    if (fetchedJsonStyleSpec.id !== backgroundStyleID) {
       console.debug("Ignoring wrong background style", {
         backgroundStyleID,
-        setJsonStyleSpec,
+        setJsonStyleSpec: setFetchedJsonStyleSpec,
       });
       return;
     }
 
     try {
-      const styleSpec = JSON.parse(jsonStyleSpec.spec) as StyleSpecification;
+      const styleSpec = JSON.parse(fetchedJsonStyleSpec.spec) as StyleSpecification;
       updateStyleSpec(styleSpec);
       console.debug("Setting json style", styleSpec);
-      setBackgroundStyle((old) => {
+      setMapStyle((old) => {
         if (old?.projection?.type)
           return { ...styleSpec, projection: { type: old.projection.type } };
         else return styleSpec;
       });
     } catch (e) {
       console.error("Failed parsing and applying json style specification", {
-        jsonStyleSpec,
+        jsonStyleSpec: fetchedJsonStyleSpec,
         e,
       });
       showSnackbar(t("snackbar.map_error"));
     }
-  }, [jsonStyleSpec, setBackgroundStyle, showSnackbar, t, updateStyleSpec]);
+  }, [backgroundStyleID, fetchedJsonStyleSpec, setMapStyle, showSnackbar, t, updateStyleSpec]);
 
   useEffect(() => {
-    setBackgroundStyle((old) => {
+    setMapStyle((old) => {
       if (!old) return old;
       else return { ...old, projection: { type: projectionID } };
     });
-  }, [projectionID, setBackgroundStyle]);
+  }, [projectionID, setMapStyle]);
+
+  const requestTransformFunction: RequestTransformFunction = useCallback(
+    (url, resourceType) => {
+      if (process.env.NEXT_PUBLIC_OWMF_mapbox_token && isMapboxURL(url)) {
+        return transformMapboxUrl(
+          url,
+          resourceType as string,
+          process.env.NEXT_PUBLIC_OWMF_mapbox_token
+        );
+      }
+
+      if (url.includes("localhost")) url = url.replace("http", "https");
+
+      return { url };
+    },
+    []
+  );
 
   return (
     <BackgroundStyleContext.Provider
-      value={{ style, backgroundStyle, projectionID, setProjectionID }}
+      value={{ style, mapStyle, requestTransformFunction, projectionID, setProjectionID }}
     >
       {children}
     </BackgroundStyleContext.Provider>

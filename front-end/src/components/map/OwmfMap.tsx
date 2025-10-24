@@ -1,24 +1,32 @@
 "use client";
-import { fetchSourcePreset } from "@/src/SourcePreset/client";
+
+import { BackEndControl } from "@/src/components/controls/BackEndControl/BackEndControl";
+import { BackgroundStyleControl } from "@/src/components/controls/BackgroundStyleControl";
+import { DataTableControl } from "@/src/components/controls/DataTableControl";
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
+import { InfoControl } from "@/src/components/controls/InfoControl";
+import { InspectControl } from "@/src/components/controls/InspectControl";
+import { LanguageControl } from "@/src/components/controls/LanguageControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
+import { OsmWikidataMatcherControl } from "@/src/components/controls/OsmWikidataMatcherControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
+import { ProjectionControl } from "@/src/components/controls/ProjectionControl";
+import { QueryLinkControls } from "@/src/components/controls/QueryLinkControls/QueryLinkControls";
+import { SourcePresetControl } from "@/src/components/controls/SourcePresetControl";
+import { StatisticsColorControl } from "@/src/components/controls/StatisticsColorControl/StatisticsColorControl";
+import { FeaturePopup } from "@/src/components/popup/FeaturePopup";
 import { useBackgroundStyleContext } from "@/src/context/BackgroundStyleContext";
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
+import { useSourcePresetContext } from "@/src/context/SourcePresetContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
-import { SourcePreset } from "@/src/model/SourcePreset";
-import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
-import { MapService } from "@/src/services/MapService";
 import {
   DataDrivenPropertyValueSpecification,
   LngLatBoundsLike,
-  RequestTransformFunction,
   addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { Protocol } from "pmtiles";
 import { CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,18 +40,6 @@ import Map, {
   ScaleControl,
   ViewStateChangeEvent
 } from "react-map-gl/maplibre";
-import { BackEndControl } from "../controls/BackEndControl/BackEndControl";
-import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
-import { DataTableControl } from "../controls/DataTableControl";
-import { InfoControl } from "../controls/InfoControl";
-import { InspectControl } from "../controls/InspectControl";
-import { LanguageControl } from "../controls/LanguageControl";
-import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
-import { ProjectionControl } from "../controls/ProjectionControl";
-import { QueryLinkControls } from "../controls/QueryLinkControls/QueryLinkControls";
-import { SourcePresetControl } from "../controls/SourcePresetControl";
-import { StatisticsColorControl } from "../controls/StatisticsColorControl/StatisticsColorControl";
-import { FeaturePopup } from "../popup/FeaturePopup";
 import { ClusteredSourceAndLayers } from "./ClusteredSourceAndLayers";
 import { DetailsLayers } from "./DetailsLayers";
 import { DetailsSourceAndLayers } from "./DetailsSourceAndLayers";
@@ -80,12 +76,10 @@ export const OwmfMap = () => {
     [mapLon, setMapLon] = useState<number>(),
     [mapLat, setMapLat] = useState<number>(),
     [mapZoom, setMapZoom] = useState<number>(),
-    [fetchedSourcePreset, setFetchedSourcePreset] = useState<SourcePreset>(),
-    [sourcePreset, setSourcePreset] = useState<SourcePreset>(),
+    { sourcePreset, backEndService } = useSourcePresetContext(),
     sourcePresetIsReady = sourcePreset?.id === sourcePresetID,
-    [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<OwmfFeature | undefined>(undefined),
-    { style, backgroundStyle } = useBackgroundStyleContext(),
+    { style, mapStyle, requestTransformFunction } = useBackgroundStyleContext(),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(
@@ -155,23 +149,6 @@ export const OwmfMap = () => {
     [setLat, setLon, setZoom]
   );
 
-  const requestTransformFunction: RequestTransformFunction = useCallback(
-    (url, resourceType) => {
-      if (process.env.NEXT_PUBLIC_OWMF_mapbox_token && isMapboxURL(url)) {
-        return transformMapboxUrl(
-          url,
-          resourceType as string,
-          process.env.NEXT_PUBLIC_OWMF_mapbox_token
-        );
-      }
-
-      if (url.includes("localhost")) url = url.replace("http", "https");
-
-      return { url };
-    },
-    []
-  );
-
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url) {
       const pmtilesProtocol = new Protocol();
@@ -198,59 +175,6 @@ export const OwmfMap = () => {
     showSnackbar,
     t,
   ]);
-
-  useEffect(() => {
-    if (sourcePresetIsReady) {
-      console.log("Skipping redundant source preset fetch", {
-        new: sourcePresetID,
-        old: sourcePreset?.id,
-      });
-      return;
-    }
-
-    console.debug("Fetching source preset", {
-      new: sourcePresetID,
-      old: sourcePreset?.id,
-    });
-    fetchSourcePreset(sourcePresetID)
-      .then(setFetchedSourcePreset)
-      .catch((e) => {
-        //setBackEndService(null);
-        //setSourcePreset(null);
-        console.error("Failed updating source preset", e);
-        showSnackbar(t("snackbar.map_error"));
-      });
-  }, [showSnackbar, sourcePreset?.id, sourcePresetID, sourcePresetIsReady, t]);
-
-  // The intermediate variable fetchedSourcePreset is needed to prevent setting the wrong sourcePreset when different presets are fetched in very close succession
-  useEffect(() => {
-    if (!fetchedSourcePreset) return;
-
-    if (fetchedSourcePreset.id !== sourcePresetID) {
-      console.warn("Not setting wrong source preset", {
-        sourcePresetID,
-        new: fetchedSourcePreset.id,
-      });
-      return;
-    }
-
-    setSourcePreset((oldPreset) => {
-      if (oldPreset?.id === fetchedSourcePreset?.id) {
-        console.log("Skipping redundant source preset update", {
-          old: oldPreset?.id,
-          new: fetchedSourcePreset.id,
-        });
-        return oldPreset;
-      }
-
-      console.debug("Updating source preset", {
-        old: oldPreset?.id,
-        new: fetchedSourcePreset.id,
-      });
-      setBackEndService(new CombinedCachedMapService(fetchedSourcePreset));
-      return fetchedSourcePreset;
-    });
-  }, [fetchedSourcePreset, sourcePresetID]);
 
   /**
    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
@@ -324,7 +248,7 @@ export const OwmfMap = () => {
     <Map
       mapLib={import("maplibre-gl")}
       RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
-      mapStyle={backgroundStyle}
+      mapStyle={mapStyle}
       style={inlineStyle}
       latitude={mapLat}
       longitude={mapLon}
