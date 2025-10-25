@@ -412,7 +412,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
           title={t("info_box.download_dataset")}
         />
       )}
-      {backEndID.includes("ohm") && <DateSelector />}
+      {process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("historical") && <DateSelector />}
       {!backEndID.startsWith("pmtiles") && (
         <Button
           onClick={clearCache}

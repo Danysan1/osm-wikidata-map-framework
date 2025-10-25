@@ -17,9 +17,9 @@ export class OverpassService extends BaseOverpassService {
             return false;
 
         if (this.preset?.osm_wikidata_keys)
-            return /^overpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
+            return /^overpass_osm_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
 
-        return /^overpass_(osm|ohm)_wd$/.test(backEndID);
+        return "overpass_osm_wd" === backEndID;
     }
 
     protected async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
@@ -28,15 +28,15 @@ export class OverpassService extends BaseOverpassService {
             relation_member_role: string | undefined,
             search_text_key: string | undefined;
 
-        if (backEndID.includes("overpass_osm_wd")) {
+        if ("overpass_osm_wd" === backEndID) {
             // Search only elements with wikidata=*
             osm_wikidata_keys = [];
             search_text_key = undefined;
-            use_wikidata = true;
+            use_wikidata = !this.preset.osm_filter_tags?.length; // If any filter is specified, elements are fetched regardless of whether they have wikidata=*
         } else if (!this.preset?.osm_wikidata_keys) {
             throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${backEndID}"`)
         } else {
-            const backEndSplitted = /^.*overpass_((?:osm|ohm)_[_a-z]+)$/.exec(backEndID),
+            const backEndSplitted = /^.*overpass_(osm_[_a-z]+)$/.exec(backEndID),
                 keyCode = backEndSplitted?.at(1);
 
             console.debug("Overpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
@@ -190,7 +190,7 @@ export class OverpassService extends BaseOverpassService {
             );
             if (osm_text_key_is_filter)
                 query += `nwr${commonFilters}["${osm_text_key}"]; // filter & text etymology key\n`;
-            if (use_wikidata && !filter_tags && !osm_text_key)
+            if (use_wikidata && !filter_tags && !wd_keys.length && !osm_text_key)
                 query += `nwr${commonFilters}["wikidata"];\n`;
 
             filter_tags?.forEach(filter_tag => {
@@ -205,7 +205,7 @@ export class OverpassService extends BaseOverpassService {
                     );
                     if (osm_text_key && !osm_text_key_is_filter)
                         query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
-                    if (use_wikidata)
+                    if (use_wikidata && !wd_keys.length && !osm_text_key)
                         query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
                 }
             });

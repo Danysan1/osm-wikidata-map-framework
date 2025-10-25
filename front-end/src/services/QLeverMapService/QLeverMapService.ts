@@ -150,7 +150,7 @@ export class QLeverMapService implements MapService {
 
     private fillPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {
         // TODO Use onlyCentroids
-        if (backEndID.includes("osm") || backEndID.includes("ohm")) {
+        if (backEndID.includes("osm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
                 osm_text_key = all_osm_wikidata_keys_selected ? this.preset.osm_text_key : undefined,
@@ -202,10 +202,6 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${osmTextSelect}', osm_text_key?.length ? '?etymology_text' : "")
                 .replaceAll('${osmDescriptionSelect}', osm_description_key?.length ? '?etymology_description' : "")
                 .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression);
-        }
-
-        if (backEndID.includes("ohm")) {
-            sparqlQuery = sparqlQuery.replaceAll("openstreetmap.org/relation", "openhistoricalmap.org/relation");
         }
 
         if (backEndID.includes("indirect") || backEndID.includes("reverse") || backEndID.includes("qualifier")) {

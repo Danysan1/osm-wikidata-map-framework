@@ -14,9 +14,9 @@ export class PostpassService extends BaseOverpassService {
         if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_postpass_api_url)
             out = false;
         else if (this.preset?.osm_wikidata_keys)
-            out = /^postpass_(osm|ohm)_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
+            out = /^postpass_osm_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
         else
-            out = /^postpass_(osm|ohm)_wd$/.test(backEndID);
+            out = "postpass_osm_wd" === backEndID;
         console.debug("Postpass canHandleBackEnd", backEndID, out);
         return out;
     }
@@ -26,15 +26,15 @@ export class PostpassService extends BaseOverpassService {
             use_wikidata = false,
             search_text_key: string | undefined;
 
-        if (backEndID.includes("postpass_osm_wd")) {
+        if ("postpass_osm_wd" === backEndID) {
             // Search only elements with wikidata=*
             osm_wikidata_keys = [];
             search_text_key = undefined;
-            use_wikidata = true;
+            use_wikidata = !this.preset.osm_filter_tags?.length; // If any filter is specified, elements are fetched regardless of whether they have wikidata=*
         } else if (!this.preset?.osm_wikidata_keys) {
             throw new Error(`No Wikidata keys configured, invalid Postpass back-end ID: "${backEndID}"`)
         } else {
-            const backEndSplitted = /^.*postpass_((?:osm|ohm)_[_a-z]+)$/.exec(backEndID),
+            const backEndSplitted = /^.*postpass_(osm_[_a-z]+)$/.exec(backEndID),
                 keyCode = backEndSplitted?.at(1);
 
             console.debug("Postpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
@@ -120,7 +120,7 @@ export class PostpassService extends BaseOverpassService {
             linked_entity_clauses.push(`tags ? '${osm_text_key}'`);
         if (use_wikidata)
             linked_entity_clauses.push(`tags ? 'wikidata'`);
-        const linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : null;
+        const linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : "";
 
         const tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
         if (osm_text_key_is_filter)
