@@ -9,6 +9,9 @@ import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "./WikimediaCommonsSe
 
 const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 
+/**
+ * Shared behavior of the services that fetch map data from OSM through Overpass or Postpass
+ */
 export abstract class BaseOverpassService implements MapService {
     protected readonly preset: SourcePreset;
     protected readonly maxElements?: number;
@@ -61,11 +64,18 @@ export abstract class BaseOverpassService implements MapService {
             console.debug(`BaseOverpass found ${out.features.length} centroids`);
         } else {
             console.debug(`BaseOverpass found ${out.features.length} features before filtering`);
-            out.features = out.features.filter(
-                (feature: OwmfFeature) => !!feature.properties?.linked_entity_count || ( // Any linked entity is available or ...
-                    backEndID.endsWith("_wd") && // ... this back-end allows features that just have wikidata=* and ...
-                    (!!feature.properties?.wikidata || feature.properties?.relations?.some(rel => rel.reltags?.wikidata)) // ... wikidata=* is available on the feature or on a containing relation     
-                ));
+            out.features = out.features.filter((feature) => {
+                if (feature.properties?.linked_entity_count)
+                    return true; // Has some linked entities => keep
+
+                if (backEndID.endsWith("_wd") && (!!feature.properties?.wikidata || feature.properties?.relations?.some(rel => rel.reltags?.wikidata)))
+                    return true; // Feature has a Wikidata entity => Keep (may be used to combine with a Wikidata feature to extract a linked entity)
+
+                if (this.preset.osm_wikidata_keys?.length)
+                    return false; // Preset requires linked entities but feature has none => Discard
+
+                return !this.preset.require_wikidata || !!feature.properties?.wikidata;
+            });
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
             console.debug(`BaseOverpass found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
         }
@@ -75,9 +85,75 @@ export abstract class BaseOverpassService implements MapService {
         return out;
     }
 
-    protected abstract fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse>;
+    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
+        let osm_wikidata_keys: string[] = [],
+            use_wikidata = false,
+            relation_member_role: string | undefined,
+            search_text_key: string | undefined;
+        const backEndSplitted = /^.*pass_(osm_[_a-z]+)$/.exec(backEndID),
+            keyCode = backEndSplitted?.at(1);
 
-    protected transformFeature(feature: OwmfFeature, osm_keys: string[]) {
+        if ("osm_wd" === keyCode) {
+            // Search only elements with wikidata=*
+            osm_wikidata_keys = [];
+            search_text_key = undefined;
+            use_wikidata = !!this.preset.require_wikidata;
+        } else if (!this.preset?.osm_wikidata_keys) {
+            throw new Error(`No Wikidata keys configured, invalid back-end ID: "${backEndID}"`)
+        } else {
+            console.debug("BaseOverpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
+            if (!keyCode)
+                throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
+
+            if (keyCode.endsWith("_all_wd")) {
+                // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
+                osm_wikidata_keys = this.preset.osm_wikidata_keys;
+                relation_member_role = this.preset.relation_member_role;
+                search_text_key = this.preset.osm_text_key;
+                use_wikidata = true;
+            } else if (keyCode.endsWith("_all")) {
+                // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*)
+                osm_wikidata_keys = this.preset.osm_wikidata_keys;
+                relation_member_role = this.preset.relation_member_role;
+                search_text_key = this.preset.osm_text_key;
+                use_wikidata = false;
+            } else if (keyCode.endsWith("_rel_role")) {
+                // Search elements members with a specific role in a linked entity relationship
+                if (!this.preset.relation_member_role)
+                    throw new Error(`relation_member_role is empty, invalid backEndID: "${backEndID}"`);
+                else
+                    relation_member_role = this.preset.relation_member_role;
+                osm_wikidata_keys = [];
+                search_text_key = undefined;
+                use_wikidata = false;
+            } else if (this.wikidata_key_codes && (keyCode in this.wikidata_key_codes)) {
+                // Search a specific linked entity key (*:wikidata=*)
+                osm_wikidata_keys = [this.wikidata_key_codes[keyCode]];
+                search_text_key = undefined;
+                use_wikidata = false;
+            } else {
+                console.error("Invalid back-end ID", { backEndID, keyCode, keyCodes: this.wikidata_key_codes });
+                throw new Error(`Invalid back-end ID: "${backEndID}"`);
+            }
+        }
+
+        const out = await this.buildAndExecuteQuery(osm_wikidata_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year);
+        if (!out.features?.length)
+            throw new Error("No elements in BaseOverpass response");
+
+        out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys));
+        out.osmInstance = OSM_INSTANCE;
+        out.bbox = bbox;
+        out.sourcePresetID = this.preset.id;
+        out.onlyCentroids = onlyCentroids;
+        out.year = year;
+        out.backEndID = backEndID;
+        out.timestamp = new Date().toISOString();
+        out.truncated = out.features.length === this.maxElements;
+        return out;
+    }
+
+    private transformFeature(feature: OwmfFeature, osm_keys: string[]) {
         if (!feature.properties)
             feature.properties = {};
 
@@ -181,7 +257,7 @@ export abstract class BaseOverpassService implements MapService {
                             validLinkedQIDs = !!linkedEntityQIDs && WIKIDATA_QID_REGEX.test(linkedEntityQIDs);
                         if (!validLinkedQIDs) return; // Secondary wikidata tag not available on the relation or invalid => No linked entity to propagate
 
-                        console.debug("Postpass transformFeature propagating linked entity from relation", { feature, rel });
+                        console.debug("BaseOverpass transformFeature propagating linked entity from relation", { feature, rel });
                         linkedEntityQIDs
                             .split(";")
                             .filter(value => WIKIDATA_QID_REGEX.test(value))
@@ -256,4 +332,14 @@ export abstract class BaseOverpassService implements MapService {
             propagated: false
         }));
     }
+
+    protected abstract buildAndExecuteQuery(
+        wd_keys: string[],
+        bbox: BBox,
+        osm_text_key: string | undefined,
+        relation_member_role: string | undefined,
+        use_wikidata: boolean,
+        onlyCentroids: boolean,
+        year: number
+    ): Promise<OwmfResponse>;
 }

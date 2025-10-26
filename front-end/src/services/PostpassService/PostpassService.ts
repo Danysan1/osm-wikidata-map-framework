@@ -1,4 +1,3 @@
-import { OSM_INSTANCE } from "@/src/config";
 import type { BBox } from "geojson";
 import { type OwmfResponse } from "../../model/OwmfResponse";
 import { BaseOverpassService } from "../BaseOverpassService";
@@ -21,52 +20,18 @@ export class PostpassService extends BaseOverpassService {
         return out;
     }
 
-    protected async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
-        let osm_wikidata_keys: string[] = [],
-            use_wikidata = false,
-            search_text_key: string | undefined;
-
-        if ("postpass_osm_wd" === backEndID) {
-            // Search only elements with wikidata=*
-            osm_wikidata_keys = [];
-            search_text_key = undefined;
-            use_wikidata = !this.preset.osm_filter_tags?.length; // If any filter is specified, elements are fetched regardless of whether they have wikidata=*
-        } else if (!this.preset?.osm_wikidata_keys) {
-            throw new Error(`No Wikidata keys configured, invalid Postpass back-end ID: "${backEndID}"`)
-        } else {
-            const backEndSplitted = /^.*postpass_(osm_[_a-z]+)$/.exec(backEndID),
-                keyCode = backEndSplitted?.at(1);
-
-            console.debug("Postpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
-            if (!keyCode)
-                throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
-
-            if (keyCode.endsWith("_all_wd")) {
-                // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
-                osm_wikidata_keys = this.preset.osm_wikidata_keys;
-                search_text_key = this.preset.osm_text_key;
-                use_wikidata = true;
-            } else if (keyCode.endsWith("_all")) {
-                // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*)
-                osm_wikidata_keys = this.preset.osm_wikidata_keys;
-                search_text_key = this.preset.osm_text_key;
-                use_wikidata = false;
-            } else if (keyCode.endsWith("_rel_role")) {
-                throw new Error("Relation member role query is not supported in Postpass")
-            } else if (this.wikidata_key_codes && (keyCode in this.wikidata_key_codes)) {
-                // Search a specific linked entity key (*:wikidata=*)
-                osm_wikidata_keys = [this.wikidata_key_codes[keyCode]];
-                search_text_key = undefined;
-                use_wikidata = false;
-            } else {
-                console.error("Invalid Postpass back-end ID", { backEndID, keyCode, keyCodes: this.wikidata_key_codes });
-                throw new Error(`Invalid Postpass back-end ID: "${backEndID}"`);
-            }
-        }
-
+    protected async buildAndExecuteQuery(
+        osm_wd_keys: string[],
+        bbox: BBox,
+        osm_text_key: string | undefined,
+        relation_member_role: string | undefined,
+        use_wikidata: boolean,
+        onlyCentroids: boolean,
+        year: number
+    ): Promise<OwmfResponse> {
         const timerID = new Date().getMilliseconds();
         console.time(`postpass_query_${timerID}`);
-        const query = this.buildPostpassSqlQuery(osm_wikidata_keys, bbox, search_text_key, use_wikidata, onlyCentroids, year),
+        const query = this.buildPostpassSqlQuery(osm_wd_keys, bbox, osm_text_key, use_wikidata, onlyCentroids, year),
             res = await fetch(process.env.NEXT_PUBLIC_OWMF_postpass_api_url!, {
                 method: "POST",
                 body: new URLSearchParams({ 'data': query })
@@ -75,19 +40,7 @@ export class PostpassService extends BaseOverpassService {
         console.timeEnd(`postpass_query_${timerID}`);
         console.debug(`Postpass fetchMapData found ${out.features?.length} ELEMENTS`, out.features);
 
-        if (!out.features?.length)
-            throw new Error("No elements in Postpass response");
-
-        out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys));
-        out.osmInstance = OSM_INSTANCE;
         out.postpass_query = query;
-        out.timestamp = new Date().toISOString();
-        out.bbox = bbox;
-        out.sourcePresetID = this.preset.id;
-        out.backEndID = backEndID;
-        out.onlyCentroids = onlyCentroids;
-        out.year = year;
-        out.truncated = out.features.length === this.maxElements;
         console.timeEnd(`postpass_transform_${timerID}`);
 
         return out;

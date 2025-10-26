@@ -6,6 +6,13 @@ export interface SourcePreset {
     background_color?: string;
 
     /**
+     * Whitelist of Q-IDs of Wikidata classes to consider when filtering features from Wikidata
+     * 
+     * @example ["Q473972","Q179049","Q46169"]
+     */
+    feature_filter_classes?: string[];
+
+    /**
      * Whether to fetch parts of linked entities (e.g. the members of a duo)
      */
     fetch_parts_of_linked_entities?: boolean;
@@ -21,6 +28,13 @@ export interface SourcePreset {
      * This setting allows to filter out big elements in the Overpass queries used by Overpass-based back-ends.
      */
     ignore_big_elements?: boolean;
+
+    /**
+     * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities
+     * 
+     * @example ["Q15056995", "Q15056993", "Q111722634", "Q110055303"]
+     */
+    linked_entity_filter_classes?: string[];
 
     /**
      * ID of the MapComplete theme to link to from the button in the feature details popup
@@ -87,18 +101,11 @@ export interface SourcePreset {
     relation_member_role?: string;
 
     /**
-     * Whitelist of Q-IDs of Wikidata classes to consider when filtering features from Wikidata
-     * 
-     * @example ["Q473972","Q179049","Q46169"]
+     * By default if a preset does not include any *:wikidata=* key in osm_wikidata_keys all fetched features are returned, even if they don't have any linked entity or wikidata link.
+     * This flag allows to specify that OSM elements should be fetched only if they have wikidata=* or a linked entity.
+     * Should probably be used only by the base preset.
      */
-    feature_filter_classes?: string[];
-
-    /**
-     * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities
-     * 
-     * @example ["Q15056995", "Q15056993", "Q111722634", "Q110055303"]
-     */
-    linked_entity_filter_classes?: string[];
+    require_wikidata?: boolean;
 
     /**
      * Whether to show linked entity count (instead of feature count) in clusters

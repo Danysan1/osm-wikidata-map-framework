@@ -99,9 +99,13 @@ export class OverpassWikidataMapService implements MapService {
 
             if (!onlyCentroids) {
                 out.features = out.features.filter((feature) => {
-                    const noEtymologyRequired = wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length,
-                        hasEtymology = !!feature.properties?.linked_entity_count;
-                    return noEtymologyRequired || hasEtymology;
+                    if (feature.properties?.linked_entity_count)
+                        return true; // Has some linked entities => keep
+
+                    if (this.preset.osm_wikidata_keys?.length)
+                        return false; // Preset requires linked entities but feature has none => Discard
+
+                    return !this.preset.require_wikidata || !!feature.properties?.wikidata;
                 });
                 out.total_entity_count = out.features
                     .map(feature => feature.properties?.linked_entity_count ?? 0)

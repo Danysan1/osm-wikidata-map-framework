@@ -1,5 +1,6 @@
 {
   "ignore_big_elements": true,
   "relation_propagation_type": "site",
+  "require_wikidata": true,
   "use_min_zoom_level": true
 }
