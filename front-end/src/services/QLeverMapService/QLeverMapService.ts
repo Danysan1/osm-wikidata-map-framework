@@ -1,3 +1,4 @@
+import { OSM_INSTANCE } from "@/src/config";
 import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
@@ -8,7 +9,6 @@ import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfRes
 import type { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
-import { OSM_INSTANCE } from "@/src/config";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -284,7 +284,7 @@ export class QLeverMapService implements MapService {
                 });
 
                 if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-                    console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
+                    console.log("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
                 } else {
                     const feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
                         from_osm_instance = row.from_osm?.value === 'true' ? OSM_INSTANCE : undefined;

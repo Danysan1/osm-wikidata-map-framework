@@ -12,8 +12,10 @@ export class PostpassService extends BaseOsmMapService {
         let out: boolean;
         if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_postpass_api_url)
             out = false;
+        else if (backEndID.endsWith("rel_role"))
+            out = false;
         else if (this.preset?.osm_wikidata_keys)
-            out = /^postpass_osm_(wd|all_wd|all|rel_role|[_a-z]+)$/.test(backEndID);
+            out = /^postpass_osm_(wd|all_wd|all|[_a-z]+)$/.test(backEndID);
         else
             out = "postpass_osm_wd" === backEndID;
         console.debug("Postpass canHandleBackEnd", backEndID, out);

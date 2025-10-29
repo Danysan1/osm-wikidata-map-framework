@@ -190,7 +190,7 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         let entity: LinkedEntity | undefined;
         if (entity_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === entity_wd_id)) {
-            console.warn("Wikidata: Ignoring duplicate etymology", { etymology_wd_id: entity_wd_id, existing: existingFeature.properties, new: row });
+            console.log("Wikidata: Ignoring duplicate etymology", { etymology_wd_id: entity_wd_id, existing: existingFeature.properties, new: row });
         } else if (entity_wd_id) {
             entity = {
                 from_wikidata: true,

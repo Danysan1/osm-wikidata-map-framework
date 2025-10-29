@@ -17,7 +17,6 @@ export function runServiceTests(
     describe("canHandleBackEnd = true", () => {
         goodBackEndIDs.forEach(
             backEndID => test(`${name} "${backEndID}"`, () => {
-                process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map = "true";
                 expect(service.canHandleBackEnd(backEndID)).toBeTruthy();
             })
         );
@@ -26,7 +25,6 @@ export function runServiceTests(
     describe("canHandleBackEnd = false", () => {
         badBackEndIDs.forEach(
             backEndID => test(`${name} "${backEndID}"`, () => {
-                process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map = "true";
                 expect(service.canHandleBackEnd(backEndID)).toBeFalsy();
             })
         );
@@ -35,17 +33,38 @@ export function runServiceTests(
     describe("fetchMapElements", () => {
         goodBackEndIDs.forEach(backEndID => {
             test(`${name} "${backEndID}" centroids`, async () => {
-                process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map = "true";
                 const geoJson = await service.fetchMapElements(
                     backEndID, true, bbox, LANGUAGE, new Date().getFullYear()
                 );
 
+                expect(geoJson).toHaveProperty("bbox");
+                expect(geoJson.bbox?.[0]).toEqual(bbox[0]);
+                expect(geoJson.bbox?.[1]).toEqual(bbox[1]);
+
                 expect(geoJson).toHaveProperty("features");
                 expect(geoJson.features.length).toBeGreaterThan(0);
+                expect(geoJson.features.every(f => f.geometry.type === "Point")).toBeTruthy();
+            }, 20_000);
+
+            test(`${name} "${backEndID}" geometries`, async () => {
+                const geoJson = await service.fetchMapElements(
+                    backEndID, false, bbox, LANGUAGE, new Date().getFullYear()
+                );
 
                 expect(geoJson).toHaveProperty("bbox");
                 expect(geoJson.bbox?.[0]).toEqual(bbox[0]);
                 expect(geoJson.bbox?.[1]).toEqual(bbox[1]);
+
+                expect(geoJson).toHaveProperty("features");
+                expect(geoJson.features.length).toBeGreaterThan(0);
+                if (backEndID.includes("osm")) {
+                    expect(geoJson.features.some(
+                        f => f.properties?.osm_type && f.properties.osm_id
+                    )).toBeTruthy();
+                }
+                if (backEndID.includes("wd") && !backEndID.endsWith("qualifier")) {
+                    expect(geoJson.features.some(f => f.properties?.wikidata)).toBeTruthy();
+                }
             }, 20_000);
         });
     });
