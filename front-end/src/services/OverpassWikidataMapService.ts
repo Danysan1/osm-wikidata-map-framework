@@ -102,10 +102,13 @@ export class OverpassWikidataMapService implements MapService {
                     if (feature.properties?.linked_entity_count)
                         return true; // Has some linked entities => keep
 
-                    if (this.preset.osm_wikidata_keys?.length)
+                    if (!!this.preset.osm_wikidata_keys?.length || !!this.preset.osm_text_key)
                         return false; // Preset requires linked entities but feature has none => Discard
 
-                    return !this.preset.require_wikidata || !!feature.properties?.wikidata;
+                    if (feature.properties?.wikidata)
+                        return true; // Feature has a Wikidata entity and preset does not require linked entities => Keep
+
+                    return process.env.NEXT_PUBLIC_OWMF_require_wikidata_link !== "true" && !!this.preset.osm_filter_tags?.length;
                 });
                 out.total_entity_count = out.features
                     .map(feature => feature.properties?.linked_entity_count ?? 0)

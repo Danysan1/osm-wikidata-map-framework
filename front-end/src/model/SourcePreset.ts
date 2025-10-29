@@ -101,13 +101,6 @@ export interface SourcePreset {
     relation_member_role?: string;
 
     /**
-     * By default if a preset does not include any *:wikidata=* key in osm_wikidata_keys all fetched features are returned, even if they don't have any linked entity or wikidata link.
-     * This flag allows to specify that OSM elements should be fetched only if they have wikidata=* or a linked entity.
-     * Should probably be used only by the base preset.
-     */
-    require_wikidata?: boolean;
-
-    /**
      * Whether to show linked entity count (instead of feature count) in clusters
      */
     use_linked_entity_count?: boolean;

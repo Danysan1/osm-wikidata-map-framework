@@ -2,7 +2,7 @@ import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { OverpassJson } from "overpass-ts";
 import { type OwmfResponse } from "../../model/OwmfResponse";
-import { BaseOverpassService } from "../BaseOverpassService";
+import { BaseOsmMapService } from "../BaseOsmMapService";
 
 /**
  * Service that handles the creation of Overpass QL queries and the execution of them on the appropriate instance of Overpass
@@ -10,7 +10,7 @@ import { BaseOverpassService } from "../BaseOverpassService";
  * @see https://wiki.openstreetmap.org/wiki/Overpass_API
  * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass
  */
-export class OverpassService extends BaseOverpassService {
+export class OverpassService extends BaseOsmMapService {
     public canHandleBackEnd(backEndID: string): boolean {
         if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_overpass_api_url)
             return false;
@@ -49,8 +49,6 @@ export class OverpassService extends BaseOverpassService {
 
         if (!res.elements && res.remark)
             throw new Error(`Overpass API error: ${res.remark}`);
-        if (!res.elements)
-            throw new Error("No elements in Overpass response");
 
         this.prepareRelationMemberAreas(res);
 
@@ -72,21 +70,23 @@ export class OverpassService extends BaseOverpassService {
      * @see https://github.com/tyrasd/osmtogeojson/issues/75
      */
     private prepareRelationMemberAreas(res: OverpassJson) {
-        if (!this.preset.relation_propagation_type) return;
+        if (!this.preset.relation_propagation_type || !res.elements?.length) return;
 
         res.elements.forEach(rel => {
             if (rel.type !== "relation" || rel.tags?.type !== this.preset.relation_propagation_type) return;
 
-            rel.members.forEach(member => {
-                const ele = res.elements?.find(ele => ele.id === member.ref && ele.type === member.type);
-                if (ele?.type !== "node" && ele?.type !== "way" && ele?.type !== "relation") return;
-                ele.tags ??= {};
+            rel.members.forEach(memberRef => {
+                const memberElement = res.elements.find(ele => ele.id === memberRef.ref && ele.type === memberRef.type);
+                if (memberElement?.type !== "node" && memberElement?.type !== "way" && memberElement?.type !== "relation") return;
 
                 /*
                 Little dirty trick to show correctly areas.
                 They would otherwise be shown as lines because tags are not sent for member ways
                 */
-                if (ele.type === "way") ele.tags.area ??= "yes";
+                if (memberElement.type === "way") {
+                    memberElement.tags ??= {};
+                    memberElement.tags.area ??= "yes";
+                }
             });
         });
     }
@@ -136,8 +136,8 @@ export class OverpassService extends BaseOverpassService {
             );
             if (osm_text_key_is_filter)
                 query += `nwr${commonFilters}["${osm_text_key}"]; // filter & text etymology key\n`;
-            if (use_wikidata && !filter_tags && !wd_keys.length && !osm_text_key)
-                query += `nwr${commonFilters}["wikidata"];\n`;
+            if (!filter_tags && !wd_keys.length && !osm_text_key)
+                query += `nwr${commonFilters}["wikidata"];\n`; // Base preset, no filters nor linked entities => Get only items with wikidata=*
 
             filter_tags?.forEach(filter_tag => {
                 const filter_split = filter_tag.split("="),
@@ -151,7 +151,10 @@ export class OverpassService extends BaseOverpassService {
                     );
                     if (osm_text_key && !osm_text_key_is_filter)
                         query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
-                    if (use_wikidata && !wd_keys.length && !osm_text_key)
+
+                    if (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link !== "true" && !wd_keys.length && !osm_text_key)
+                        query += `nwr${commonFilters}[${filter_clause}]; // filter only\n`;
+                    else if (use_wikidata)
                         query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
                 }
             });

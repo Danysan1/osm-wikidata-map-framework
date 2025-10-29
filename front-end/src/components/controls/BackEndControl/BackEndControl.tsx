@@ -35,15 +35,16 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
     { backEndID, setBackEndID } = useUrlFragmentContext(),
     dropdownItems = useMemo(() => {
       const qleverOsmEnable =
-        !!process.env.NEXT_PUBLIC_OWMF_qlever_instance_url &&
-        !!process.env.NEXT_PUBLIC_OWMF_qlever_osm_source,
+          !!process.env.NEXT_PUBLIC_OWMF_qlever_instance_url &&
+          !!process.env.NEXT_PUBLIC_OWMF_qlever_osm_source,
         qleverWdEnable =
           !!process.env.NEXT_PUBLIC_OWMF_qlever_instance_url &&
           !!process.env.NEXT_PUBLIC_OWMF_qlever_wikibase_source,
-        pmtilesURL =
-          process.env.NEXT_PUBLIC_OWMF_pmtiles_preset === preset.id
-            ? process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url
-            : undefined,
+        pmtilesEnable =
+          process.env.NEXT_PUBLIC_OWMF_pmtiles_preset === preset.id &&
+          !!process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url,
+        overpassEnable = !!process.env.NEXT_PUBLIC_OWMF_overpass_api_url,
+        postpassEnable = !!process.env.NEXT_PUBLIC_OWMF_postpass_api_url,
         dropdownItems: DropdownItem[] = [],
         buildDropdownItem = (
           backEndID: string,
@@ -56,7 +57,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
           onSelect: () => setBackEndID(backEndID),
         });
 
-      if (pmtilesURL)
+      if (pmtilesEnable)
         dropdownItems.push(
           buildDropdownItem(
             "pmtiles_all",
@@ -67,11 +68,19 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
 
       const allKeysText = t("source.all_keys", "All keys");
       if (preset.osm_wikidata_keys?.length) {
-        dropdownItems.push(
-          buildDropdownItem("overpass_osm_all", allKeysText, OVERPASS_GROUP_NAME)
-        );
+        if (overpassEnable) {
+          dropdownItems.push(
+            buildDropdownItem("overpass_osm_all", allKeysText, OVERPASS_GROUP_NAME)
+          );
+        }
+        if (postpassEnable) {
+          dropdownItems.push(
+            buildDropdownItem("postpass_osm_all", allKeysText, POSTPASS_GROUP_NAME)
+          );
+        }
       }
-      if (preset.relation_member_role) {
+
+      if (preset.relation_member_role && overpassEnable) {
         dropdownItems.push(
           buildDropdownItem(
             "overpass_osm_rel_role",
@@ -90,7 +99,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
          * @example "OSM wikidata=* > Wikidata P138/P825/P547"
          */
         const osmWikidataDirectText = `wikidata=* > ${wikidataDirectText}`;
-        if (pmtilesURL) {
+        if (pmtilesEnable) {
           dropdownItems.push(
             buildDropdownItem(
               "pmtiles_osm_wd_direct",
@@ -102,54 +111,55 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME)
           );
         }
-        if (preset.osm_wikidata_keys?.length) {
+
+        if (overpassEnable) {
+          if (preset.osm_wikidata_keys?.length) {
+            dropdownItems.push(
+              buildDropdownItem(
+                "overpass_osm_all_wd+wd_direct",
+                `${allKeysText} + ${wikidataDirectText}`,
+                OVERPASS_WDQS_GROUP_NAME
+              )
+            );
+          }
           dropdownItems.push(
             buildDropdownItem(
-              "overpass_osm_all_wd+wd_direct",
-              `${allKeysText} + ${wikidataDirectText}`,
+              "overpass_osm_wd+wd_direct",
+              osmWikidataDirectText,
               OVERPASS_WDQS_GROUP_NAME
             )
           );
         }
-        dropdownItems.push(
-          buildDropdownItem(
-            "overpass_osm_wd+wd_direct",
-            osmWikidataDirectText,
-            OVERPASS_WDQS_GROUP_NAME
-          )
-        );
 
         dropdownItems.push(
           buildDropdownItem("wd_direct", wikidataDirectText, WDQS_GROUP_NAME)
         );
 
-        if (preset.osm_wikidata_keys?.length) {
-          dropdownItems.push(
-            buildDropdownItem("postpass_osm_all", allKeysText, POSTPASS_GROUP_NAME)
-          );
+        if (postpassEnable) {
+          if (preset.osm_wikidata_keys?.length) {
+            dropdownItems.push(
+              buildDropdownItem("postpass_osm_all", allKeysText, POSTPASS_GROUP_NAME)
+            );
+            dropdownItems.push(
+              buildDropdownItem(
+                "postpass_osm_all_wd+wd_direct",
+                `${allKeysText} + ${wikidataDirectText}`,
+                POSTPASS_WDQS_GROUP_NAME
+              )
+            );
+          }
           dropdownItems.push(
             buildDropdownItem(
-              "postpass_osm_all_wd+wd_direct",
-              `${allKeysText} + ${wikidataDirectText}`,
+              "postpass_osm_wd+wd_direct",
+              osmWikidataDirectText,
               POSTPASS_WDQS_GROUP_NAME
             )
           );
         }
-        dropdownItems.push(
-          buildDropdownItem(
-            "postpass_osm_wd+wd_direct",
-            osmWikidataDirectText,
-            POSTPASS_WDQS_GROUP_NAME
-          )
-        );
 
         if (qleverWdEnable)
           dropdownItems.push(
-            buildDropdownItem(
-              "qlever_wd_direct",
-              wikidataDirectText,
-              QLEVER_GROUP_NAME
-            )
+            buildDropdownItem("qlever_wd_direct", wikidataDirectText, QLEVER_GROUP_NAME)
           );
         if (qleverOsmEnable) {
           dropdownItems.push(
@@ -173,10 +183,10 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
 
       if (preset.wikidata_indirect_property) {
         const indirectText = t(
-          "source.wd_indirect",
-          "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}",
-          { indirectWdProperty: preset.wikidata_indirect_property }
-        ),
+            "source.wd_indirect",
+            "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}",
+            { indirectWdProperty: preset.wikidata_indirect_property }
+          ),
           qualifierText = t(
             "source.wd_qualifier",
             "P625 qualifiers on {{indirectWdProperty}}",
@@ -189,42 +199,88 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
           );
 
         if (preset.osm_wikidata_keys?.length) {
+          if (overpassEnable) {
+            dropdownItems.push(
+              buildDropdownItem(
+                "overpass_osm_all_wd+wd_indirect",
+                `${allKeysText} + ${indirectText}`,
+                OVERPASS_WDQS_GROUP_NAME
+              )
+            );
+            dropdownItems.push(
+              buildDropdownItem(
+                "overpass_osm_all_wd+wd_qualifier",
+                `${allKeysText} + ${qualifierText}`,
+                OVERPASS_WDQS_GROUP_NAME
+              )
+            );
+            dropdownItems.push(
+              buildDropdownItem(
+                "overpass_osm_all_wd+wd_reverse",
+                `${allKeysText} + ${reverseText}`,
+                OVERPASS_WDQS_GROUP_NAME
+              )
+            );
+          }
+
+          if (postpassEnable) {
+            dropdownItems.push(
+              buildDropdownItem(
+                "postpass_osm_all_wd+wd_indirect",
+                `${allKeysText} + ${indirectText}`,
+                POSTPASS_WDQS_GROUP_NAME
+              )
+            );
+            dropdownItems.push(
+              buildDropdownItem(
+                "postpass_osm_all_wd+wd_qualifier",
+                `${allKeysText} + ${qualifierText}`,
+                POSTPASS_WDQS_GROUP_NAME
+              )
+            );
+            dropdownItems.push(
+              buildDropdownItem(
+                "postpass_osm_all_wd+wd_reverse",
+                `${allKeysText} + ${reverseText}`,
+                POSTPASS_WDQS_GROUP_NAME
+              )
+            );
+          }
+        }
+
+        if (overpassEnable) {
           dropdownItems.push(
             buildDropdownItem(
-              "overpass_osm_all_wd+wd_indirect",
-              `${allKeysText} + ${indirectText}`,
+              "overpass_osm_wd+wd_indirect",
+              `wikidata=* > ${indirectText}`,
               OVERPASS_WDQS_GROUP_NAME
             )
           );
           dropdownItems.push(
             buildDropdownItem(
-              "overpass_osm_all_wd+wd_qualifier",
-              `${allKeysText} + ${qualifierText}`,
-              OVERPASS_WDQS_GROUP_NAME
-            )
-          );
-          dropdownItems.push(
-            buildDropdownItem(
-              "overpass_osm_all_wd+wd_reverse",
-              `${allKeysText} + ${reverseText}`,
+              "overpass_osm_wd+wd_reverse",
+              `wikidata=* > ${reverseText}`,
               OVERPASS_WDQS_GROUP_NAME
             )
           );
         }
-        dropdownItems.push(
-          buildDropdownItem(
-            "overpass_osm_wd+wd_indirect",
-            `wikidata=* > ${indirectText}`,
-            OVERPASS_WDQS_GROUP_NAME
-          )
-        );
-        dropdownItems.push(
-          buildDropdownItem(
-            "overpass_osm_wd+wd_reverse",
-            `wikidata=* > ${reverseText}`,
-            OVERPASS_WDQS_GROUP_NAME
-          )
-        );
+
+        if (postpassEnable) {
+          dropdownItems.push(
+            buildDropdownItem(
+              "postpass_osm_wd+wd_indirect",
+              `wikidata=* > ${indirectText}`,
+              POSTPASS_WDQS_GROUP_NAME
+            )
+          );
+          dropdownItems.push(
+            buildDropdownItem(
+              "postpass_osm_wd+wd_reverse",
+              `wikidata=* > ${reverseText}`,
+              POSTPASS_WDQS_GROUP_NAME
+            )
+          );
+        }
 
         dropdownItems.push(
           buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME)
@@ -266,23 +322,29 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         );
       }
 
-      preset.osm_wikidata_keys?.forEach((key) => {
-        const osmKeyID = osmKeyToKeyID(key);
+      preset.osm_wikidata_keys?.forEach((osmKey) => {
+        const osmKeyID = osmKeyToKeyID(osmKey);
 
-        dropdownItems.push(
-          buildDropdownItem("overpass_" + osmKeyID, key, OVERPASS_GROUP_NAME)
-        );
-        dropdownItems.push(
-          buildDropdownItem("postpass_" + osmKeyID, key, POSTPASS_GROUP_NAME)
-        );
-        if (pmtilesURL)
+        if (overpassEnable) {
           dropdownItems.push(
-            buildDropdownItem("pmtiles_" + osmKeyID, `${key}`, PMTILES_GROUP_NAME)
+            buildDropdownItem("overpass_" + osmKeyID, osmKey, OVERPASS_GROUP_NAME)
           );
-        if (qleverOsmEnable)
+        }
+        if (postpassEnable) {
           dropdownItems.push(
-            buildDropdownItem("qlever_" + osmKeyID, `${key}`, QLEVER_GROUP_NAME)
+            buildDropdownItem("postpass_" + osmKeyID, osmKey, POSTPASS_GROUP_NAME)
           );
+        }
+        if (pmtilesEnable) {
+          dropdownItems.push(
+            buildDropdownItem("pmtiles_" + osmKeyID, osmKey, PMTILES_GROUP_NAME)
+          );
+        }
+        if (qleverOsmEnable) {
+          dropdownItems.push(
+            buildDropdownItem("qlever_" + osmKeyID, osmKey, QLEVER_GROUP_NAME)
+          );
+        }
       });
 
       const anyLinkedEntity =
@@ -291,31 +353,35 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         !!preset.wikidata_indirect_property ||
         !!preset.osm_text_key;
       if (!anyLinkedEntity) {
-        dropdownItems.push(
-          buildDropdownItem(
-            "overpass_osm_wd+wd_base",
-            "wikidata=* + Wikidata P625",
-            OVERPASS_WDQS_GROUP_NAME
-          )
-        );
-        dropdownItems.push(
-          buildDropdownItem("overpass_osm_wd", "wikidata=*", OVERPASS_GROUP_NAME)
-        );
+        if (overpassEnable) {
+          dropdownItems.push(
+            buildDropdownItem(
+              "overpass_osm_wd+wd_base",
+              "wikidata=* + Wikidata P625",
+              OVERPASS_WDQS_GROUP_NAME
+            )
+          );
+          dropdownItems.push(
+            buildDropdownItem("overpass_osm_wd", "wikidata=*", OVERPASS_GROUP_NAME)
+          );
+        }
 
         dropdownItems.push(
           buildDropdownItem("wd_base", "Wikidata P625", WDQS_GROUP_NAME)
         );
-        
-        dropdownItems.push(
-          buildDropdownItem(
-            "postpass_osm_wd+wd_base",
-            "wikidata=* + Wikidata P625",
-            POSTPASS_WDQS_GROUP_NAME
-          )
-        );
-        dropdownItems.push(
-          buildDropdownItem("postpass_osm_wd", "wikidata=*", POSTPASS_GROUP_NAME)
-        );
+
+        if (postpassEnable) {
+          dropdownItems.push(
+            buildDropdownItem(
+              "postpass_osm_wd+wd_base",
+              "wikidata=* + Wikidata P625",
+              POSTPASS_WDQS_GROUP_NAME
+            )
+          );
+          dropdownItems.push(
+            buildDropdownItem("postpass_osm_wd", "wikidata=*", POSTPASS_GROUP_NAME)
+          );
+        }
 
         if (qleverOsmEnable) {
           dropdownItems.push(
@@ -329,13 +395,14 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             buildDropdownItem("qlever_osm_wd", "wikidata=*", QLEVER_GROUP_NAME)
           );
         }
-        if (qleverWdEnable)
+        if (qleverWdEnable) {
           dropdownItems.push(
             buildDropdownItem("qlever_wd_base", "Wikidata P625", QLEVER_GROUP_NAME)
           );
+        }
       }
 
-      if (pmtilesURL)
+      if (pmtilesEnable)
         dropdownItems.push(
           buildDropdownItem(
             "pmtiles_propagated",
@@ -361,8 +428,8 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
   useEffect(() => {
     if (!dropdownItems.find((i) => i.id === backEndID)) {
       const preferredBackends = process.env.NEXT_PUBLIC_OWMF_preferred_backends
-        ? parseStringArrayConfig(process.env.NEXT_PUBLIC_OWMF_preferred_backends)
-        : [],
+          ? parseStringArrayConfig(process.env.NEXT_PUBLIC_OWMF_preferred_backends)
+          : [],
         preferredBackend = preferredBackends.find(
           (backend) => !!dropdownItems.find((item) => item.id === backend)
         ),
@@ -412,7 +479,9 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
           title={t("info_box.download_dataset")}
         />
       )}
-      {process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("historical") && <DateSelector />}
+      {process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("historical") && (
+        <DateSelector />
+      )}
       {!backEndID.startsWith("pmtiles") && (
         <Button
           onClick={clearCache}

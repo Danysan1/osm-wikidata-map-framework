@@ -12,7 +12,7 @@ const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 /**
  * Shared behavior of the services that fetch map data from OSM through Overpass or Postpass
  */
-export abstract class BaseOverpassService implements MapService {
+export abstract class BaseOsmMapService implements MapService {
     protected readonly preset: SourcePreset;
     protected readonly maxElements?: number;
     protected readonly maxRelationMembers?: number;
@@ -36,16 +36,16 @@ export abstract class BaseOverpassService implements MapService {
             acc[osmKeyToKeyID(key)] = key;
             return acc;
         }, {});
-        console.debug("BaseOverpassService initialized", { preset, maxElements, maxRelationMembers, bbox, wikidata_key_codes: this.wikidata_key_codes });
+        console.debug("BaseOsmMapService initialized", { preset, maxElements, maxRelationMembers, bbox, wikidata_key_codes: this.wikidata_key_codes });
     }
 
     public abstract canHandleBackEnd(backEndID: string): boolean;
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
-        language = ''; // Not used in Overpass query
+        language = ''; // Not used in OSM queries
 
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
-            console.warn("BaseOverpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox, language });
+            console.warn("BaseOsm fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox, language });
             return { type: "FeatureCollection", features: [] };
         }
 
@@ -53,7 +53,7 @@ export abstract class BaseOverpassService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        console.debug("BaseOverpass: No cached response found, fetching", { bbox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
+        console.debug("BaseOsm: No cached response found, fetching", { bbox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
         if (area < 0.000001 || (!onlyCentroids && area > 5)) {
             throw new Error(`Invalid bbox area: ${area} - ${bbox.join(",")}`);
@@ -61,23 +61,27 @@ export abstract class BaseOverpassService implements MapService {
 
         const out = await this.fetchMapData(backEndID, onlyCentroids, bbox, year);
         if (onlyCentroids) {
-            console.debug(`BaseOverpass found ${out.features.length} centroids`);
+            console.debug(`BaseOsm found ${out.features.length} centroids`);
         } else {
-            console.debug(`BaseOverpass found ${out.features.length} features before filtering`);
+            console.debug(`BaseOsm found ${out.features.length} features before filtering`);
             out.features = out.features.filter((feature) => {
                 if (feature.properties?.linked_entity_count)
                     return true; // Has some linked entities => keep
 
-                if (backEndID.endsWith("_wd") && (!!feature.properties?.wikidata || feature.properties?.relations?.some(rel => rel.reltags?.wikidata)))
-                    return true; // Feature has a Wikidata entity => Keep (may be used to combine with a Wikidata feature to extract a linked entity)
+                const hasDirectWikidataLink = !!feature.properties?.wikidata || feature.properties?.relations?.some(rel => rel.reltags?.wikidata);
+                if (backEndID.endsWith("_wd") && hasDirectWikidataLink)
+                    return true; // Feature has a Wikidata entity that may be used to combine with a Wikidata feature to extract a linked entity => Keep
 
-                if (this.preset.osm_wikidata_keys?.length)
+                if (!!this.preset.osm_wikidata_keys?.length || !!this.preset.osm_text_key)
                     return false; // Preset requires linked entities but feature has none => Discard
 
-                return !this.preset.require_wikidata || !!feature.properties?.wikidata;
+                if (hasDirectWikidataLink)
+                    return true; // Feature has a Wikidata entity and preset does not require linked entities => Keep
+
+                return process.env.NEXT_PUBLIC_OWMF_require_wikidata_link !== "true" && !!this.preset.osm_filter_tags?.length;
             });
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
-            console.debug(`BaseOverpass found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
+            console.debug(`BaseOsm found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`);
         }
         out.language = language;
 
@@ -97,11 +101,11 @@ export abstract class BaseOverpassService implements MapService {
             // Search only elements with wikidata=*
             osm_wikidata_keys = [];
             search_text_key = undefined;
-            use_wikidata = !!this.preset.require_wikidata;
+            use_wikidata = true;
         } else if (!this.preset?.osm_wikidata_keys) {
             throw new Error(`No Wikidata keys configured, invalid back-end ID: "${backEndID}"`)
         } else {
-            console.debug("BaseOverpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
+            console.debug("BaseOsm fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
             if (!keyCode)
                 throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
 
@@ -139,7 +143,7 @@ export abstract class BaseOverpassService implements MapService {
 
         const out = await this.buildAndExecuteQuery(osm_wikidata_keys, bbox, search_text_key, relation_member_role, use_wikidata, onlyCentroids, year);
         if (!out.features?.length)
-            throw new Error("No elements in BaseOverpass response");
+            console.warn("No elements in BaseOsm response");
 
         out.features.forEach(f => this.transformFeature(f, osm_wikidata_keys));
         out.osmInstance = OSM_INSTANCE;
@@ -257,7 +261,7 @@ export abstract class BaseOverpassService implements MapService {
                             validLinkedQIDs = !!linkedEntityQIDs && WIKIDATA_QID_REGEX.test(linkedEntityQIDs);
                         if (!validLinkedQIDs) return; // Secondary wikidata tag not available on the relation or invalid => No linked entity to propagate
 
-                        console.debug("BaseOverpass transformFeature propagating linked entity from relation", { feature, rel });
+                        console.debug("BaseOsm transformFeature propagating linked entity from relation", { feature, rel });
                         linkedEntityQIDs
                             .split(";")
                             .filter(value => WIKIDATA_QID_REGEX.test(value))

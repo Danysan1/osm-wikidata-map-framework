@@ -1,13 +1,13 @@
 import type { BBox } from "geojson";
 import { type OwmfResponse } from "../../model/OwmfResponse";
-import { BaseOverpassService } from "../BaseOverpassService";
+import { BaseOsmMapService } from "../BaseOsmMapService";
 
 /**
  * Service that handles the creation of Postpass SQL queries and the execution of them on the appropriate instance of Postpass
  * 
  * @see https://wiki.openstreetmap.org/wiki/Postpass
  */
-export class PostpassService extends BaseOverpassService {
+export class PostpassService extends BaseOsmMapService {
     public canHandleBackEnd(backEndID: string): boolean {
         let out: boolean;
         if (!process.env.NEXT_PUBLIC_OWMF_osm_instance_url || !process.env.NEXT_PUBLIC_OWMF_postpass_api_url)
@@ -71,7 +71,7 @@ export class PostpassService extends BaseOverpassService {
             linked_entity_clauses = non_filter_wd_keys.map(key => `tags ? '${key}'`);
         if (osm_text_key && !osm_text_key_is_filter)
             linked_entity_clauses.push(`tags ? '${osm_text_key}'`);
-        if (use_wikidata)
+        if (use_wikidata && (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link === "true" || !filter_tags?.length || !!osm_wd_keys?.length || !!osm_text_key))
             linked_entity_clauses.push(`tags ? 'wikidata'`);
         const linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : "";
 
@@ -110,7 +110,7 @@ AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_Make
         if (this.maxElements)
             query += `LIMIT ${this.maxElements}`
 
-        console.debug("buildPostpassSqlQuery", { query, filter_wd_keys, non_filter_wd_keys, filter_tags, osm_text_key, linked_entity_clause, tagFilters });
+        console.debug("buildPostpassSqlQuery", { query, filter_tags, filter_wd_keys, non_filter_wd_keys, osm_wd_keys, osm_text_key, linked_entity_clause, tagFilters });
         return query;
     }
 }
