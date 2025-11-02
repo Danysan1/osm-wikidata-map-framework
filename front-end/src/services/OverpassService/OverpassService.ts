@@ -113,7 +113,7 @@ export class OverpassService extends BaseOsmMapService {
                 `["start_date"](if:t["start_date"] < "${year}" && (!is_tag("end_date") || t["end_date"] >= "${year}"))`
             ],
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
-            osm_text_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
+            osm_text_key_is_filter = !!osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
 
