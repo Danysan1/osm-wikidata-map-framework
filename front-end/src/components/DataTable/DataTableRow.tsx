@@ -1,9 +1,9 @@
-import { LinkedEntity } from "@/src/model/LinkedEntity";
+import { LinkedEntity, normalizeForComparison } from "@/src/model/LinkedEntity";
 import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import {
-    getFeatureLinkedEntities,
-    getFeatureTags,
-    OwmfFeature,
+  getFeatureLinkedEntities,
+  getFeatureTags,
+  OwmfFeature,
 } from "@/src/model/OwmfResponse";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -59,16 +59,9 @@ export const DataTableRow: FC<DataTableRowProps> = ({
         nameArray: string[] = [];
       if (tags?.alt_name) nameArray.push(...tags.alt_name.split(";"));
       if (typeof mainName === "string") {
-        const lowerName = mainName
-            .toLowerCase()
-            .replaceAll("“", '"')
-            .replaceAll("”", '"'),
+        const normalizedName = normalizeForComparison(mainName),
           includedInAnyAltName = nameArray.some((alt_name) =>
-            alt_name
-              .toLowerCase()
-              .replaceAll("“", '"')
-              .replaceAll("”", '"')
-              .includes(lowerName)
+            normalizeForComparison(alt_name).includes(normalizedName)
           );
         if (!includedInAnyAltName) nameArray.push(mainName);
       }

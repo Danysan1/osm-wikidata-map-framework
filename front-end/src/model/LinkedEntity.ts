@@ -154,3 +154,14 @@ export interface EntityLinkNote {
      */
     languages?: string;
 }
+
+/**
+ * @see https://stackoverflow.com/a/37511463/2347196
+ */
+export function normalizeForComparison(str: string) {
+  return str
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f.\s"“”-]/g, "")
+    .trim()
+    .toLowerCase();
+}

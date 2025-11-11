@@ -2,7 +2,7 @@ import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 import { EntityLinkNotesDatabase } from "@/src/db/EntityLinkNotesDatabase";
-import type { EntityLinkNote, LinkedEntity } from "@/src/model/LinkedEntity";
+import { normalizeForComparison, type EntityLinkNote, type LinkedEntity } from "@/src/model/LinkedEntity";
 import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { WikidataEntityLinkNotesService } from "@/src/services/WikidataEntityLinkNotesService/WikidataEntityLinkNotesService";
@@ -146,15 +146,4 @@ function deduplicateByName(
       (normalizeForComparison(other.name).includes(normalName) ||
         (other.description && normalizeForComparison(other.description).includes(normalName)))
   );
-}
-
-/**
- * @see https://stackoverflow.com/a/37511463/2347196
- */
-function normalizeForComparison(str: string) {
-  return str
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f.-]/g, "")
-    .trim()
-    .toLowerCase();
 }
