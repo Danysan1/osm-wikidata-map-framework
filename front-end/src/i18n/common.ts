@@ -12,6 +12,7 @@ export const DEFAULT_LANGUAGE = "en",
         nl: "Nederlands",
         pt: "Português",
         pt_BR: "Português (Brasil)",
+        sv: "Svenska",
         uk_UA: "українська"
     },
     MAIN_NAMESPACE = "app",

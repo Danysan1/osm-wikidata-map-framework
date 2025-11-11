@@ -58,5 +58,17 @@
             "title": "Instância de teste OWMF",
             "description": "Instância de teste para o OSM-Wikidata Map Framework. Todos os recursos e predefinições estão ativados."
         }
+    },
+    "sv": {
+        "app": {
+            "title": "OWMF-testinstans",
+            "description": "Testinstans för OSM-Wikidata Map Framework. Alla funktioner och förinställningar är aktiverade."
+        }
+    },
+    "uk_UA": {
+        "app": {
+            "title": "Тестовий екземпляр OWMF",
+            "description": "Тестовий екземпляр для OSM-Wikidata Map Framework. Усі функції та пресети ввімкнено."
+        }
     }
 }
