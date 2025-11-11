@@ -126,6 +126,10 @@ function openHistoricalMapStyle(id: string, text: string, ohmId: string): Backgr
     };
 }
 
+/**
+ * @see https://operations.osmfoundation.org/policies/vector/
+ * @see https://vector.openstreetmap.org/demo/shortbread/
+ */
 function osmfStyle(id: string, text: string, osmfId: string): BackgroundStyle {
     return {
         id: id,
@@ -246,6 +250,7 @@ if (ENABLE_OHM) {
 if (ENABLE_OSMF) {
     BACKGROUND_STYLES.push(
         osmfStyle("osmf_colorful", "Colorful", "colorful"),
+        osmfStyle("osmf_graybeard", "Graybeard", "graybeard"),
         osmfStyle("osmf_eclipse", "Eclipse", "eclipse")
     );
 }

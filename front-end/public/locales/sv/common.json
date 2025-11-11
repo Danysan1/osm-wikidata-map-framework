@@ -10,7 +10,7 @@
         "to_choose_backend": "att välja vilken backend som ska användas",
         "to_overpass_query": "för att visa källfrågan för OverpassQL (endast med Overpass-källor)",
         "to_wikidata_query": "för att visa käll-SPARQL-frågan (endast med Wikidata-källor)",
-        "to_view_data_table": "to view data in a table (only at high zoom)",
+        "to_view_data_table": "för att visa data i en tabell (endast vid hög zoom)",
         "to_change_background": "för att ändra bakgrundskartans stil",
         "to_open_again": "för att öppna den här popupen igen",
         "contribute": "Bidra till kartan",
