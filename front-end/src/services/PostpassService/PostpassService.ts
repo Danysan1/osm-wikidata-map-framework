@@ -77,10 +77,10 @@ export class PostpassService extends BaseOsmMapService {
             linked_entity_clauses.push(`tags ? 'wikidata'`);
         const linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : "";
 
-        const tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
+        const same_linked_entity_clause_for_all = !filter_wd_keys.length && !osm_text_key_is_filter,
+            tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
         if (osm_text_key_is_filter)
             tagFilters.push(`tags ? '${osm_text_key}'`);
-        const same_linked_entity_clause_for_all = !tagFilters?.length;
         filter_tags?.forEach(filter_tag => {
             const filter_split = filter_tag.split("="),
                 filter_key = filter_split[0],
@@ -91,6 +91,7 @@ export class PostpassService extends BaseOsmMapService {
                 tagFilters.push(same_linked_entity_clause_for_all ? filter_clause : `(${filter_clause} ${linked_entity_clause})`);
             }
         });
+        const tagFilterClause = tagFilters.length ? `AND (${tagFilters.join(" OR ")})` : "";
 
         let query = `
 -- Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
@@ -105,7 +106,7 @@ FROM postpass_pointlinepolygon
 WHERE ${dateFilter}
 ${notTooBig}
 ${same_linked_entity_clause_for_all ? linked_entity_clause : ""}
-AND (${tagFilters.join(" OR ")})
+${tagFilterClause}
 AND geom && ST_SetSRID(ST_MakeBox2D(ST_MakePoint(${bbox[0]},${bbox[1]}), ST_MakePoint(${bbox[2]},${bbox[3]})), 4326)
 `;
 

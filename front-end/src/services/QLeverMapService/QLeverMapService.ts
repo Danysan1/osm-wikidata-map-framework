@@ -44,13 +44,16 @@ export class QLeverMapService implements MapService {
         resolveQuery?: (type: string) => Promise<string>,
         basePath = process.env.NEXT_PUBLIC_OWMF_qlever_instance_url
     ) {
+        if (!basePath)
+            throw new Error("Empty QLever base path");
+
         this.preset = preset;
         this.maxElements = maxElements;
         this.db = db;
         this.baseBBox = bbox;
         this.resolveQuery = resolveQuery ?? fetchSparqlQuery;
         this.api = new SparqlApi(new Configuration({
-            basePath,
+            basePath: basePath + "/api",
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
         }));
 
@@ -58,9 +61,6 @@ export class QLeverMapService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        if (!process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url || !process.env.NEXT_PUBLIC_OWMF_qlever_instance_url)
-            return false;
-
         if (!this.preset.wikidata_indirect_property && ["reverse", "qualifier", "indirect"].some(x => backEndID.includes(x)))
             return false;
 
