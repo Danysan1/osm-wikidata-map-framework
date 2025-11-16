@@ -33,7 +33,7 @@ export const DataTableRow: FC<DataTableRowProps> = ({
         >((acc, entity, i) => {
           const wdQID = entity?.wikidata,
             entityDetails = wdQID ? details?.[wdQID] : undefined,
-            signature = entityDetails?.name ?? entity.name ?? wdQID ?? i.toString();
+            signature = normalizeForComparison(entityDetails?.name ?? entity.name ?? wdQID ?? i.toString());
           if (!acc[signature]?.wikidata) acc[signature] = entityDetails ?? entity;
           return acc;
         }, {});
@@ -60,9 +60,11 @@ export const DataTableRow: FC<DataTableRowProps> = ({
       if (tags?.alt_name) nameArray.push(...tags.alt_name.split(";"));
       if (typeof mainName === "string") {
         const normalizedName = normalizeForComparison(mainName),
-          includedInAnyAltName = nameArray.some((alt_name) =>
-            normalizeForComparison(alt_name).includes(normalizedName)
-          );
+          includedInAnyAltName = nameArray.some((alt_name) => {
+            const out = normalizeForComparison(alt_name).includes(normalizedName);
+            console.debug("DataTableRow", {normalizedName, alt_name, out});
+            return out;
+      });
         if (!includedInAnyAltName) nameArray.push(mainName);
       }
 
