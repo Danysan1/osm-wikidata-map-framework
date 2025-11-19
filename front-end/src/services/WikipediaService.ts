@@ -7,14 +7,14 @@ export class WikipediaService {
     async fetchExtract(article: string): Promise<string> {
         let title: string, url: string;
         if (article.startsWith("http")) {
-            title = decodeURIComponent(article.substring(article.lastIndexOf("/wiki/") + 6));
+            title = decodeURIComponent(article.substring(article.lastIndexOf("/wiki/") + 6)).replaceAll("_", " ");
             url = article.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true";
         } else {
             const split = article.split(":");
             title = split[1];
             url = `https://${split[0]}.wikipedia.org/api/rest_v1/page/summary/${split[1]}?redirect=true`;
         }
-        console.debug("fetchExtract", { article, title, url });
+        console.debug("Fetching Wikipedia extract...", { article, title, url });
         const response = await fetch(url);
         if (response.status === 302)
             throw new Error("The Wikipedia page for this item is an HTTP 302 redirect, ignoring it");
@@ -26,12 +26,13 @@ export class WikipediaService {
             throw new Error("The response from Wikipedia is not valid");
 
         if (content.title !== title)
-            throw new Error("The Wikipedia page for this item is a redirect, ignoring it");
+            throw new Error(`The Wikipedia page for "${title}" is a redirect to "${content.title}", ignoring it`);
 
         const extract = content.extract;
         if (!extract || typeof extract !== "string")
             throw new Error("The response from Wikipedia is not valid");
 
+        console.debug("Fetched Wikipedia extract", { article, content });
         return extract;
     }
 }
