@@ -158,8 +158,7 @@ export abstract class BaseOsmMapService implements MapService {
     }
 
     private transformFeature(feature: OwmfFeature, osm_keys: string[]) {
-        if (!feature.properties)
-            feature.properties = {};
+        feature.properties ??= {};
 
         let osm_type = parseOsmType(feature.properties.osm_type),
             osm_id = feature.properties.osm_id,

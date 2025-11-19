@@ -174,8 +174,7 @@ export class OverpassWikidataMapService implements MapService {
         osmFeaturesToMerge.forEach((osmFeature) => {
             osmFeature.id = (osmFeature.id ?? osmFeature.properties?.id) + "_" + (wikidataFeature.id ?? wikidataFeature.properties?.id);
 
-            if (!osmFeature.properties)
-                osmFeature.properties = {};
+            osmFeature.properties ??= {};
             osmFeature.properties.id = osmFeature.id; // Copying the ID as sometimes Maplibre erases feature.id
             osmFeature.properties.from_wikidata = true;
             osmFeature.properties.from_wikidata_entity = wikidataFeature.properties?.from_wikidata_entity;
@@ -231,8 +230,7 @@ export class OverpassWikidataMapService implements MapService {
                     //console.debug("Overpass+Wikidata: Pushing Wikidata linked entity", wdEtymology);
                     osmEntities.push(wdEntity);
 
-                    if (!osmFeature.properties)
-                        osmFeature.properties = {};
+                    osmFeature.properties ??= {};
                     osmFeature.properties.linked_entities = osmEntities.length ? osmEntities : undefined;
                     osmFeature.properties.linked_entity_count = osmEntities.length;
                 }

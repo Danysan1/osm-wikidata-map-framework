@@ -112,8 +112,6 @@ export function getFeatureTags(f: OwmfFeature): OsmFeatureTags | undefined {
  * Returns the tags of a feature, creating an empty oject if they are missing
  */
 export function createFeatureTags(f: OwmfFeature): OsmFeatureTags {
-    if (!f.properties) {
-        f.properties = { tags: {} };
-    }
+    f.properties ??= { tags: {} };
     return createPropTags(f.properties)
 }

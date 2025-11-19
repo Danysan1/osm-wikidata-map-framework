@@ -52,8 +52,7 @@ export class MapDatabase extends Dexie {
 
     public async addMap(map: OwmfResponse) {
         const row: MapRow = { ...map, id: undefined };
-        if (row.timestamp === undefined)
-            row.timestamp = new Date().toISOString();
+        row.timestamp ??= new Date().toISOString();
 
         try {
             await this.transaction('rw', this.maps, async () => {

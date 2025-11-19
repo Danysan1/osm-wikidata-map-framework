@@ -3,13 +3,13 @@ import {
   type ChangeEvent,
   type ChangeEventHandler,
   type FC,
+  type JSX,
   type PropsWithChildren,
   cloneElement,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  type JSX,
 } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -121,7 +121,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
       (e) => {
         const selectedID = e.target.value,
           selectedItem = dropdownItems.find((item) => item.id === selectedID);
-        selectedItem && selectedItem.onSelect(e);
+        selectedItem?.onSelect(e);
       },
       [dropdownItems]
     ),

@@ -242,7 +242,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 wikispore: row.wikispore?.value,
             };
 
-        const from_wikidata_entity = feature_wd_id ? feature_wd_id : entity?.from_wikidata_entity,
+        const from_wikidata_entity = feature_wd_id?.length ? feature_wd_id : entity?.from_wikidata_entity,
             from_wikidata_prop = feature_wd_id ? "P625" : entity?.from_wikidata_prop,
             id = `wikidata.org/entity/${from_wikidata_entity}#${from_wikidata_prop}`,
             specificProps: OwmfFeatureProperties = {

@@ -75,11 +75,11 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
       const birth_date = entity.birth_date
         ? formatDate(entity.birth_date, entity.birth_date_precision)
         : "?",
-        birth_place = entity.birth_place ? entity.birth_place : "?",
+        birth_place = entity.birth_place?.length ? entity.birth_place : "?",
         death_date = entity.death_date
           ? formatDate(entity.death_date, entity.death_date_precision)
           : "?",
-        death_place = entity.death_place ? entity.death_place : "?";
+        death_place = entity.death_place?.length ? entity.death_place : "?";
       return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
     } else if (!!entity.start_date || !!entity.end_date) {
       const start_date = entity.start_date

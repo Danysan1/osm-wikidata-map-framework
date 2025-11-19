@@ -16,7 +16,7 @@ export const LinkedEntityLink: FC<LinkedEntityLinkProps> = ({ linkedEntity }) =>
       target="_blank"
       rel="noreferrer"
     >
-      {linkedEntity.name ? linkedEntity.name : linkedEntity.wikidata}
+      {linkedEntity.name?.length ? linkedEntity.name : linkedEntity.wikidata}
     </a>
   );
 };

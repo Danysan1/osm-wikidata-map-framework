@@ -1,5 +1,5 @@
 {
-  "version": "5.0.0",
+  "version": "5.0.1",
   "name": "osm-wikidata-map-framework-front-end",
   "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
   "description": "OSM-Wikidata Map Framework - Create interactive maps to show details about map elements based on OpenStreetMap and Wikidata",
@@ -80,10 +80,10 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/wellknown": "^0.5.8",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.3",
+    "eslint-config-next": "^14.2.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8",
@@ -92,5 +92,10 @@
     "sharp": "^0.33.4",
     "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "overrides": {
+    "osmtogeojson": {
+      "@xmldom/xmldom": "^0.8.4"
+    }
   }
 }

@@ -354,8 +354,8 @@ export class QLeverMapService implements MapService {
         else if (row.building?.value)
             render_height = 6;
 
-        const from_wikidata_entity = feature_wd_id ? feature_wd_id : linkedEntity?.from_wikidata_entity,
-            from_wikidata_prop = feature_wd_id ? "P625" : linkedEntity?.from_wikidata_prop;
+        const from_wikidata_entity = feature_wd_id?.length ? feature_wd_id : linkedEntity?.from_wikidata_entity,
+            from_wikidata_prop = feature_wd_id?.length ? "P625" : linkedEntity?.from_wikidata_prop;
         let id;
         if (from_osm_instance && from_wikidata)
             id = `${from_osm_instance}/${osm_type}/${osm_id}+wikidata.org/${from_wikidata_entity}/${from_wikidata_prop}`;
