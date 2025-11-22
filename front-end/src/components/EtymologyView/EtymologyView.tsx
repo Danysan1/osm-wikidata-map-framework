@@ -111,25 +111,26 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
   ]);
 
   useEffect(() => {
-    if (entity.wikipedia) {
-      new WikipediaService()
-        .fetchExtract(entity.wikipedia)
-        .then((res) => {
-          console.debug("Fetched linked entity Wikipedia extract: ", entity.wikipedia);
-          setWikipediaExtract(res);
-        })
-        .catch((e) => {
-          console.error(
-            "Failed fetching linked entity Wikipedia extract",
-            entity.wikipedia,
-            e
-          );
-          setWikipediaExtract(undefined);
-        });
-    } else {
+    if (!entity.wikipedia) {
       setWikipediaExtract(undefined);
+      return;
     }
-  }, [entity.wikipedia]);
+
+    new WikipediaService()
+      .fetchExtract(entity.wikipedia, i18n.language)
+      .then((res) => {
+        console.debug("Fetched linked entity Wikipedia extract: ", entity.wikipedia);
+        setWikipediaExtract(res);
+      })
+      .catch((e) => {
+        console.error(
+          "Failed fetching linked entity Wikipedia extract",
+          entity.wikipedia,
+          e
+        );
+        setWikipediaExtract(undefined);
+      });
+  }, [entity.wikipedia, i18n.language]);
 
   const parts = useMemo((): LinkedEntity[] | undefined => {
     if (!entity.parts) return undefined;
@@ -172,9 +173,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
     <div className={styles.entity}>
       <div className={styles.entity_grid}>
         <div className={styles.entity_info_column}>
-          {!!firstLine && (
-            <p>{firstLine}</p>
-          )}
+          {!!firstLine && <p>{firstLine}</p>}
 
           {entity.linkPicture && (
             <CommonsImage name={entity.linkPicture} className={styles.entity_image} />
@@ -185,7 +184,9 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
 
           <EntityButtonRow entity={entity} />
 
-          {wikipediaExtract && <p className={styles.wikipedia_extract}>📖 {wikipediaExtract}</p>}
+          {wikipediaExtract && (
+            <p className={styles.wikipedia_extract}>📖 {wikipediaExtract}</p>
+          )}
           {startEndDate && <p className="start_end_date">📅 {startEndDate}</p>}
           {entity.event_place && <p className="event_place">📍 {entity.event_place}</p>}
           {entity.citizenship && <p className="citizenship">🌍 {entity.citizenship}</p>}
@@ -209,7 +210,10 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ entity, firstLine, entit
       {!!parts?.length && <LinkedEntityList linkedEntities={parts} />}
 
       {!!statementEntities?.length && (
-        <LinkedEntityList linkedEntities={statementEntities} firstLine={t("etymology_details.more_details")} />
+        <LinkedEntityList
+          linkedEntities={statementEntities}
+          firstLine={t("etymology_details.more_details")}
+        />
       )}
     </div>
   );

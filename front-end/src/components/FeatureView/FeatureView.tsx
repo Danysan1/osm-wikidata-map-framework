@@ -99,28 +99,28 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
   }, [featureI18n?.description, i18n.language, props]);
 
   useEffect(() => {
-    if (!feature.properties?.wikipedia?.startsWith(i18n.language)) {
-      console.debug("Skipping fetching feature Wikipedia extract: ", feature.properties?.wikipedia);
+    if (!feature.properties?.wikipedia) {
       setWikipediaExtract(undefined);
-    } else {
-      new WikipediaService()
-        .fetchExtract(feature.properties?.wikipedia)
-        .then((res) => {
-          console.debug(
-            "Fetched feature Wikipedia extract: ",
-            feature.properties?.wikipedia
-          );
-          setWikipediaExtract(res);
-        })
-        .catch((e) => {
-          console.error(
-            "Failed fetching feature Wikipedia extract: ",
-            feature.properties?.wikipedia,
-            e
-          );
-          setWikipediaExtract(undefined);
-        });
+      return;
     }
+
+    new WikipediaService()
+      .fetchExtract(feature.properties.wikipedia, i18n.language)
+      .then((res) => {
+        console.debug(
+          "Fetched feature Wikipedia extract: ",
+          feature.properties?.wikipedia
+        );
+        setWikipediaExtract(res);
+      })
+      .catch((e) => {
+        console.error(
+          "Failed fetching feature Wikipedia extract: ",
+          feature.properties?.wikipedia,
+          e
+        );
+        setWikipediaExtract(undefined);
+      });
   }, [feature.properties?.wikipedia, i18n.language]);
 
   return (

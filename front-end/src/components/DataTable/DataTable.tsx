@@ -1,11 +1,11 @@
+import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { getFeatureLinkedEntities, OwmfFeature } from "@/src/model/OwmfResponse";
+import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./DataTable.module.css";
 import { DataTableRow } from "./DataTableRow";
-import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
-import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 
 interface DataTableProps {
   features: OwmfFeature[];
@@ -21,9 +21,15 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
       getFeatureLinkedEntities(f)
         .filter((e) => e.wikidata)
         .map((e) => e.wikidata!)
-    ),
-      uniqueWikidataIds = new Set<string>(wikidataIdArray),
-      detailsService = new WikidataDetailsService(i18n.language, new EntityDetailsDatabase());
+    );
+
+    if (!wikidataIdArray.length) return;
+
+    const uniqueWikidataIds = new Set<string>(wikidataIdArray),
+      detailsService = new WikidataDetailsService(
+        i18n.language,
+        new EntityDetailsDatabase()
+      );
 
     detailsService
       .fetchEtymologyDetails(uniqueWikidataIds)
