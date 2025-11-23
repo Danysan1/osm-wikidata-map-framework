@@ -1,5 +1,4 @@
-import { LinkedEntity, normalizeForComparison } from "@/src/model/LinkedEntity";
-import { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
+import { deduplicateByName, normalizeForComparison, type LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import {
   getFeatureLinkedEntities,
   getFeatureTags,
@@ -12,7 +11,9 @@ import styles from "./DataTable.module.css";
 import { LinkedEntityLink } from "./LinkedEntityLink";
 
 interface DataTableRowProps {
+  /** The feature to be represented in this row */
   feature: OwmfFeature;
+  /** Details by QID of linked entities of ALL FEATURES IN THE TABLE, should be filtered based on this feature linked entities */
   details?: Record<string, LinkedEntityDetails>;
   openFeatureDetails: () => void;
 }
@@ -24,22 +25,9 @@ export const DataTableRow: FC<DataTableRowProps> = ({
 }) => {
   const { i18n } = useTranslation(),
     entitiesCellContent = useMemo(() => {
-      let uniqueEntities: LinkedEntity[];
-      if (process.env.NEXT_PUBLIC_OWMF_deduplicate_by_name !== "true") {
-        uniqueEntities = getFeatureLinkedEntities(feature);
-      } else {
-        const uniqueMap = getFeatureLinkedEntities(feature).reduce<
-          Record<string, LinkedEntity>
-        >((acc, entity, i) => {
-          const wdQID = entity?.wikidata,
-            entityDetails = wdQID ? details?.[wdQID] : undefined,
-            signature = normalizeForComparison(entityDetails?.name ?? entity.name ?? wdQID ?? i.toString());
-          if (!acc[signature]?.wikidata) acc[signature] = entityDetails ?? entity;
-          return acc;
-        }, {});
-        console.debug("Calculated unique entities", uniqueMap);
-        uniqueEntities = Object.values(uniqueMap);
-      }
+      const entities = getFeatureLinkedEntities(feature),
+        mergedEntities = entities.map<LinkedEntityDetails>(e => (e.wikidata && details?.[e.wikidata]) ? { ...details[e.wikidata], ...e } : e),
+        uniqueEntities = mergedEntities.filter(deduplicateByName);
 
       return (
         <ul>
@@ -62,9 +50,9 @@ export const DataTableRow: FC<DataTableRowProps> = ({
         const normalizedName = normalizeForComparison(mainName),
           includedInAnyAltName = nameArray.some((alt_name) => {
             const out = normalizeForComparison(alt_name).includes(normalizedName);
-            console.debug("DataTableRow", {normalizedName, alt_name, out});
+            console.debug("DataTableRow", { normalizedName, alt_name, out });
             return out;
-      });
+          });
         if (!includedInAnyAltName) nameArray.push(mainName);
       }
 

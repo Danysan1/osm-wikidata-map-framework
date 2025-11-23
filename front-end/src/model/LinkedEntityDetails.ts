@@ -80,3 +80,39 @@ export interface LinkedEntityDetails extends LinkedEntity {
      */
     wkt_coords?: string;
 }
+
+/**
+ * @see https://stackoverflow.com/a/37511463/2347196
+ */
+export function normalizeForComparison(str: string) {
+  return str
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f.\s"“”-]/g, "")
+    .toLowerCase();
+}
+
+export function deduplicateByName(
+  entity: LinkedEntityDetails,
+  index: number,
+  all: LinkedEntityDetails[]
+) {
+  // If deduplication is disabled show all text entities
+  if (process.env.NEXT_PUBLIC_OWMF_deduplicate_by_name !== "true") return true;
+
+  if (entity.wikidata) return true; // Always show all Wikidata entities
+
+  if (!entity.name) { // This should never happen
+    console.error("Not showing an entity without name nor Wikidata Q-ID", entity);
+    return false;
+  }
+
+  // Ignore text entities with the same name as an existing Wikidata entity
+  const normalName = normalizeForComparison(entity.name);
+  return !all.some(
+    (other) =>
+      !!other.wikidata &&
+      !!other.name &&
+      (normalizeForComparison(other.name).includes(normalName) ||
+        (other.description && normalizeForComparison(other.description).includes(normalName)))
+  );
+}

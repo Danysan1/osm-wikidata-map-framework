@@ -28,7 +28,7 @@ export const DataTablePopup: FC<DataTablePopupProps> = ({
       const uniqueMap = features.reduce<Record<string, OwmfFeature>>(
         (acc, feature, i) => {
           const signatures = [
-            getFeatureTags(feature)?.name ?? feature.id ?? feature.properties?.id ?? i,
+            getFeatureTags(feature)?.name ?? feature.properties?.id ?? i,
             ...getFeatureLinkedEntities(feature).map((e, i) => e.wikidata ?? e.name ?? i),
           ];
           acc[signatures.join("_")] = feature;

@@ -14,7 +14,7 @@ interface DataTableProps {
 
 export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
   const { t, i18n } = useTranslation(),
-    [entityDetails, setEtymologyDetails] = useState<Record<string, LinkedEntityDetails>>();
+    [entityDetails, setEntityDetails] = useState<Record<string, LinkedEntityDetails>>();
 
   useEffect(() => {
     const wikidataIdArray = features.flatMap((f) =>
@@ -33,7 +33,7 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
 
     detailsService
       .fetchEtymologyDetails(uniqueWikidataIds)
-      .then(setEtymologyDetails)
+      .then(setEntityDetails)
       .catch((e) => console.error("Error fetching linked entity details", e));
   }, [features, i18n.language]);
 
@@ -49,7 +49,7 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
       <tbody>
         {features.map((feature, i) => (
           <DataTableRow
-            key={feature.id ?? i}
+            key={feature.properties?.id ?? i}
             feature={feature}
             openFeatureDetails={() => setOpenFeature(feature)}
             details={entityDetails}

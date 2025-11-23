@@ -2,8 +2,8 @@ import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { EntityDetailsDatabase } from "@/src/db/EntityDetailsDatabase";
 import { EntityLinkNotesDatabase } from "@/src/db/EntityLinkNotesDatabase";
-import { normalizeForComparison, type EntityLinkNote, type LinkedEntity } from "@/src/model/LinkedEntity";
-import type { LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
+import type { EntityLinkNote, LinkedEntity } from "@/src/model/LinkedEntity";
+import { deduplicateByName, type LinkedEntityDetails } from "@/src/model/LinkedEntityDetails";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { WikidataEntityLinkNotesService } from "@/src/services/WikidataEntityLinkNotesService/WikidataEntityLinkNotesService";
 import { FC, useCallback, useEffect, useState } from "react";
@@ -121,29 +121,3 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities, fi
     </div>
   );
 };
-
-function deduplicateByName(
-  entity: LinkedEntityDetails,
-  index: number,
-  all: LinkedEntityDetails[]
-) {
-  // If deduplication is disabled show all text entities
-  if (process.env.NEXT_PUBLIC_OWMF_deduplicate_by_name !== "true") return true;
-
-  if (entity.wikidata) return true; // Always show all Wikidata entities
-
-  if (!entity.name) {
-    console.warn("Not showing an entity without name nor Wikidata Q-ID", entity);
-    return false;
-  }
-
-  // Ignore text entities with the same name as an existing Wikidata entity
-  const normalName = normalizeForComparison(entity.name);
-  return !all.some(
-    (other) =>
-      !!other.wikidata &&
-      !!other.name &&
-      (normalizeForComparison(other.name).includes(normalName) ||
-        (other.description && normalizeForComparison(other.description).includes(normalName)))
-  );
-}

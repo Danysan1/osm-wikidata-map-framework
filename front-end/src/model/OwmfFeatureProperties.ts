@@ -167,7 +167,7 @@ export interface OwmfFeatureProperties {
 
     /**
      * Unique ID of the feature.
-     * This is a duplicate of the Feature.id JSON spec property but sometimes Maplibre erases it so we need this backup
+     * Often this is a duplicate of the Feature.id JSON spec property but sometimes Maplibre erases or replaces that property so we need this backup
      * 
      * @example "openstreetmap.org/way/42"
      * @example "openhistoricalmap.org/way/42"
