@@ -91,7 +91,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                     &nbsp;
                     {sourcePreset.osm_wikidata_properties?.map((prop, index) => <Fragment key={index}>
                         {index > 0 && index < (sourcePreset.osm_wikidata_properties!.length - 1) && ", "}
-                        {index === (sourcePreset.osm_wikidata_properties!.length - 1) && " or "}
+                        {index > 0 && index === (sourcePreset.osm_wikidata_properties!.length - 1) && " or "}
                         <a href={`https://www.wikidata.org/wiki/Property:${prop}`}><code>{prop}</code></a>
                     </Fragment>)}
                     &nbsp;
@@ -234,11 +234,11 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                             &nbsp;
                             {sourcePreset.osm_wikidata_keys.map((key, index) => <Fragment key={index}>
                                 {index > 0 && index < (sourcePreset.osm_wikidata_keys!.length - 1) && ", "}
-                                {index === (sourcePreset.osm_wikidata_keys!.length - 1) && " or "}
+                                {index > 0 && index === (sourcePreset.osm_wikidata_keys!.length - 1) && " or "}
                                 <a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}><code>{key}</code></a>
                             </Fragment>)}
                             &nbsp;
-                            tag and this website&apos;s data has been updated in the meantime, then the element should already be available on the map.
+                            tag and this website&apos;s data has been updated since it has been added, then the element should already be available on the map.
                         </li>}
                         <li>If one of these tags is present and this website&apos;s data has been updated but the element isn&apos;t available on the map, then the tag value may contain an error (like not being a valid Wikidata ID).</li>
                         <li>If one of these tags is available but links to the wrong entity, search on Wikidata the ID for the correct entity ID and edit the incorrect tag with the new ID.</li>
@@ -250,7 +250,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                                     &nbsp;
                                     {sourcePreset.osm_wikidata_properties?.map((prop, index) => <Fragment key={index}>
                                         {index > 0 && index < (sourcePreset.osm_wikidata_properties!.length - 1) && ", "}
-                                        {index === (sourcePreset.osm_wikidata_properties!.length - 1) && " or "}
+                                        {index > 0 && index === (sourcePreset.osm_wikidata_properties!.length - 1) && " or "}
                                         <a href={`https://www.wikidata.org/wiki/Property:${prop}`}><code>{prop}</code></a>
                                     </Fragment>)}
                                     &nbsp;
