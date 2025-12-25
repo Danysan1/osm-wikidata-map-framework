@@ -30,7 +30,7 @@ export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
             ? `${process.env.NEXT_PUBLIC_OWMF_wikibase_instance_url}/wiki/${from_wikidata_entity}`
             : null,
         wdFeatureUrl =
-            osm_wd_join_field?.startsWith("P") && fromWdUrl
+            !from_wikidata_prop && osm_wd_join_field?.startsWith("P") && fromWdUrl
                 ? `${fromWdUrl}#${osm_wd_join_field}`
                 : null,
         showArrow = (!!osmFeatureUrl || !!wdFeatureUrl) && !!fromWdUrl,

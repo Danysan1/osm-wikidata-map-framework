@@ -1,22 +1,22 @@
-# DB initialization
+# Custom vector tiles initialization
 
-The code in this folder defines the Apache Airflow data pipelines that are regularly run to download the latest OSM data, initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB and get the linked entities and export the result to a PMTiles file used by the front-end.
+The code in this folder defines the [Apache Airflow](https://airflow.apache.org/docs/apache-airflow/stable/index.html) data pipelines that are regularly run to download the latest OSM data, load it on a [PostGIS](https://postgis.net/) DB, get the linked entities and export the result to a PMTiles file used by the front-end.
 
 ## Pipeline structure
 
 Each `db-init-*.py` file in the [dags/](./dags/) folder defines the flow for an area of the world. If you need the pipelines for a new area you can request it in an issue or propose it in a PR.
-The DB initialization flow for each area is split in three Airflow data pipelines ("DAG"s) that automatically run in sequence once enabled.
+The DB initialization flow for each area is split in three Airflow data pipelines (`DAG`s) that automatically run in sequence once enabled.
 
-1. OSM dump download ([OsmPbfDownloadDAG.py](./dags/OsmPbfDownloadDAG.py), for example `download-planet-from-rss`)
-   - This pipeline downloads a .pbf OpenStreetMap dump ([a local extract](https://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production)
-2. OSM dump filtering ([OwmfFilterDAG.py](./dags/OwmfFilterDAG.py), for example `filter-planet`)
+1. OSM dump download ([`OsmPbfDownloadDAG`](./dags/OsmPbfDownloadDAG.py), for example `download-planet-from-rss`)
+   - This pipeline downloads a .pbf OpenStreetMap dump ([a local extract](https://download.geofabrik.de/) or [a full planet export](https://planet.openstreetmap.org/))
+2. OSM dump filtering ([`OwmfFilterDAG`](./dags/OwmfFilterDAG.py), for example `filter-planet`)
    - This pipeline filters the downloaded OSM dump with [`osmium tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html) to keep only potentially useful data
    - The filtered .pbf is also exported to a tab-separated-values file with [`osmium export`](https://docs.osmcode.org/osmium/latest/osmium-export.html)
-3. Data elaboration + Tiles generation ([OwmfDbInitDAG.py](./dags/OwmfDbInitDAG.py), for example `db-init-planet`)
+3. Data elaboration + Tiles generation ([`OwmfDbInitDAG`](./dags/OwmfDbInitDAG.py), for example `db-init-planet`)
    - This pipeline imports the filtered data into the DB (by default by loading the tab-separated-values file, but it can also be configured to load it from the filtered .pbf with [osm2pgsql](https://osm2pgsql.org/))
    - Then OSM linked entities are extracted from OSM data and downloaded from Wikidata.
    - If enabled, propagation is executed.
-   - Then the data is exported to PMTiles through ogr2ogr+[Tippecanoe](https://github.com/felt/tippecanoe).
+   - Then the data is exported to PMTiles through [ogr2ogr](https://gdal.org/en/stable/programs/ogr2ogr.html)+[tippecanoe](https://github.com/felt/tippecanoe).
    - If enabled, the data is uploaded to a remote DB with pg_dump+pg_restore
    - If enabled, the tiles are uploaded to an S3 bucket
 

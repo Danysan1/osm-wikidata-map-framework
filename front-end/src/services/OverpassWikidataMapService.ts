@@ -158,9 +158,12 @@ export class OverpassWikidataMapService implements MapService {
             }
 
             const osmID = osmFeature.properties?.osm_id,
-                osmType = osmFeature.properties?.osm_type;
-            if (osmID && osmID === wikidataFeature.properties?.osm_id && osmType && osmType === wikidataFeature.properties?.osm_type) {
-                const join_field = JOIN_FIELD_MAP[wikidataFeature.properties.osm_type];
+                osmType = osmFeature.properties?.osm_type,
+                wdOsmID = wikidataFeature.properties?.osm_id,
+                wdOsmType = wikidataFeature.properties?.osm_type;
+            if (osmID && osmID === wdOsmID && osmType && osmType === wdOsmType) {
+                const join_field = JOIN_FIELD_MAP[osmType];
+                console.debug("Overpass+Wikidata: Setting osm_wd_join_field", { osmType, osmID, join_field });
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
                 return true; // Same OSM => merge
             }

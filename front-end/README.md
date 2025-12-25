@@ -60,7 +60,7 @@ To learn more about Next.js, take a look at the following resources:
 In order to build a deployable instance its configuration must be set in `.env` or `.env.production`.
 You can copy it from the template file [`.env.example`](../.env.example).
 
-You will also need to specify [a token/key in `.env` for the background map](../.env.example#L45) (either `mapbox_token`, `maptiler_key`, `enable_stadia_maps` or `jawg_token`).
+You will also need to specify [a token/key in `.env` for the background map](../.env.example#L90) (`mapbox_token`/`maptiler_key`/`enable_versatiles`/`enable_stadia_maps`/...).
 
 If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS Sentry project and set [the `sentry-*` parameters in `.env`](../.env.example#L122) according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 
