@@ -12,7 +12,11 @@ interface EntityButtonRowProps {
 export const EntityButtonRow: FC<EntityButtonRowProps> = ({ entity }) => {
   const { i18n } = useTranslation(),
     language = i18n.language.split("_")[0]; // Ignore country
-  const entitreeURL = language && entity.wikidata && entity.instanceID == "Q5"
+  const osm_full_id =
+      entity.osm_type && entity.osm_id
+        ? entity.osm_type + "/" + entity.osm_id
+        : undefined,
+      entitreeURL = language && entity.wikidata && entity.instanceID == "Q5"
     ? `https://www.entitree.com/${language}/family_tree/${entity.wikidata}`
     : undefined;
 
@@ -22,6 +26,7 @@ export const EntityButtonRow: FC<EntityButtonRowProps> = ({ entity }) => {
       wikipedia={entity.wikipedia}
       commons={entity.commons}
       wikispore={entity.wikispore}
+      osmFullID={osm_full_id}
     >
       {entitreeURL && (
         <Button

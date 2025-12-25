@@ -12,16 +12,15 @@ SELECT
     (SAMPLE(?_itemPicture) AS ?itemPicture)
     (SAMPLE(?_height) AS ?height)
     (SAMPLE(?_levels) AS ?levels)
-    (SAMPLE(?_osm_node) AS ?osm_node)
-    (SAMPLE(?_osm_way) AS ?osm_way)
-    (SAMPLE(?_osm_rel) AS ?osm_rel)
-    (SAMPLE(?_ohm_rel) AS ?ohm_rel)
+    (SAMPLE(?_osm_node_id) AS ?osm_node_id)
+    (SAMPLE(?_osm_way_id) AS ?osm_way_id)
+    (SAMPLE(?_osm_rel_id) AS ?osm_rel_id)
     (SAMPLE(?_alias) AS ?alias)
     ?etymology
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
 WITH { 
-    SELECT ?etymology ?_location ?_commons ?_linkPicture ?_itemPicture ?_osm_node ?_osm_way ?_osm_rel
+    SELECT ?etymology ?_location ?_commons ?_linkPicture ?_itemPicture ?_osm_node_id ?_osm_way_id ?_osm_rel_id
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
@@ -37,13 +36,13 @@ WITH {
 
         OPTIONAL { ?stmt pq:P373 ?_commons. }
         ${linkPictureQuery}
-        OPTIONAL { ?stmt pq:P11693 ?_osm_node. }
-        OPTIONAL { ?stmt pq:P10689 ?_osm_way. }
-        OPTIONAL { ?stmt pq:P402 ?_osm_rel. }
+        OPTIONAL { ?stmt pq:P11693 ?_osm_node_id. }
+        OPTIONAL { ?stmt pq:P10689 ?_osm_way_id. }
+        OPTIONAL { ?stmt pq:P402 ?_osm_rel_id. }
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_website ?_wikipedia ?_wikispore ?_linkPicture ?_itemPicture ?_height ?_levels ?_osm_node ?_osm_way ?_osm_rel ?_ohm_rel ?_alias
+    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_website ?_wikipedia ?_wikispore ?_linkPicture ?_itemPicture ?_height ?_levels ?_osm_node_id ?_osm_way_id ?_osm_rel_id ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         ${entityFilterQuery}
@@ -77,10 +76,9 @@ WITH {
         OPTIONAL { ?item wdt:P18 ?_itemPicture. }
         OPTIONAL { ?item p:P2048/psn:P2048/wikibase:quantityAmount ?_height. } # https://stackoverflow.com/a/57560572/2347196
         OPTIONAL { ?item wdt:P1101 ?_levels. }
-        OPTIONAL { ?item wdt:P11693 ?_osm_node. }
-        OPTIONAL { ?item wdt:P10689 ?_osm_way. }
-        OPTIONAL { ?item wdt:P402 ?_osm_rel. }
-        OPTIONAL { ?item wdt:P8424 ?_ohm_rel. }
+        OPTIONAL { ?item wdt:P11693 ?_osm_node_id. }
+        OPTIONAL { ?item wdt:P10689 ?_osm_way_id. }
+        OPTIONAL { ?item wdt:P402 ?_osm_rel_id. }
         OPTIONAL { ?_alias owl:sameAs ?item. }
     }
 } AS %reverse

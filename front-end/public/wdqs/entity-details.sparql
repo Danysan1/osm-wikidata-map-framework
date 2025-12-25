@@ -29,6 +29,9 @@ SELECT ?wikidata
     (SAMPLE(?birth_place_name) AS ?birth_place)
     (SAMPLE(?death_place_name) AS ?death_place)
     (SAMPLE(?_wkt_coords) AS ?wkt_coords)
+    (SAMPLE(?_osm_node_id) AS ?osm_node_id)
+    (SAMPLE(?_osm_way_id) AS ?osm_way_id)
+    (SAMPLE(?_osm_rel_id) AS ?osm_rel_id)
     (GROUP_CONCAT(DISTINCT ?part; SEPARATOR=';') AS ?parts)
 WHERE {
     VALUES ?rawWikidata { ${wikidataValues} }
@@ -230,6 +233,18 @@ WHERE {
     OPTIONAL {
         ?wikidata wdt:P625 ?_wkt_coords.
         FILTER(STRSTARTS(?_wkt_coords, 'Point')).
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P11693 ?_osm_node_id.
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P10689 ?_osm_way_id.
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P402 ?_osm_rel_id.
     }
 
     OPTIONAL {

@@ -1,4 +1,3 @@
-import { OSM_TITLE } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import mapcompleteLogo from "@/src/img/mapcomplete.svg";
 import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
@@ -10,14 +9,6 @@ import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { ButtonRow } from "./ButtonRow";
-import openHistoricalMapLogo from "./img/OpenHistoricalMap_logo.svg";
-import openStreetMapLogo from "./img/Openstreetmap_logo.svg";
-
-const OSM_LOGO = (
-  process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("openhistoricalmap")
-    ? openHistoricalMapLogo
-    : openStreetMapLogo
-) as StaticImport;
 
 interface FeatureButtonRowProps {
   feature: OwmfFeature;
@@ -35,11 +26,8 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
   const osm_full_id =
       feature.properties?.osm_type && feature.properties?.osm_id
         ? feature.properties.osm_type + "/" + feature.properties?.osm_id
-        : null,
+        : undefined,
     { t } = useTranslation(),
-    openStreetMapURL = osm_full_id
-      ? `${process.env.NEXT_PUBLIC_OWMF_osm_instance_url}/${osm_full_id}`
-      : undefined,
     { setLat, setLon, setZoom } = useUrlFragmentContext();
 
   let pos: Position | undefined;
@@ -98,18 +86,9 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
       wikipedia={feature.properties?.wikipedia}
       wikispore={feature.properties?.wikispore}
       className={className}
+      osmFullID={osm_full_id}
       onOpenInfo={openFeatureDetails}
     >
-      {openStreetMapURL && (
-        <Button
-          href={openStreetMapURL}
-          title={OSM_TITLE}
-          className="osm_button"
-          icon={OSM_LOGO}
-          iconAlt={`${OSM_TITLE} logo`}
-          text={OSM_TITLE}
-        />
-      )}
       {iDEditorURL && (
         <Button
           href={iDEditorURL}

@@ -1,11 +1,20 @@
+import { OSM_TITLE } from "@/src/config";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { FC, PropsWithChildren, useMemo } from "react";
 import { Button } from "../Button/Button";
 import styles from "./ButtonRow.module.css";
 import commonsLogo from "./img/Commons-logo.svg";
+import openHistoricalMapLogo from "./img/OpenHistoricalMap_logo.svg";
+import openStreetMapLogo from "./img/Openstreetmap_logo.svg";
 import wikidataLogo from "./img/Wikidata.svg";
 import wikipediaLogo from "./img/Wikipedia-logo-v2.svg";
 import wikisporeLogo from "./img/Wikispore_logo_without_text.svg";
+
+const OSM_LOGO = (
+  process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("openhistoricalmap")
+    ? openHistoricalMapLogo
+    : openStreetMapLogo
+) as StaticImport;
 
 interface ButtonRowProps extends PropsWithChildren {
   commons?: string;
@@ -14,21 +23,22 @@ interface ButtonRowProps extends PropsWithChildren {
   wikipedia?: string;
   wikispore?: string;
   className?: string;
+  osmFullID?: string;
   onOpenInfo?: () => void;
 }
 
 export const ButtonRow: FC<ButtonRowProps> = (props) => {
   const commonsURL = useMemo(() => {
-      if (!props.commons || props.commons === "null") return undefined;
+    if (!props.commons || props.commons === "null") return undefined;
 
-      if (props.commons.startsWith("Category:"))
-        return `https://commons.wikimedia.org/wiki/${props.commons}`;
+    if (props.commons.startsWith("Category:"))
+      return `https://commons.wikimedia.org/wiki/${props.commons}`;
 
-      if (!props.commons.startsWith("http") && !props.commons.includes("File:"))
-        return `https://commons.wikimedia.org/wiki/Category:${props.commons}`;
+    if (!props.commons.startsWith("http") && !props.commons.includes("File:"))
+      return `https://commons.wikimedia.org/wiki/Category:${props.commons}`;
 
-      return props.commons;
-    }, [props.commons]),
+    return props.commons;
+  }, [props.commons]),
     wikidataURL = useMemo(() => {
       if (!props.wikidata || props.wikidata === "null") return undefined;
 
@@ -43,6 +53,9 @@ export const ButtonRow: FC<ButtonRowProps> = (props) => {
 
       return `https://www.wikipedia.org/wiki/${props.wikipedia}`;
     }, [props.wikipedia]),
+    openStreetMapURL = props.osmFullID
+      ? `${process.env.NEXT_PUBLIC_OWMF_osm_instance_url}/${props.osmFullID}`
+      : undefined,
     wikisporeURL = useMemo(() => {
       if (
         process.env.NEXT_PUBLIC_OWMF_wikispore_enable !== "true" ||
@@ -116,6 +129,16 @@ export const ButtonRow: FC<ButtonRowProps> = (props) => {
           iconText="🌐"
           iconAlt="Official website symbol"
           text="Website"
+        />
+      )}
+      {openStreetMapURL && (
+        <Button
+          href={openStreetMapURL}
+          title={OSM_TITLE}
+          className="osm_button"
+          icon={OSM_LOGO}
+          iconAlt={`${OSM_TITLE} logo`}
+          text={OSM_TITLE}
         />
       )}
       {props.children}

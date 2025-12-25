@@ -12,10 +12,9 @@ SELECT
     (SAMPLE(?_itemPicture) AS ?itemPicture)
     (SAMPLE(?_height) AS ?height)
     (SAMPLE(?_levels) AS ?levels)
-    (SAMPLE(?_osm_node) AS ?osm_node)
-    (SAMPLE(?_osm_way) AS ?osm_way)
-    (SAMPLE(?_osm_rel) AS ?osm_rel)
-    (SAMPLE(?_ohm_rel) AS ?ohm_rel)
+    (SAMPLE(?_osm_node_id) AS ?osm_node_id)
+    (SAMPLE(?_osm_way_id) AS ?osm_way_id)
+    (SAMPLE(?_osm_rel_id) AS ?osm_rel_id)
     (SAMPLE(?_alias) AS ?alias)
     ?etymology
     (?etymology AS ?from_entity)
@@ -52,10 +51,9 @@ WHERE {
     OPTIONAL { ?item wdt:P18 ?_itemPicture. }
     OPTIONAL { ?item p:P2048/psn:P2048/wikibase:quantityAmount ?_height. } # https://stackoverflow.com/a/57560572/2347196
     OPTIONAL { ?item wdt:P1101 ?_levels. }
-    OPTIONAL { ?item wdt:P11693 ?_osm_node. }
-    OPTIONAL { ?item wdt:P10689 ?_osm_way. }
-    OPTIONAL { ?item wdt:P402 ?_osm_rel. }
-    OPTIONAL { ?item wdt:P8424 ?_ohm_rel. }
+    OPTIONAL { ?item wdt:P11693 ?_osm_node_id. }
+    OPTIONAL { ?item wdt:P10689 ?_osm_way_id. }
+    OPTIONAL { ?item wdt:P402 ?_osm_rel_id. }
     OPTIONAL { ?_alias owl:sameAs ?item. }
 }
 GROUP BY ?item ?etymology

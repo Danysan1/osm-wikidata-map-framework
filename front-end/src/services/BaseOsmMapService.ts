@@ -310,6 +310,8 @@ export abstract class BaseOsmMapService implements MapService {
                             death_date_precision: DatePrecision.day,
                             death_place: rel.reltags?.deathplace,
                             wikidata: relWikidataQID,
+                            osm_type: "relation",
+                            osm_id: rel.rel,
                             from_osm_instance: OSM_INSTANCE,
                             from_osm_type: "relation",
                             from_osm_id: rel.rel,

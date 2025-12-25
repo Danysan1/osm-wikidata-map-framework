@@ -1,3 +1,4 @@
+import { OsmType } from "@/src/model/LinkedEntity";
 import type { EntityDetailsDatabase } from "../../db/EntityDetailsDatabase";
 import type { LinkedEntityDetails } from "../../model/LinkedEntityDetails";
 import { WikidataService } from "../WikidataService";
@@ -56,6 +57,19 @@ export class WikidataDetailsService extends WikidataService {
                     ?.map(id => id.replace(WikidataService.WD_ENTITY_PREFIX, ""))
                     ?.filter(id => id.length);
 
+                let osm_id: number | undefined,
+                    osm_type: OsmType | undefined;
+                if (row.osm_rel_id?.value) {
+                    osm_type = "relation";
+                    osm_id = parseInt(row.osm_rel_id.value);
+                } else if (row.osm_way_id?.value) {
+                    osm_type = "way";
+                    osm_id = parseInt(row.osm_way_id.value);
+                } else if (row.osm_node_id?.value) {
+                    osm_type = "node";
+                    osm_id = parseInt(row.osm_node_id.value);
+                }
+
                 if (!!row.name?.value || !!row.description?.value || !!row.instanceID?.value) {
                     const details: LinkedEntityDetails = {
                         alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
@@ -79,6 +93,8 @@ export class WikidataDetailsService extends WikidataService {
                         instance: row.instance?.value,
                         instanceID: row.instanceID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         name: row.name?.value,
+                        osm_type,
+                        osm_id,
                         occupations: row.occupations?.value,
                         pictures: row.pictures?.value?.split("||")?.filter(p => p?.length),
                         prizes: row.prizes?.value,

@@ -204,15 +204,15 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         let osm_id: number | undefined,
             osm_type: OsmType | undefined;
-        if (row.osm_rel?.value) {
+        if (row.osm_rel_id?.value) {
             osm_type = "relation";
-            osm_id = parseInt(row.osm_rel.value);
-        } else if (row.osm_way?.value) {
+            osm_id = parseInt(row.osm_rel_id.value);
+        } else if (row.osm_way_id?.value) {
             osm_type = "way";
-            osm_id = parseInt(row.osm_way.value);
-        } else if (row.osm_node?.value) {
+            osm_id = parseInt(row.osm_way_id.value);
+        } else if (row.osm_node_id?.value) {
             osm_type = "node";
-            osm_id = parseInt(row.osm_node.value);
+            osm_id = parseInt(row.osm_node_id.value);
         }
 
         let render_height;

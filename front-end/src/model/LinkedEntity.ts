@@ -87,6 +87,16 @@ export interface LinkedEntity {
     name?: string;
 
     /**
+     * Type of the OpenStreetMap element for this entity
+     */
+    osm_type?: OsmType;
+
+    /**
+     * ID (unique only within its osm_type) of the OpenStreetMap element for this entity
+     */
+    osm_id?: number;
+
+    /**
      * If the feature has both an OSM element and Wikidata entity, this field specifies the clause used to join them.
      * In theory the OSM-WD feature link should be bi-univocal and this field should be on the feature;
      * however in practice this is not always the case (ex. https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/18);
@@ -134,7 +144,7 @@ export interface LinkedEntity {
 
     death_date?: string;
     death_date_precision?: DatePrecision;
-    
+
     /**
      * Name of the place of death
      */
@@ -148,7 +158,7 @@ export interface EntityLinkNote {
      * @see https://www.wikidata.org/wiki/Property:P805
      */
     entityQID?: string;
-    
+
     /**
      * Human readable list of languages in which the statement applies
      */
