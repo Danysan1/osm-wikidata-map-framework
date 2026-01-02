@@ -1,16 +1,16 @@
 import { parseStringArrayConfig } from '../config';
-import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
+import { CUSTOM_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 
 export function getActiveSourcePresetIDs(): string[] {
     if (!process.env.NEXT_PUBLIC_OWMF_source_presets?.trim()) {
-        console.debug("getActiveSourcePresetIDs: using default value:", DEFAULT_SOURCE_PRESET_ID);
-        return [DEFAULT_SOURCE_PRESET_ID];
+        console.debug("getActiveSourcePresetIDs: using default value:", CUSTOM_SOURCE_PRESET_ID);
+        return [CUSTOM_SOURCE_PRESET_ID];
     }
 
     try {
         const presets = parseStringArrayConfig(process.env.NEXT_PUBLIC_OWMF_source_presets);
         if (presets.length) return presets;
-        else return [DEFAULT_SOURCE_PRESET_ID];
+        else return [CUSTOM_SOURCE_PRESET_ID];
     } catch (parseError) {
         console.debug("getActiveSourcePresetIDs: using raw value", { parseError, value: process.env.NEXT_PUBLIC_OWMF_source_presets });
         return [process.env.NEXT_PUBLIC_OWMF_source_presets];
@@ -19,7 +19,7 @@ export function getActiveSourcePresetIDs(): string[] {
 
 export function getCustomSourcePreset(): SourcePreset {
     return {
-        id: DEFAULT_SOURCE_PRESET_ID,
+        id: CUSTOM_SOURCE_PRESET_ID,
         fetch_parts_of_linked_entities: !!process.env.NEXT_PUBLIC_OWMF_fetch_parts_of_linked_entities,
         mapcomplete_theme: process.env.NEXT_PUBLIC_OWMF_mapcomplete_theme,
         osm_filter_tags: process.env.NEXT_PUBLIC_OWMF_osm_filter_tags ? parseStringArrayConfig(process.env.NEXT_PUBLIC_OWMF_osm_filter_tags) : undefined,

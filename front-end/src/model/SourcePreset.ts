@@ -1,4 +1,5 @@
-export const DEFAULT_SOURCE_PRESET_ID = "custom";
+export const DEFAULT_SOURCE_PRESET_ID = "base";
+export const CUSTOM_SOURCE_PRESET_ID = "custom";
 export interface SourcePreset {
     /**
      * Background color for controls and popups

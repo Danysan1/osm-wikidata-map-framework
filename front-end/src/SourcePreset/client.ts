@@ -1,9 +1,9 @@
-import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
+import { CUSTOM_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 import { getCustomSourcePreset } from "./common";
 
 export async function fetchSourcePreset(sourcePresetID?: string) {
     let preset: SourcePreset;
-    if (!sourcePresetID || sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
+    if (!sourcePresetID || sourcePresetID === CUSTOM_SOURCE_PRESET_ID) {
         preset = getCustomSourcePreset();
     } else {
         const presetURL = `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/presets/${sourcePresetID}.json`,

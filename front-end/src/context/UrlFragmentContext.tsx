@@ -69,10 +69,10 @@ function readColorSchemeIdFromFragment(splitFragment: string[]) {
     return ColorSchemeID.entity_link_count;
   } else if (rawID && Object.values(ColorSchemeID).includes(rawID as ColorSchemeID)) {
     return rawID as ColorSchemeID;
-  } else {
+  } else if (rawID !== undefined) {
     console.warn("Invalid color scheme in URL fragment", rawID);
-    return undefined;
   }
+  return undefined;
 }
 function readBackEndIdFromFragment(splitFragment: string[]) {
   return splitFragment[BACK_END_POSITION];
@@ -90,10 +90,10 @@ function readSourcePresetIdFromFragment(splitFragment: string[]) {
   const rawID = splitFragment[PRESET_POSITION];
   if (rawID && getActiveSourcePresetIDs().includes(rawID)) {
     return rawID;
-  } else {
-    console.warn("Invalid or empty source preset in URL fragment", rawID);
-    return undefined;
+  } else if (rawID !== undefined) {
+    console.warn("Invalid source preset in URL fragment", rawID);
   }
+  return undefined;
 }
 
 const UrlFragmentContext = createContext<UrlFragmentState>({
@@ -141,7 +141,9 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
     [colorSchemeID, setColorSchemeID] = useState<ColorSchemeID>(DEFAULT_COLOR_SCHEME),
     [backEndID, setBackEndID] = useState<string>(DEFAULT_BACKEND_ID),
     [backgroundStyleID, setBackgroundStyleID] = useState<string>(DEFAULT_BACKGROUND_STYLE_ID),
-    [sourcePresetID, setSourcePresetID] = useState<string>(getActiveSourcePresetIDs()[0] ?? DEFAULT_SOURCE_PRESET_ID),
+    presets = getActiveSourcePresetIDs(),
+    defaultSourcePreset = presets.includes(DEFAULT_SOURCE_PRESET_ID) ? DEFAULT_SOURCE_PRESET_ID : presets[0],
+    [sourcePresetID, setSourcePresetID] = useState<string>(defaultSourcePreset),
     [year, setYear] = useState<number>(DEFAULT_YEAR),
     setLat: Dispatch<SetStateAction<number>> = useCallback(
       (lat) => {

@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from 'path';
-import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
+import { CUSTOM_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 import { getCustomSourcePreset } from "./common";
 
 export function readSourcePreset(sourcePresetID?: string): SourcePreset {
     let preset: SourcePreset;
-    if (!sourcePresetID || sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
+    if (!sourcePresetID || sourcePresetID === CUSTOM_SOURCE_PRESET_ID) {
         preset = getCustomSourcePreset();
     } else {
         const presetPath = join(process.cwd(), "public", "presets", sourcePresetID + ".json");
