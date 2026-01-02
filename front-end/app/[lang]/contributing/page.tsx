@@ -8,10 +8,16 @@ export function generateStaticParams() {
 }
 
 interface LanguageContributingProps {
-    params: { lang: string; }
+    params: Promise<{ lang: string; }>
 }
 
-export default function LanguageContributing({ params: { lang } }: LanguageContributingProps) {
+export default async function LanguageContributing(props: LanguageContributingProps) {
+    const params = await props.params;
+
+    const {
+        lang
+    } = params;
+
     return (
         <main className={`${styles.main} ${styles.text}`}>
             <ContributingIndex lang={lang} />
