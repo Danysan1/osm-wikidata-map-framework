@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import { loadServerI18n } from "@/src/i18n/server";
 import { NextResponse } from "next/server";
 

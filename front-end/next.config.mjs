@@ -10,7 +10,7 @@ else if (process.env.NODE_ENV === "test")
 else if (process.env.owmf_static_export === "true")
   console.log("Static export enabled, generating static files to be served with any web server");
 else
-  console.log("Static export disabled, building dynamic server-side app to be run with `next start`");
+  console.log("Static export DISABLED, building dynamic server-side app to be run with `next start`");
 
 process.env.NEXT_PUBLIC_OWMF_version = JSON.parse(readFileSync('package.json', 'utf8')).version;
 

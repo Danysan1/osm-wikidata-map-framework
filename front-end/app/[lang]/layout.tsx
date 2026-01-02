@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import { GoogleTagManager } from "@next/third-parties/google";
 import { dir } from "i18next";
 
