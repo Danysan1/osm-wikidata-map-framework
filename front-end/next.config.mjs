@@ -88,19 +88,6 @@ let nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production"
   },
-  webpack: (config, options) => {
-    config.module.rules.push({
-      test: /\.sparql$/,
-      type: "asset/resource",
-      exclude: /node_modules/,
-    }, {
-      test: /\.sql$/,
-      type: "asset/source",
-      exclude: /node_modules/,
-    });
-
-    return config;
-  },
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -151,14 +138,6 @@ if (process.env.owmf_sentry_js_dsn && process.env.NODE_ENV !== "test") {
       deleteSourcemapsAfterUpload: true
     },
 
-    // Automatically tree-shake Sentry logger statements to reduce bundle size
-    disableLogger: true, //process.env.NODE_ENV !== "development", // https://github.com/getsentry/sentry-javascript/issues/10951#issuecomment-1982739125
-
-    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-    // See the following for more information:
-    // https://docs.sentry.io/product/crons/
-    // https://vercel.com/docs/cron-jobs
-    automaticVercelMonitors: true,
   });
 }
 

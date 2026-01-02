@@ -11,8 +11,8 @@ export function getActiveSourcePresetIDs(): string[] {
         const presets = parseStringArrayConfig(process.env.NEXT_PUBLIC_OWMF_source_presets);
         if (presets.length) return presets;
         else return [CUSTOM_SOURCE_PRESET_ID];
-    } catch (parseError) {
-        console.debug("getActiveSourcePresetIDs: using raw value", { parseError, value: process.env.NEXT_PUBLIC_OWMF_source_presets });
+    } catch {
+        console.debug("getActiveSourcePresetIDs: using raw value", { value: process.env.NEXT_PUBLIC_OWMF_source_presets });
         return [process.env.NEXT_PUBLIC_OWMF_source_presets];
     }
 }

@@ -1,0 +1,26 @@
+#defaultView:BarChart
+SELECT
+    (?articleCount AS ?name)
+    (COUNT(DISTINCT ?wikidata) AS ?count)
+    (?articleCount AS ?id)
+    (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
+    (CONCAT('rgb(',?red,',',?green,',0)') AS ?color)
+WITH {
+    SELECT ?wikidata (COUNT(DISTINCT ?article) AS ?articleCount)
+    WHERE {
+        VALUES ?wikidata { ${wikidataValues} }
+        OPTIONAL { ?article schema:about ?wikidata }
+    }
+    GROUP BY ?wikidata
+} AS %articleCounts
+WHERE {
+    INCLUDE %articleCounts
+
+    BIND(ROUND((?articleCount-5)*255/20) AS ?rawGreen)
+    BIND(STR(IF(?rawGreen < 0, 0, IF(?rawGreen > 255, 255, ?rawGreen))) AS ?green)
+    BIND(ROUND((45-?articleCount)*255/20) AS ?rawRed)
+    BIND(STR(IF(?rawRed < 0, 0, IF(?rawRed > 255, 255, ?rawRed))) AS ?red)
+}
+GROUP BY ?articleCount ?red ?green
+ORDER BY DESC(?count)
+LIMIT 120
