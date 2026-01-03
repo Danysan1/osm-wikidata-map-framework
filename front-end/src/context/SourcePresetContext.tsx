@@ -71,6 +71,8 @@ export const SourcePresetContextProvider: FC<PropsWithChildren> = ({ children })
             return;
         }
 
+        // The separate state and effect for fetchedSourcePreset are needed to guarantee that the wrong preset is not set if the selected preset has changed while fetching the preset
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSourcePreset((oldPreset) => {
             if (oldPreset?.id === fetchedSourcePreset?.id) {
                 console.log("Skipping redundant source preset update", {

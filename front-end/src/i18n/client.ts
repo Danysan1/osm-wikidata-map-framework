@@ -18,6 +18,7 @@ export async function loadClientI18n() {
         backends: object[] = [HttpBackend],
         backendOptions: object[] = [{ loadPath: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/locales/{{lng}}/{{ns}}.json` }];
     if (i18nOverride) {
+        console.debug("loadClientI18n: using i18n_override:", { languages: Object.keys(i18nOverride) });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }

@@ -192,7 +192,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       newSourcePreset,
       newYear,
     });
-  }, [setLat, setZoom]);
+  }, [setLat, setLon, setZoom]);
 
   /** Load URL fragment on each fragment change */
   useEffect(() => {

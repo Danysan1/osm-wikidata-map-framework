@@ -9,17 +9,19 @@ import { loadClientI18n } from "@/src/i18n/client";
 import { useEffect, useState } from "react";
 import { OwmfMap } from "./OwmfMap";
 
-loadClientI18n().catch((e) => {
-  throw e;
-});
+loadClientI18n().then(
+  () => console.debug("Loaded i18n")
+).catch((e) => { throw e; });
 
 export function OwmfMapIfSupported() {
   const [isWebglSupported, setIsWebglSupported] = useState(true);
 
   useEffect(() => {
     // https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
+    // This must be run in a useEffect or Next would try to pre-render it causing an error "window is not defined"
     if (!window.WebGLRenderingContext) {
       console.warn("WebGL not supported");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsWebglSupported(false);
     } else {
       const canvas = document.createElement("canvas");

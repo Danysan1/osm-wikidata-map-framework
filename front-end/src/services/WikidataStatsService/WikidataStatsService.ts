@@ -13,15 +13,13 @@ const COLOR_SCHEMES_WITH_CSV: ColorSchemeID[] = [
 ];
 
 const fetchSparqlQuery = (type: ColorSchemeID) => fetch(
-    `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/wdqs/stats/${type}.sparql`,
-    { cache: "force-cache" }
+    `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/wdqs/stats/${type}.sparql`, { cache: "force-cache" }
 ).then(r => {
     if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
     return r.text();
 });
 const fetchCsvFile = (type: ColorSchemeID) => fetch(
-    `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/${type}.csv`,
-    { cache: "force-cache" }
+    `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/${type}.csv`, { cache: "force-cache" }
 ).then(r => {
     if (r.status !== 200) throw new Error("Failed fetching CSV file from " + r.url);
     return r.text();

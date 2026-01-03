@@ -1,6 +1,3 @@
-"use client";
-
-import { loadClientI18n } from "@/src/i18n/client";
 import osmTagDiagram from "@/src/img/data/osm_name_etymology.png";
 import directDiagram from "@/src/img/data/osm_wikidata_direct.png";
 import reverseDiagram from "@/src/img/data/osm_wikidata_reverse.png";
@@ -9,18 +6,16 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import Image from "next/image";
 import Link from "next/link";
 import { FC, Fragment } from "react";
-import { useTranslation } from "react-i18next";
 import styles from "./Contributing.module.css";
-
-loadClientI18n().catch((e) => { throw e; });
+import { loadServerI18n } from "@/src/i18n/server";
 
 interface ContributingProps {
     lang?: string;
     sourcePreset: SourcePreset;
 }
 
-export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
-    const { t } = useTranslation(),
+export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }) => {
+    const { t } = await loadServerI18n(lang),
         anyLinkedEntity = !!sourcePreset?.osm_wikidata_keys || !!sourcePreset?.osm_wikidata_properties || !!sourcePreset?.wikidata_indirect_property || !!sourcePreset?.osm_text_key,
         anyPropagation = anyLinkedEntity && process.env.NEXT_PUBLIC_OWMF_pmtiles_preset === sourcePreset.id;
 
@@ -122,7 +117,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                 alt={"Propagation example diagram"}
                 src={propagationDiagram}
                 width={500}
-                height={333}/>
+                height={333} />
             <p>If you find an element that is linked to the wrong entity and you want to fix it or report the problem, check the linked entity&apos;s source row.
                 If it includes the &quot;{t("etymology_details.propagation")}&quot; step, check whether the bad link is caused by a wrong propagation.
                 You can check the source of the copied link by clicking the first and last link in the source row, you will be taken respectively to the OSM page for the map feature and to the Wikidata page for the linked entity.
@@ -167,7 +162,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                             <Image
                                 alt={"OSM to Wikidata diagram"}
                                 src={osmTagDiagram}
-                                width={420}/>
+                                width={420} />
                         </td>}
                     </tr>)}
                     {sourcePreset.osm_text_key && <tr>
@@ -192,7 +187,7 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                                 <Image
                                     alt={"OSM+Wikidata diagram"}
                                     src={sourcePreset.osm_wikidata_properties ? directDiagram : reverseDiagram}
-                                    width={sourcePreset.osm_wikidata_properties ? 500 : 400}/>
+                                    width={sourcePreset.osm_wikidata_properties ? 500 : 400} />
                             </td>
                         </tr>
                         <tr>

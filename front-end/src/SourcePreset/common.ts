@@ -12,7 +12,7 @@ export function getActiveSourcePresetIDs(): string[] {
         if (presets.length) return presets;
         else return [CUSTOM_SOURCE_PRESET_ID];
     } catch {
-        console.debug("getActiveSourcePresetIDs: using raw value", { value: process.env.NEXT_PUBLIC_OWMF_source_presets });
+        // console.debug("getActiveSourcePresetIDs: using raw value", { value: process.env.NEXT_PUBLIC_OWMF_source_presets });
         return [process.env.NEXT_PUBLIC_OWMF_source_presets];
     }
 }
