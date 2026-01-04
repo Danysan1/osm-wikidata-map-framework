@@ -1,0 +1,12 @@
+{
+    "background_color": "hsl(150, 100%, 96%)",
+    "fetch_parts_of_linked_entities": true,
+    "mapcomplete_theme": "trees",
+    "osm_text_key": "species",
+    "osm_wikidata_keys": [
+        "species:wikidata"
+    ],
+    "osm_wikidata_properties": [
+        "P10241"
+    ]
+}
