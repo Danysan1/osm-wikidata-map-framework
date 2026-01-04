@@ -84,13 +84,13 @@ export class QLeverMapService implements MapService {
 
         let backend: SparqlBackend;
         if (backEndID.startsWith("qlever_osm")) {
-            backend = SparqlBackend.OsmPlanet;
+            backend = process.env.NEXT_PUBLIC_OWMF_qlever_osm_source as SparqlBackend;
         } else {
             backend = "wikidata";
         }
 
         const sparqlQueryTemplate = await this.getSparqlQueryTemplate(backEndID),
-            sparqlQuery = this.fillPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox)
+            sparqlQuery = this.fillQueryPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox, year)
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
             // TODO Filter by date
@@ -148,7 +148,7 @@ export class QLeverMapService implements MapService {
             throw new Error(`Invalid QLever back-end ID: "${backEndID}"`);
     }
 
-    private fillPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {
+    private fillQueryPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox, year: number): string {
         // TODO Use onlyCentroids
         if (backEndID.includes("osm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
@@ -168,7 +168,7 @@ export class QLeverMapService implements MapService {
                 filterKeysExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_value; " : "", // TODO Use blank nodes
                 non_filter_osm_wd_predicate = non_filter_osm_wd_keys?.map(keyPredicate)?.join('|'),
                 osmEtymologyUnionBranches: string[] = [];
-            console.debug("fillPlaceholders", {
+            console.debug("fillQueryPlaceholders", {
                 filter_tags, filter_tags_with_value, filter_keys, filter_osm_wd_keys, non_filter_wd_keys: non_filter_osm_wd_keys, filter_non_etymology_keys, filterExpression: filterKeysExpression
             });
 
@@ -241,6 +241,7 @@ export class QLeverMapService implements MapService {
         return sparqlQuery
             .replaceAll('${osmCountryQuery}', osmCountryQuery)
             .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
+            .replaceAll('${year}', year.toFixed(0))
             .replaceAll('${westLon}', bbox[0].toString())
             .replaceAll('${southLat}', bbox[1].toString())
             .replaceAll('${eastLon}', bbox[2].toString())

@@ -72,6 +72,9 @@ export class CombinedCachedMapService implements MapService {
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
+        if(isNaN(year))
+            year = new Date().getFullYear();
+
         const promise = service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
         this.alreadyFetchingPromises[+onlyCentroids] = promise;
 
