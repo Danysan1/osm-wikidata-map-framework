@@ -21,8 +21,10 @@ WHERE {
     ?item p:P625 ?locationStatement;
           rdfs:label ?anyLabel.
     ${wikidataCountryQuery}
-    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
-    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+    MINUS { ?item (wdt:P580|wdt:P571|wdt:P1619) ?startDate FILTER(YEAR(?startDate) > ${year}). } # Ignore if the feature has a bad start date
+    MINUS { ?item (wdt:P582|wdt:P576|wdt:P3999) ?endDate FILTER(YEAR(?endDate) < ${year}). } # Ignore if the feature has a bad end date
+    MINUS { ?item (wdt:P585|wdt:P376) []. } # Ignore if the feature isn't on Earth
+    MINUS { ?locationStatement pq:P582 ?endDate FILTER(YEAR(?endDate) < ${year}). } # Ignore if the location statement has a bad end date
 
     # Filter by location
     SERVICE wikibase:box {

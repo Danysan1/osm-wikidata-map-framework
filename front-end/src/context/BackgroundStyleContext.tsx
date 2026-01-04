@@ -135,6 +135,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       }
 
       if (style?.canFilterByDate) {
+        const mapYear = isNaN(year) ? new Date().getFullYear() : year;
         /**
          * Filter the features by date, where applicable
          *
@@ -143,12 +144,12 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
         const startFilter: ExpressionSpecification = [
           "any",
           ["!", ["has", "start_date"]],
-          [">=", year, ["get", "start_decdate"]],
+          [">=", mapYear, ["get", "start_decdate"]],
         ];
         const endFilter: ExpressionSpecification = [
           "any",
           ["!", ["has", "end_date"]],
-          ["<", year, ["get", "end_decdate"]],
+          ["<", mapYear, ["get", "end_decdate"]],
         ];
         styleSpec.layers.forEach((l) => {
           if (l.type !== "raster" && l.type !== "background") {
@@ -204,7 +205,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       // https://github.com/mapbox/mapbox-gl-js/issues/4808
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
     },
-    [i18n.language, style?.canFilterByDate, style?.key, style?.keyPlaceholder, year]
+    [i18n.language, style, year]
   );
 
   /**

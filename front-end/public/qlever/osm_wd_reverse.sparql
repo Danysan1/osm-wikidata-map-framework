@@ -42,8 +42,10 @@ WHERE {
         ${wikidataCountryQuery}
         MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore the etymology statement has an end date # TODO Use blank nodes
         MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
-        MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
-        MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
+        MINUS { ?item (wdt:P580|wdt:P571|wdt:P1619) ?startDate FILTER(YEAR(?startDate) > ${year}). } # Ignore if the feature has a bad start date
+        MINUS { ?item (wdt:P582|wdt:P576|wdt:P3999) ?endDate FILTER(YEAR(?endDate) < ${year}). } # Ignore if the feature has a bad end date
+        MINUS { ?item (wdt:P585|wdt:P376) []. } # Ignore if the feature isn't on Earth
+        MINUS { ?locationStatement pq:P582 ?endDate FILTER(YEAR(?endDate) < ${year}). } # Ignore if the location statement has a bad end date
         MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated linked entities where both the item and the item's containing location are linked through the indirect property
         ?locationStatement ps:P625 ?wd_location.
 
