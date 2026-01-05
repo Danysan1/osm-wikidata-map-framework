@@ -48,6 +48,7 @@
         "network": "Name of the 'network' source preset",
         "operator": "Name of the 'operator' source preset",
         "protected_areas": "Name of the 'protected_areas' source preset",
+        "species": "Name of the 'species' source preset",
         "stolperstein": "Name of the 'stolperstein' source preset"
     },
     "source": {
