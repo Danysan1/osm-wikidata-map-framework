@@ -1,6 +1,6 @@
+import { ContributingIndex } from "@/src/components/Contributing/ContributingIndex";
 import { LANGUAGES } from "@/src/i18n/common";
 import styles from "../../page.module.css";
-import { ContributingIndex } from "@/src/components/Contributing/ContributingIndex";
 
 // https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
 export function generateStaticParams() {
@@ -12,11 +12,7 @@ interface LanguageContributingProps {
 }
 
 export default async function LanguageContributing(props: LanguageContributingProps) {
-    const params = await props.params;
-
-    const {
-        lang
-    } = params;
+    const { lang } = await props.params;
 
     return (
         <main className={`${styles.main} ${styles.text}`}>

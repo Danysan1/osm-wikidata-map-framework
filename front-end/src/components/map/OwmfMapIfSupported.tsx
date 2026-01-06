@@ -5,12 +5,12 @@ import { LoadingSpinnerContextProvider } from "@/src/context/LoadingSpinnerConte
 import { SnackbarContextProvider } from "@/src/context/SnackbarContext";
 import { SourcePresetContextProvider } from "@/src/context/SourcePresetContext";
 import { UrlFragmentContextProvider } from "@/src/context/UrlFragmentContext";
-import { loadClientI18n } from "@/src/i18n/client";
+import { loadServerI18n } from "@/src/i18n/server";
 import { useEffect, useState } from "react";
 import { OwmfMap } from "./OwmfMap";
 
-loadClientI18n().then(
-  () => console.debug("Loaded i18n")
+loadServerI18n().then(
+  ({ i18n }) => { console.debug("Loaded i18n:", i18n.language); }
 ).catch((e) => { throw e; });
 
 export function OwmfMapIfSupported() {
