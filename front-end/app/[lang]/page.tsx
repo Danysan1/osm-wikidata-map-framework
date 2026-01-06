@@ -15,11 +15,7 @@ interface LanguageHomeProps {
 }
 
 export async function generateMetadata(props: LanguageHomeProps): Promise<Metadata> {
-  const params = await props.params;
-
-  const {
-    lang
-  } = params;
+  const { lang } = await props.params;
 
   if (!!lang && !Object.keys(LANGUAGES).includes(lang)) return notFound();
 

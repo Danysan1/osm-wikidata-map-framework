@@ -8,5 +8,6 @@
     ],
     "osm_wikidata_properties": [
         "P10241"
-    ]
+    ],
+    "use_min_zoom_level": true
 }
