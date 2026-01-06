@@ -3,45 +3,44 @@ import { parse } from "papaparse";
 import type { EtymologyStat } from "../../model/EtymologyStat";
 import { ColorSchemeID } from "../../model/colorScheme";
 import { WikidataService } from "../WikidataService";
-import countryStatsQuery from "./country.sparql";
-import endCenturyStatsQuery from "./end-century.sparql";
-import lineOfWorkStatsQuery from "./field_of_work.sparql";
-import genderStatsQuery from "./gender.sparql";
-import occupationStatsQuery from "./occupation.sparql";
-import pictureStatsQuery from "./picture.sparql";
-import startCenturyStatsQuery from "./start-century.sparql";
-import typeStatsQuery from "./type.sparql";
-import wikilinkStatsQuery from "./wikilink.sparql";
 
-const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
-    [ColorSchemeID.type]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_types.csv`,
-    [ColorSchemeID.gender]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_genders.csv`,
-    [ColorSchemeID.country]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_countries.csv`,
-    [ColorSchemeID.field_of_work]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_lines_of_work.csv`,
-    [ColorSchemeID.occupation]: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/wikidata_occupations.csv`,
-}
+const COLOR_SCHEMES_WITH_CSV: ColorSchemeID[] = [
+    ColorSchemeID.type,
+    ColorSchemeID.gender,
+    ColorSchemeID.country,
+    ColorSchemeID.occupation,
+    ColorSchemeID.field_of_work,
+];
 
-export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
-    [ColorSchemeID.picture]: pictureStatsQuery,
-    [ColorSchemeID.feature_link_count]: wikilinkStatsQuery,
-    [ColorSchemeID.type]: typeStatsQuery,
-    [ColorSchemeID.gender]: genderStatsQuery,
-    [ColorSchemeID.country]: countryStatsQuery,
-    [ColorSchemeID.field_of_work]: lineOfWorkStatsQuery,
-    [ColorSchemeID.occupation]: occupationStatsQuery,
-    [ColorSchemeID.start_century]: startCenturyStatsQuery,
-    [ColorSchemeID.end_century]: endCenturyStatsQuery,
-    [ColorSchemeID.entity_link_count]: wikilinkStatsQuery,
-}
+const fetchSparqlQuery = (type: ColorSchemeID) => fetch(
+    `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/wdqs/stats/${type}.sparql`, { cache: "force-cache" }
+).then(r => {
+    if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
+    return r.text();
+});
+const fetchCsvFile = (type: ColorSchemeID) => fetch(
+    `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/csv/${type}.csv`, { cache: "force-cache" }
+).then(r => {
+    if (r.status !== 200) throw new Error("Failed fetching CSV file from " + r.url);
+    return r.text();
+});
 
 export class WikidataStatsService extends WikidataService {
     private readonly db?: StatsDatabase;
     private readonly language: string;
+    private readonly resolveQuery: (type: ColorSchemeID) => Promise<string>;
+    private readonly resolveCSV: (type: ColorSchemeID) => Promise<string>;
 
-    public constructor(language: string, db?: StatsDatabase) {
+    public constructor(
+        language: string,
+        db?: StatsDatabase,
+        resolveQuery = fetchSparqlQuery,
+        resolveCSV = fetchCsvFile) {
         super();
         this.db = db;
         this.language = language.split("_")[0]; // Ignore country
+        this.resolveQuery = resolveQuery;
+        this.resolveCSV = resolveCSV;
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
@@ -50,16 +49,11 @@ export class WikidataStatsService extends WikidataService {
             console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
             console.debug("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
-            const csvPath = statsCSVPaths[colorSchemeID],
-                sparqlQueryURL = statsQueryURLs[colorSchemeID];
-            if (!sparqlQueryURL)
-                throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
-            const sparqlQueryTemplate = await fetch(sparqlQueryURL).then(res => res.text()),
+            const sparqlQueryTemplate = await this.resolveQuery(colorSchemeID),
                 res = await this.etymologyIDsQuery(this.language, wikidataIDs, sparqlQueryTemplate);
             let csvData: string[][] | undefined;
-            if (csvPath) {
-                const csvResponse = await fetch(csvPath),
-                    csvText = await csvResponse.text();
+            if (COLOR_SCHEMES_WITH_CSV.includes(colorSchemeID)) {
+                const csvText = await this.resolveCSV(colorSchemeID);
                 csvData = parse(csvText, { download: false, header: false }).data as string[][];
                 // console.info("Loaded CSV:")
                 // console.table(csvData);

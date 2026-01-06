@@ -73,13 +73,13 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${featureFilterQuery}', featureFilterQuery)
                 .replaceAll('${entityFilterQuery}', entityFilterQuery)
                 .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
+                .replaceAll('${year}', year.toFixed(0))
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : "")
                 .replaceAll('${westLon}', bbox[0].toString())
                 .replaceAll('${southLat}', bbox[1].toString())
                 .replaceAll('${eastLon}', bbox[2].toString())
                 .replaceAll('${northLat}', bbox[3].toString());
-        // TODO Filter by year
 
         console.time("wikidata_fetch");
         const ret: SparqlResponse = (await this.api.postSparqlQuery("sparql", sparqlQuery, "json")).data;

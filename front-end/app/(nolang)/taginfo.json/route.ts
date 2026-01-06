@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import { loadServerI18n } from "@/src/i18n/server";
 import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { readSourcePreset } from "@/src/SourcePreset/server";

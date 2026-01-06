@@ -15,7 +15,11 @@ interface LanguageControlProps {
 export const LanguageControl: FC<LanguageControlProps> = (props) => {
     const { t, i18n } = useTranslation(),
         dropdownItems = useMemo(() => {
-            return Object.keys(LANGUAGES).map((lang): DropdownItem => ({
+            const languages = Object.keys(LANGUAGES);
+            if(process.env.NODE_ENV === "development")
+                languages.push("cimode");
+            
+            return languages.map((lang): DropdownItem => ({
                 id: lang,
                 text: lang in LANGUAGES ? LANGUAGES[lang] : lang,
                 onSelect: () => {

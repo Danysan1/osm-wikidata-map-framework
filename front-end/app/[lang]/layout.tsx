@@ -1,12 +1,24 @@
+export const dynamic = "force-static";
+
 import { GoogleTagManager } from "@next/third-parties/google";
 import { dir } from "i18next";
 
 interface LanguageLayoutProps {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
-export default function LanguageLayout({ children, params: { lang } }: LanguageLayoutProps) {
+export default async function LanguageLayout(props: LanguageLayoutProps) {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
+  const {
+    children
+  } = props;
+
   return (
     <html lang={lang} dir={dir(lang)}>
       {process.env.NEXT_PUBLIC_OWMF_google_analytics_id && <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_OWMF_google_analytics_id} />}

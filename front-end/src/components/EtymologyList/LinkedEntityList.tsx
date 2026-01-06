@@ -79,7 +79,6 @@ export const LinkedEntityList: FC<LinkedEntityListProps> = ({ linkedEntities, fi
     );
 
   useEffect(() => {
-    setLoadingEtymologies(true);
     showLoadingSpinner(true);
     downloadEntityDetails(linkedEntities)
       .then(setEntityDetails)

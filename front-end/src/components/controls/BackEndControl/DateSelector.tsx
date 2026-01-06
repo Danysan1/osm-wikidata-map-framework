@@ -15,7 +15,7 @@ export const DateSelector: FC = () => {
       <input
         type="number"
         name="year"
-        value={year}
+        value={isNaN(year) ? "" : year}
         onChange={changeDate}
         min="-1000"
         max="2030"

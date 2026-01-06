@@ -11,12 +11,16 @@ export function generateStaticParams() {
 }
 
 interface LanguageHomeProps {
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }
 
-export async function generateMetadata({
-  params: { lang },
-}: LanguageHomeProps): Promise<Metadata> {
+export async function generateMetadata(props: LanguageHomeProps): Promise<Metadata> {
+  const params = await props.params;
+
+  const {
+    lang
+  } = params;
+
   if (!!lang && !Object.keys(LANGUAGES).includes(lang)) return notFound();
 
   return generateOwmfMetadata(lang);

@@ -12,13 +12,20 @@ export function generateStaticParams() {
 }
 
 interface PresetContributingProps {
-  params: {
+  params: Promise<{
     lang: string;
     preset: string;
-  }
+  }>
 }
 
-export default function PresetContributing({ params: { lang, preset } }: PresetContributingProps) {
+export default async function PresetContributing(props: PresetContributingProps) {
+  const params = await props.params;
+
+  const {
+    lang,
+    preset
+  } = params;
+
   return (
     <main className={`${styles.main} ${styles.text}`}>
       <Contributing lang={lang} sourcePreset={readSourcePreset(preset)} />

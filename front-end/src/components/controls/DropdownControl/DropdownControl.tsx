@@ -91,7 +91,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
       dropdownItems.length > 1 &&
       (minZoomLevel === undefined || zoom >= minZoomLevel),
     [dropdownToggled, setDropdownToggled] = useState(false),
-    onBtnClick = useCallback(() => setDropdownToggled((prev) => !prev), []),
+    onBtnClick = useCallback(() => setDropdownToggled((prev) => !prev), [setDropdownToggled]),
     btnCell = useMemo(
       () => (
         <td className={styles.button_cell}>

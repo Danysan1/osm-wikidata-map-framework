@@ -88,7 +88,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       console.error("No background styles available");
     } else if (style) {
       console.debug("Fetching style", style);
-      fetch(style.styleUrl)
+      fetch(style.styleUrl, { cache: "force-cache" })
         .then((resp) => resp.text())
         .then((json) => setFetchedJsonStyleSpec({ id: style.id, spec: json }))
         .catch((e) => {
@@ -135,6 +135,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       }
 
       if (style?.canFilterByDate) {
+        const mapYear = isNaN(year) ? new Date().getFullYear() : year;
         /**
          * Filter the features by date, where applicable
          *
@@ -143,12 +144,12 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
         const startFilter: ExpressionSpecification = [
           "any",
           ["!", ["has", "start_date"]],
-          [">=", year, ["get", "start_decdate"]],
+          [">=", mapYear, ["get", "start_decdate"]],
         ];
         const endFilter: ExpressionSpecification = [
           "any",
           ["!", ["has", "end_date"]],
-          ["<", year, ["get", "end_decdate"]],
+          ["<", mapYear, ["get", "end_decdate"]],
         ];
         styleSpec.layers.forEach((l) => {
           if (l.type !== "raster" && l.type !== "background") {
@@ -184,10 +185,18 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
         "coalesce",
         ["get", "name:" + i18n.language], // Main language name in OpenMapTiles vector tiles
         ["get", "name_" + i18n.language], // Main language name in Mapbox vector tiles
+      ];
+      if (i18n.language.includes("_")) {
+        newTextField.push(
+          ["get", "name:" + i18n.language.split("_")[0]],
+          ["get", "name_" + i18n.language.split("_")[0]],
+        );
+      }
+      newTextField.push(
         ["get", "name"],
         ["get", "name:" + DEFAULT_LANGUAGE], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
         ["get", "name_" + DEFAULT_LANGUAGE], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
-      ];
+      );
       styleSpec.layers?.forEach((layer) => {
         if (layer.type === "symbol" && layer.layout) {
           const labelExpression = layer.layout["text-field"],
@@ -203,8 +212,9 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
 
       // https://github.com/mapbox/mapbox-gl-js/issues/4808
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
+      console.debug("updateStyleSpec", { locale: i18n.language, year, styleSpec, newTextField });
     },
-    [i18n.language, style?.canFilterByDate, style?.key, style?.keyPlaceholder, year]
+    [i18n.language, style, year]
   );
 
   /**
@@ -227,7 +237,6 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
     try {
       const styleSpec = JSON.parse(fetchedJsonStyleSpec.spec) as StyleSpecification;
       updateStyleSpec(styleSpec);
-      console.debug("Setting json style", styleSpec);
       setMapStyle((old) => {
         if (old?.projection?.type)
           return { ...styleSpec, projection: { type: old.projection.type } };
