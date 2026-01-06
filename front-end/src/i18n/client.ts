@@ -1,6 +1,6 @@
 'use client';
 
-import { Resource, createInstance } from 'i18next';
+import { createInstance, Resource } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
@@ -9,13 +9,13 @@ import { initReactI18next } from 'react-i18next';
 import { DEFAULT_LANGUAGE, FALLBACK_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from "./common";
 
 /**
- * 
+ * @see https://www.locize.com/blog/i18n-next-app-router/
  * @see https://react.i18next.com/
  */
 export async function loadClientI18n() {
     const rawI18nOverride = process.env.NEXT_PUBLIC_OWMF_i18n_override ? JSON.parse(process.env.NEXT_PUBLIC_OWMF_i18n_override) as unknown : undefined,
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
-        backends: object[] = [HttpBackend],
+        backends: object[] = typeof window === "undefined" ? [] : [HttpBackend],
         backendOptions: object[] = [{ loadPath: `${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/locales/{{lng}}/{{ns}}.json` }];
     if (i18nOverride) {
         console.debug("loadClientI18n: using i18n_override:", { languages: Object.keys(i18nOverride) });
@@ -29,12 +29,14 @@ export async function loadClientI18n() {
         .use(LanguageDetector)
         .init({
             supportedLngs: Object.keys(LANGUAGES),
+            fallbackLng: DEFAULT_LANGUAGE,
+            lng: undefined, // let detect the language on client side
             detection: {
                 lookupQuerystring: 'lang', // default is lng
                 order: ['querystring', 'path', 'htmlTag', 'cookie', 'localStorage', 'sessionStorage', 'navigator'],
             },
             debug: false,//process.env.NODE_ENV === 'development',
-            fallbackLng: DEFAULT_LANGUAGE,
+            preload: false,
             backend: { backends, backendOptions },
             ns: [MAIN_NAMESPACE, FALLBACK_NAMESPACE],
             fallbackNS: FALLBACK_NAMESPACE,

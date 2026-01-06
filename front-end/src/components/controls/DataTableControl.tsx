@@ -54,7 +54,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
         if (e.isSourceLoaded && e.dataType === "source" && props.sourceID === e.sourceId)
           setDataLoaded(true);
       },
-      [props.sourceID]
+      [props.sourceID, setDataLoaded]
     );
 
   const ctrl = useControl<DataTableControlObject>(
@@ -71,11 +71,11 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
     openTable = useCallback(() => {
       setPopupPosition(map?.getBounds()?.getNorthWest());
       setTableFeatures(map?.queryRenderedFeatures({ layers: props.dataLayerIDs }));
-    }, [map, props.dataLayerIDs]),
+    }, [map, props.dataLayerIDs, setTableFeatures]),
     closeTable = useCallback(() => {
       setPopupPosition(undefined);
       setTableFeatures(undefined);
-    }, []);
+    }, [setTableFeatures]);
   const element = useMemo(
     () =>
       visible && (
