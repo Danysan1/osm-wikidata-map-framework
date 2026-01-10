@@ -74,7 +74,7 @@ export const LinkedEntitySourceRow: FC<LinkedEntity> = ({
             <span className="etymology_propagated_wrapper">
                 &gt;&nbsp;
                 <Link title={t("etymology_details.propagation")}
-                    href={`/${i18n.language}/contributing/${sourcePresetID}#propagation`}>
+                    href={`/${i18n.language}/contributing/${sourcePresetID}/#propagation`}>
                     {t("etymology_details.propagation")}
                 </Link>
                 &nbsp;

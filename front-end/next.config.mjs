@@ -84,7 +84,7 @@ function generateCspHeaders() {
 let nextConfig = {
   basePath: process.env.NEXT_PUBLIC_OWMF_base_path,
   output: process.env.owmf_static_export === "true" ? "export" : undefined,
-  trailingSlash: process.env.owmf_static_export === "true",
+  trailingSlash: true, // https://stackoverflow.com/a/63866501
   compiler: {
     removeConsole: process.env.NODE_ENV === "production"
   },

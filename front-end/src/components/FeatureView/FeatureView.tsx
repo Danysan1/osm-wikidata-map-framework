@@ -145,7 +145,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
       <Button
         title={t("feature_details.report_problem")}
         className="ety_error_button"
-        href={`/${i18n.language}/contributing/${preset.id}`}
+        href={`/${i18n.language}/contributing/${preset.id}/`}
         iconText="⚠️"
         iconAlt="Problem symbol"
         showText

@@ -1,6 +1,7 @@
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
 import dataTableIcon from "@/src/img/Simple_icon_table.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
+import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import { FC } from "react";
@@ -8,7 +9,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./InfoPanel.module.css";
 import liberapayDonate from "./liberapay_donate.svg";
-import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 
 interface InfoPanelProps {
   showInstructions?: boolean;
@@ -97,7 +97,7 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
       <p>
         <Button
           className={styles.contribute_button}
-          href={`/${i18n.language}/contributing`}
+          href={`/${i18n.language}/contributing/`}
           iconText="📖"
           iconAlt="Contribute symbol"
           showText

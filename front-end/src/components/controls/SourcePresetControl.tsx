@@ -36,7 +36,7 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = ({ position }) 
     >
       {sourcePresetID && sourcePresetID !== "base" && (
         <Button
-          href={`/${i18n.language}/contributing/${sourcePresetID}#contribute_linked_entity`}
+          href={`/${i18n.language}/contributing/${sourcePresetID}/#contribute_linked_entity`}
           text={t("etymology_details.more_details")}
           showText
           title={t("etymology_details.more_details")}
