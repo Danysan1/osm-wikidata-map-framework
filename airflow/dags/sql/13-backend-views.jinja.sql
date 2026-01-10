@@ -5,7 +5,7 @@ SELECT
     el.el_osm_type AS osm_type,
     el.el_osm_id AS osm_id,
     CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 'osm.org' END AS from_osm_instance,
-    el.el_osm_id IS NULL AS from_wikidata,
+    el.el_wikidata_cod IS NOT NULL AS from_wikidata,
     STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     1 AS boundary,
     el.el_tags AS tags,
@@ -17,7 +17,7 @@ SELECT
         ELSE NULL
     END AS render_height,
     el.el_commons AS commons,
-    el.el_wikidata_cod AS wikidata,
+    COALESCE(el.el_wikidata_cod, el.el_tags->>'wikidata') AS wikidata,
     el.el_wikipedia AS wikipedia,
     CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
         'from_osm_instance', CASE WHEN et_from_osm THEN 'osm.org' ELSE NULL END,
@@ -47,7 +47,7 @@ SELECT
     el.el_osm_type AS osm_type,
     el.el_osm_id AS osm_id,
     CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 'osm.org' END AS from_osm_instance,
-    el.el_osm_id IS NULL AS from_wikidata,
+    el.el_wikidata_cod IS NOT NULL AS from_wikidata,
     STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     el.el_tags AS tags,
     CASE
@@ -57,7 +57,7 @@ SELECT
         ELSE NULL
     END AS render_height,
     el.el_commons AS commons,
-    el.el_wikidata_cod AS wikidata,
+    COALESCE(el.el_wikidata_cod, el.el_tags->>'wikidata') AS wikidata,
     el.el_wikipedia AS wikipedia,
     CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
         'from_osm_instance', CASE WHEN et_from_osm THEN 'osm.org' ELSE NULL END,

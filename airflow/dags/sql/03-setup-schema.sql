@@ -66,7 +66,7 @@ CREATE TABLE owmf.element (
     el_osm_id BIGINT,
     el_tags JSONB,
     el_is_boundary BOOLEAN DEFAULT FALSE,
-    el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
+    el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'), -- Q-ID of the Wikidata entity linked to this element (filled only if the feature comes from WD)
     el_commons VARCHAR,
     el_wikipedia VARCHAR,
     CONSTRAINT element_unique_ids UNIQUE (el_osm_type, el_osm_id, el_wikidata_cod)
