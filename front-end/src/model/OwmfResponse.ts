@@ -71,6 +71,7 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
 
     /**
      * Which (if any) OpenStreetMap instance is the original source of this data
+     * @example "osm.org"
      * @example "openstreetmap.org"
      * @example "openhistoricalmap.org"
      */

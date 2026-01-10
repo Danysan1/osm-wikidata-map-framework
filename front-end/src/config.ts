@@ -1,7 +1,7 @@
 export const OSM_TITLE = process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.includes("openhistoricalmap")
     ? "OpenHistoricalMap"
     : "OpenStreetMap",
-    OSM_INSTANCE = process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.replace("https://www.","") ?? "openstreetmap.org";
+    OSM_INSTANCE = process.env.NEXT_PUBLIC_OWMF_osm_instance_url?.replace("https://www.","").replace("openstreetmap.org", "osm.org");
 
 export function parseStringArrayConfig(rawValue: string): string[] {
     //console.debug("parseStringArrayConfig", { rawValue });

@@ -37,6 +37,7 @@ export const enum DatePrecision {
 export interface LinkedEntity {
     /**
      * Which (if any) OpenStreetMap instance is the original source of the link to this entity
+     * @example "osm.org"
      * @example "openstreetmap.org"
      * @example "openhistoricalmap.org"
      */

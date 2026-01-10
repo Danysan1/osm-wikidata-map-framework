@@ -1,3 +1,5 @@
+import { OSM_TITLE } from "@/src/config";
+import { loadServerI18n } from "@/src/i18n/server";
 import osmTagDiagram from "@/src/img/data/osm_name_etymology.png";
 import directDiagram from "@/src/img/data/osm_wikidata_direct.png";
 import reverseDiagram from "@/src/img/data/osm_wikidata_reverse.png";
@@ -7,7 +9,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { FC, Fragment } from "react";
 import styles from "./Contributing.module.css";
-import { loadServerI18n } from "@/src/i18n/server";
 
 interface ContributingProps {
     lang?: string;
@@ -135,7 +136,7 @@ export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }
                 {sourcePreset?.mapcomplete_theme && <li><a href={`https://mapcomplete.org/${sourcePreset?.mapcomplete_theme}`}>MapComplete</a> helps discovering missing <code>*:wikidata</code> tags and find their possible value</li>}
                 <li><a href="https://osm.wikidata.link/">OSM ↔ Wikidata matcher</a> helps discovering missing <code>wikidata</code> tags and find their possible value</li>
                 <li><a href="https://map.osm.wikidata.link/">OWL map</a> helps discovering missing <code>wikidata</code> tags directly on a map</li>
-                <li><a href="https://www.openstreetmap.org/">openstreetmap.org</a> allows to manually edit map elements (you can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>)</li>
+                <li><a href={process.env.NEXT_PUBLIC_OWMF_osm_instance_url}>{OSM_TITLE}</a> allows to manually edit map elements (you can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>)</li>
             </ul>
             <p>
                 The wikidata Q-ID of an item (object/person/...) can be found by searching its name on <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page">wikidata.org</a>, once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
@@ -221,7 +222,7 @@ export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }
             <p>In order to display an entity linked to a map feature you need to create one of these combinations. Here&apos;s how to do it:</p>
 
             <ol>
-                <li>Find the element of interest on <a href="https://www.openstreetmap.org/">openstreetmap.org</a></li>
+                <li>Find the element of interest on <a href={process.env.NEXT_PUBLIC_OWMF_osm_instance_url}>{OSM_TITLE}</a></li>
                 <li>Check out the element&apos;s tags:
                     <ul>
                         {sourcePreset.osm_wikidata_keys?.length && <li>
@@ -285,7 +286,7 @@ export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }
                 {!!process.env.NEXT_PUBLIC_OWMF_mapbox_token && <li><a href="https://www.mapbox.com/">Mapbox</a></li>}
                 {process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map === "true" && <li><a href="https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse">OpenHistoricalMap</a></li>}
             </ul>
-            <p>Most of them render data from OpenStreetMap, which can be improved on <a href="https://www.openstreetmap.org/">openstreetmap.org</a>.
+            <p>Most of them render data from <a href={process.env.NEXT_PUBLIC_OWMF_osm_instance_url}>{OSM_TITLE}</a>, which can be improved on its website.
                 You can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>.
                 Keep in mind that these external providers don&apos;t update the map immediately so if you edit something on OpenStreetMap it may take a lot of time to appear in the map.</p>
         </section>
