@@ -196,6 +196,8 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
 
   /** Load URL fragment on each fragment change */
   useEffect(() => {
+    // This needs to be run as effect to initialize the state from the URL fragment on first load
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updateStateFromFragment();
     setInitialized(true);
     window.addEventListener("hashchange", updateStateFromFragment);

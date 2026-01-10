@@ -31,12 +31,11 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
       [featureI18n.name, featureI18n.official_name, featureI18n.alt_name]
         .flatMap((name) => name?.split(";"))
         .map((name) => name?.trim())
-        .filter(
-          (name) =>
-            name &&
-            name !== "null" &&
-            (!mainName || name.toLowerCase() !== mainName.toLowerCase())
-        )
+        .filter((name) => {
+          if (!name || name === "null") return false; // Ignore empty alt names
+          if (!mainName) return true; // If no main name is available, keep all alt names
+          return name.toLowerCase() !== mainName.toLowerCase();
+        })
         .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
       return alt_name_set.size > 0 ? Array.from(alt_name_set) : undefined;
     }, [featureI18n, mainName]),
@@ -100,8 +99,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
 
   useEffect(() => {
     if (!feature.properties?.wikipedia) {
-      setWikipediaExtract(undefined);
-      return;
+      return; // No wikipedia extract available
     }
 
     new WikipediaService()

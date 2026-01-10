@@ -16,7 +16,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { preload } from "react-dom";
+import { preconnect, preload } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { StyleSpecification } from "react-map-gl/maplibre";
 import { DEFAULT_LANGUAGE } from "../i18n/common";
@@ -60,11 +60,12 @@ const BackgroundStyleContext = createContext<BackgroundStyleState>({
 export const useBackgroundStyleContext = () => useContext(BackgroundStyleContext);
 
 export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  if (process.env.NEXT_PUBLIC_OWMF_default_background_style === "stamen_toner_lite") {
-    preload("https://tiles.stadiamaps.com/styles/stamen_toner_lite.json", {
+  if (process.env.NEXT_PUBLIC_OWMF_default_background_style?.startsWith("stamen_")) {
+    preload(`https://tiles.stadiamaps.com/styles/${process.env.NEXT_PUBLIC_OWMF_default_background_style}.json`, {
       as: "fetch",
       crossOrigin: "anonymous",
     });
+    preconnect("https://tiles.stadiamaps.com");
   }
 
   const { t, i18n } = useTranslation(),
