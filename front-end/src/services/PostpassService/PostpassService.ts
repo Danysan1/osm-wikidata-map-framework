@@ -57,7 +57,7 @@ export class PostpassService extends BaseOsmMapService {
         year: number
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
-        const notTooBig = this.preset.ignore_big_elements ? "AND NOT tags ? 'sqkm' AND NOT tags ? 'boundary' AND (NOT tags ? 'type' OR tags->>'type'!='boundary')" : "",
+        const notTooBig = this.preset.ignore_big_elements ? "AND NOT tags ? 'sqkm' AND NOT tags ? 'boundary'" : "", // Postpass/osm2pgsql data does not include type=* tags, no check necessary
             dateFilter = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ?
                 // Filter for openstreetmap.org or openhistoricalmap.org in the current year
                 "NOT tags ? 'end_date' AND (NOT tags ? 'route' OR tags->>'route'!='historic')"

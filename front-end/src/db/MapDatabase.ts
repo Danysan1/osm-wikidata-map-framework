@@ -27,7 +27,7 @@ export class MapDatabase extends Dexie {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
-                return await this.maps
+                const results = await this.maps
                     .where({ sourcePresetID, backEndID, language, year })
                     .and(map => { // Find elements whose bbox includes the given bbox and that are not truncated
                         if (!map.bbox || map.onlyCentroids !== onlyCentroids)
@@ -42,7 +42,9 @@ export class MapDatabase extends Dexie {
                         // so in that case we return the truncated map as valid
                         // The same doesn't apply to partial results (map.partial==true): these might be combined results with one source that would yield more data at lower zoom.
                     })
-                    .first();
+                    .sortBy("partial,truncated");
+                console.debug("MapDatabase results", { sourcePresetID, backEndID, language, year, truncated: results.map(r => r.truncated), partial: results.map(r => r.partial) });
+                return results[0];
             });
         } catch (e) {
             console.error("Failed getting map from cache", e);
