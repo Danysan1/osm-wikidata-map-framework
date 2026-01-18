@@ -2,6 +2,11 @@ div.detail_container {
   text-align: center;
 }
 
+div.detail_container * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 div.detail_container h1,
 div.detail_container h2,
 div.detail_container h3 {
@@ -12,9 +17,6 @@ div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,
 div.detail_container .wikipedia_extract,
-div.detail_container .feature_images,
-div.detail_container .feature_buttons_container {
+div.detail_container .feature_images {
   max-width: var(--owmf-popup-width, 75em);
-  margin-left: auto;
-  margin-right: auto;
 }
