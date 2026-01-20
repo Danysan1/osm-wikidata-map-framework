@@ -75,6 +75,7 @@
         "entity_link_count": "Per entiteit Wikilink-aantal",
         "feature_link_count": "Per element Wikilink-aantal",
         "feature_picture": "Per beschikbaarheid van afbeeldingen",
+        "feature_osm_link": "Per aanwezigheid van wikidata=* op OSM",
         "available": "Beschikbaar",
         "unavailable": "Onbeschikbaar",
         "osm_text_only": "OSM (alleen tekst)",

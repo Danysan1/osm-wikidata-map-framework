@@ -75,6 +75,7 @@
         "entity_link_count": "Dropdown item for feature Wikilink count statistics",
         "feature_link_count": "Dropdown item for linked entity Wikilink count statistics",
         "feature_picture": "Dropdown item for feature picture availability statistics",
+        "feature_osm_link": "Dropdown item for statistics of presence of wikidata=* on the OSM element for feature",
         "available": "Available",
         "unavailable": "Unavailable",
         "osm_text_only": "Features with only text etymology (no linked entities)",

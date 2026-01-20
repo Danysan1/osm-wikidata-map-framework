@@ -1,6 +1,6 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
-import type { EtymologyStat } from "@/src/model/EtymologyStat";
+import type { FeatureStatistic } from "@/src/model/FeatureStatistic";
 import { getFeatureLinkedEntities, type OwmfFeature } from "@/src/model/OwmfResponse";
 import type { SourcePreset } from "@/src/model/SourcePreset";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
@@ -15,12 +15,13 @@ import {
   BLUE,
   calculateEtymologySourceStats,
   calculateFeatureSourceStats,
-  downloadChartDataForWikidataIDs,
   FALLBACK_COLOR,
   getLayerColorFromStats,
+  loadOsmLinkChartData,
   loadPictureAvailabilityChartData,
   loadWikilinkChartData,
   ORANGE,
+  queryChartDataForWikidataIDs,
   RED,
   StatisticsCalculator
 } from "./statistics";
@@ -57,7 +58,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         setChartData(undefined);
       };
 
-      const setChartStats = (stats: EtymologyStat[]) => {
+      const setChartStats = (stats: FeatureStatistic[]) => {
         const usedStats = stats.slice(0, MAX_CHART_ITEMS),
           data: ChartData<"pie"> = {
             labels: usedStats.map(row => row.name),
@@ -115,7 +116,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         }
 
         const idSet = new Set(wikidataIDs), // de-duplicate
-          stats = await downloadChartDataForWikidataIDs(idSet, colorSchemeID, i18n.language);
+          stats = await queryChartDataForWikidataIDs(idSet, colorSchemeID, i18n.language);
         if (stats?.length) {
           setChartStats(stats)
           setLayerColor(getLayerColorFromStats(stats));
@@ -138,11 +139,12 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         [ColorSchemeID.occupation]: () => void downloadChartDataFromWikidata(ColorSchemeID.occupation),
         [ColorSchemeID.orange]: () => setFixedColor(ORANGE),
         [ColorSchemeID.picture]: () => void calculateLocalChartData(loadPictureAvailabilityChartData(t("color_scheme.available"), t("color_scheme.unavailable"))),
+        [ColorSchemeID.osm_link]: () => void calculateLocalChartData(loadOsmLinkChartData(t("color_scheme.available"), t("color_scheme.unavailable"))),
         [ColorSchemeID.red]: () => setFixedColor(RED),
         [ColorSchemeID.start_century]: () => void downloadChartDataFromWikidata(ColorSchemeID.start_century),
         [ColorSchemeID.type]: () => void downloadChartDataFromWikidata(ColorSchemeID.type),
       };
-    }, [i18n.language, layerIDs, map, setLayerColor, t]);
+    }, [i18n.language, layerIDs, map, setLayerColor, setChartData, t]);
 
   const dropdownItems = useMemo((): DropdownItem[] => {
     const anyLinkedEntity = !!preset.osm_wikidata_keys || !!preset.osm_wikidata_properties || !!preset.wikidata_indirect_property || !!preset.osm_text_key,

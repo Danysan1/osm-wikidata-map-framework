@@ -1,6 +1,6 @@
 import type { StatsDatabase } from "@/src/db/StatsDatabase";
 import { parse } from "papaparse";
-import type { EtymologyStat } from "../../model/EtymologyStat";
+import type { FeatureStatistic } from "../../model/FeatureStatistic";
 import { ColorSchemeID } from "../../model/colorScheme";
 import { WikidataService } from "../WikidataService";
 
@@ -43,7 +43,7 @@ export class WikidataStatsService extends WikidataService {
         this.resolveCSV = resolveCSV;
     }
 
-    async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
+    async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<FeatureStatistic[]> {
         let out = await this.db?.getStats(colorSchemeID, wikidataIDs, this.language);
         if (out) {
             console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
@@ -58,7 +58,7 @@ export class WikidataStatsService extends WikidataService {
                 // console.info("Loaded CSV:")
                 // console.table(csvData);
             }
-            out = res.results?.bindings?.map((x): EtymologyStat => {
+            out = res.results?.bindings?.map((x): FeatureStatistic => {
                 if (!x.count?.value || !x.name?.value) {
                     console.debug("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");

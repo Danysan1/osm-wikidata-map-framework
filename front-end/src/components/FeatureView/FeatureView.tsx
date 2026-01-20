@@ -123,7 +123,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
 
   return (
     <div className={styles.detail_container}>
-      {!!mainName && <h3 className={styles.element_name}>📍 {mainName}</h3>}
+      {!!mainName && <h3 className={styles.element_name}>{mainName}</h3>}
       {!!altNames?.length && (
         <p className={styles.element_alt_names}>
           {altNames.map((name) => '"' + name + '"').join(" / ")}

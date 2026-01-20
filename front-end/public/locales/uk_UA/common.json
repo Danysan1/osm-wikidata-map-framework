@@ -75,6 +75,7 @@
         "entity_link_count": "За кількістю посилань на сутність Wikidata",
         "feature_link_count": "За кількістю посилань на елемент",
         "feature_picture": "За наявністю зображень",
+        "feature_osm_link": "За наявністю wikidata=* в OSM",
         "available": "Є",
         "unavailable": "Немає",
         "osm_text_only": "OSM (текст тільки)",

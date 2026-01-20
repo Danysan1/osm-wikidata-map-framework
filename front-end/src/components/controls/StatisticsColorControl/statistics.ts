@@ -1,12 +1,12 @@
 import { OSM_TITLE } from "@/src/config";
 import { StatsDatabase } from "@/src/db/StatsDatabase";
 import { ColorSchemeID } from "@/src/model/colorScheme";
-import { EtymologyStat } from "@/src/model/EtymologyStat";
+import { FeatureStatistic } from "@/src/model/FeatureStatistic";
 import { getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
-export type StatisticsCalculator = (features: OwmfFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
+export type StatisticsCalculator = (features: OwmfFeatureProperties[], language: string) => Promise<readonly [FeatureStatistic[] | null, ExpressionSpecification | null]>;
 
 const OSM_WIKIDATA_TITLE = OSM_TITLE + " + Wikidata";
 
@@ -73,12 +73,48 @@ const PROPAGATED_COLOR = '#ff3333',
     FALLBACK_COLOR
   ];
 
+export function loadOsmLinkChartData(availableLabel: string, unavailableLabel: string): StatisticsCalculator {
+  return (features,) => {
+    const with_osm_link_IDs = new Set<string | number>(),
+      without_osm_link_IDs = new Set<string | number>();
+    features?.forEach(props => {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      const id = props.wikidata || props.osm_type + '/' + props.osm_id;
+      if (props.from_osm_instance && props.wikidata)
+        with_osm_link_IDs.add(id);
+      else
+        without_osm_link_IDs.add(id);
+    });
+    const stats: FeatureStatistic[] = [{
+      id: "available",
+      name: availableLabel,
+      color: HAS_PICTURE_COLOR,
+      count: with_osm_link_IDs.size
+    }, {
+      id: "unavailable",
+      name: unavailableLabel,
+      color: NO_PICTURE_COLOR,
+      count: without_osm_link_IDs.size
+    }];
+    const layerColor: ExpressionSpecification = [
+      "case",
+      ["all", ["has", "from_osm_instance"], ["has", "wikidata"]], HAS_PICTURE_COLOR,
+      NO_PICTURE_COLOR
+    ];
+    console.debug(
+      "loadOsmLinkChartData",
+      { features, stats, layerColor, with_osm_link_IDs, without_osm_link_IDs }
+    );
+    return Promise.resolve([stats, layerColor] as const);
+  }
+}
+
 /**
  * Common gateway for all statistics based on a query to Wikidata
  */
-export async function downloadChartDataForWikidataIDs(
+export async function queryChartDataForWikidataIDs(
   idSet: Set<string>, colorSchemeID: ColorSchemeID, language: string
-): Promise<EtymologyStat[] | null> {
+): Promise<FeatureStatistic[] | null> {
   if (idSet.size === 0) {
     console.warn("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
     return [];
@@ -122,8 +158,8 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
       "loadPictureAvailabilityChartData: downloading unknown picture chart data",
       { features, language, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
     );
-    const stats = await downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture, language);
-    let data: ExpressionSpecification | null = null;
+    const stats = await queryChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture, language);
+    let layerColor: ExpressionSpecification | null = null;
     if (stats) {
       const withPictureObject = stats.find(stat => stat.id === 'available'),
         withoutPictureObject = stats.find(stat => stat.id === 'unavailable');
@@ -161,7 +197,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
         }
       });
 
-      data = [
+      layerColor = [
         "case",
         ["has", "picture"], HAS_PICTURE_COLOR,
         ["has", "commons"], HAS_PICTURE_COLOR,
@@ -171,12 +207,11 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
       ];
     }
 
-    const out = [stats, data] as const;
     console.debug(
       "loadPictureAvailabilityChartData",
-      { features, out, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
+      { features, stats, layerColor, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
     );
-    return out;
+    return [stats, layerColor] as const;
   }
 }
 
@@ -189,9 +224,9 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
   console.debug(
     "loadWikilinkChartData: downloading chart data", { features, language, wikidataIDs }
   );
-  const stats = await downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count, language);
+  const stats = await queryChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count, language);
 
-  let data: ExpressionSpecification | null = null;
+  let layerColor: ExpressionSpecification | null = null;
   if (stats) {
     const statsData: (ExpressionSpecification | string)[] = []
     stats.forEach(row => {
@@ -207,7 +242,7 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
       }
     });
 
-    data = [
+    layerColor = [
       "case",
       ["!", ["has", "wikidata"]], FALLBACK_COLOR,
       ...statsData,
@@ -215,9 +250,8 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
     ];
   }
 
-  const out = [stats, data] as const;
-  console.debug("loadWikilinkChartData", { features, out, wikidataIDs });
-  return out;
+  console.debug("loadWikilinkChartData", { features, stats, layerColor, wikidataIDs });
+  return [stats, layerColor] as const;
 }
 
 export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
@@ -237,7 +271,7 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
       IDs_by_source.Wikidata.add(id);
   });
 
-  const stats: EtymologyStat[] = Object.keys(IDs_by_source).filter(source => IDs_by_source[source].size > 0).map(source => {
+  const stats: FeatureStatistic[] = Object.keys(IDs_by_source).filter(source => IDs_by_source[source].size > 0).map(source => {
     let color: string;
     if (source === "Wikidata") color = WIKIDATA_COLOR;
     else if (source.endsWith("Wikidata")) color = OSM_WIKIDATA_COLOR;
@@ -246,12 +280,11 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
     return { name: source, color, id: source, count: IDs_by_source[source].size };
   });
 
-  const out = [stats, FEATURE_SOURCE_LAYER_COLOR] as const;
   console.debug(
     "calculateFeatureSourceStats",
-    { features: features, out, IDs_by_source }
+    { features: features, stats, IDs_by_source }
   );
-  return Promise.resolve(out);
+  return Promise.resolve([stats, FEATURE_SOURCE_LAYER_COLOR] as const);
 }
 
 export function calculateEtymologySourceStats(osmTextOnlyLabel: string): StatisticsCalculator {
@@ -279,7 +312,7 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       });
     });
 
-    const stats: EtymologyStat[] = [];
+    const stats: FeatureStatistic[] = [];
     if (propagation_IDs.size) stats.push({
       name: "Propagation", color: PROPAGATED_COLOR, id: 'propagation', count: propagation_IDs.size
     });
@@ -296,18 +329,17 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       name: osmTextOnlyLabel, color: FALLBACK_COLOR, id: "osm_text", count: osm_text_names.size
     });
 
-    const out = [stats, ETYMOLOGY_SOURCE_LAYER_COLOR] as const;
     console.debug(
       "calculateEtymologySourceStats",
-      { features, out, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names, osmTextOnlyLabel }
+      { features, stats, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names, osmTextOnlyLabel }
     );
-    return Promise.resolve(out);
+    return Promise.resolve([stats, ETYMOLOGY_SOURCE_LAYER_COLOR] as const);
   }
 }
 
-export function getLayerColorFromStats(stats: EtymologyStat[]) {
+export function getLayerColorFromStats(stats: FeatureStatistic[]) {
   const statsData: (ExpressionSpecification | string)[] = [];
-  stats.forEach((row: EtymologyStat) => {
+  stats.forEach((row: FeatureStatistic) => {
     const color = row.color;
     if (color && row.subjects?.length) {
       // In vector tiles linked_entities array is JSON-encoded

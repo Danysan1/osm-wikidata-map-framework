@@ -91,12 +91,11 @@ export const DropdownControl: FC<DropdownControlProps> = ({
       dropdownItems.length > 1 &&
       (minZoomLevel === undefined || zoom >= minZoomLevel),
     [dropdownToggled, setDropdownToggled] = useState(false),
-    onBtnClick = useCallback(() => setDropdownToggled((prev) => !prev), [setDropdownToggled]),
     btnCell = useMemo(
       () => (
         <td className={styles.button_cell}>
           <button
-            onClick={onBtnClick}
+            onClick={() => setDropdownToggled((prev) => !prev)}
             className={styles.button}
             title={title}
             aria-label={title}
@@ -105,7 +104,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
           </button>
         </td>
       ),
-      [onBtnClick, buttonContent, title]
+      [setDropdownToggled, buttonContent, title]
     ),
     titleCell = useMemo(
       () => (

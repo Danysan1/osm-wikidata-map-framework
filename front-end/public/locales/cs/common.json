@@ -75,6 +75,7 @@
         "entity_link_count": "Podle počtu Wikilink entit",
         "feature_link_count": "Podle počtu Wikilink prvků",
         "feature_picture": "Podle dostupnosti obrázků",
+        "feature_osm_link": "Podle přítomnosti wikidata=* v OSM",
         "available": "Dostupné",
         "unavailable": "Nedostupné",
         "osm_text_only": "OSM (pouze text)",

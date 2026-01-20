@@ -1,6 +1,6 @@
 
 /** Statistics row with a name and a numeric value */
-export interface EtymologyStat {
+export interface FeatureStatistic {
     /** Human friendly name of this statistic */
     name: string;
 

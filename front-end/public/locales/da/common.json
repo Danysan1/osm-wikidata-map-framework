@@ -75,6 +75,7 @@
         "entity_link_count": "Efter entitets Wikilink-antal",
         "feature_link_count": "Efter elements Wikilink-antal",
         "feature_picture": "Efter billedtilgængelighed",
+        "feature_osm_link": "Efter tilstedeværelse af wikidata=* på OSM",
         "available": "Tilgængelig",
         "unavailable": "Ikke tilgængelig",
         "osm_text_only": "OSM (kun tekst)",

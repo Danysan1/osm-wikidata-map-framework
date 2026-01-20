@@ -1,12 +1,12 @@
 import Dexie, { Table } from 'dexie';
-import type { EtymologyStat } from '../model/EtymologyStat';
+import type { FeatureStatistic } from '../model/FeatureStatistic';
 import type { ColorSchemeID } from '../model/colorScheme';
 
 interface StatsRow {
     id?: number;
     language?: string;
     colorSchemeID: ColorSchemeID;
-    stats: EtymologyStat[];
+    stats: FeatureStatistic[];
     timestamp: string;
     wikidataIDs: string[];
 }
@@ -29,7 +29,7 @@ export class StatsDatabase extends Dexie {
         });
     }
 
-    public async getStats(colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string): Promise<EtymologyStat[] | undefined> {
+    public async getStats(colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string): Promise<FeatureStatistic[] | undefined> {
         try {
             const row = await this.transaction('r', this.stats, async () => {
                 return await this.stats.where({ colorSchemeID, language, wikidataIDs }).first();
@@ -41,7 +41,7 @@ export class StatsDatabase extends Dexie {
         }
     }
 
-    public async addStats(stats: EtymologyStat[], colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string) {
+    public async addStats(stats: FeatureStatistic[], colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string) {
         try {
             await this.transaction('rw', this.stats, async () => {
                 await this.stats.add({ stats, colorSchemeID, wikidataIDs, language, timestamp: new Date().toISOString() });

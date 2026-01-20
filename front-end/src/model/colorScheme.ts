@@ -12,6 +12,7 @@ export enum ColorSchemeID {
     entity_source = "entity_source",
     entity_link_count = "entity_link_count",
     picture = "feature_picture",
+    osm_link = "feature_osm_link",
     black = "black",
     red = "red",
     orange = "orange",
@@ -31,6 +32,9 @@ export interface ColorScheme {
 export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     [ColorSchemeID.feature_source]: {
         defaultText: "By source", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: false,
+    },
+    [ColorSchemeID.osm_link]: {
+        defaultText: "By OSM link availability", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: false,
     },
     [ColorSchemeID.picture]: {
         defaultText: "By picture availability", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", requiresLinkedEntities: false,
