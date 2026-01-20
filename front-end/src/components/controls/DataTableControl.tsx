@@ -51,7 +51,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
     [dataLoaded, setDataLoaded] = useState(false),
     onSourceData = useCallback(
       (e: MapSourceDataEvent) => {
-        if (e.isSourceLoaded && e.dataType === "source" && props.sourceID === e.sourceId)
+        if (e.isSourceLoaded && e.dataType === "source" && e.sourceDataType !== "metadata" && props.sourceID === e.sourceId)
           setDataLoaded(true);
       },
       [props.sourceID, setDataLoaded]

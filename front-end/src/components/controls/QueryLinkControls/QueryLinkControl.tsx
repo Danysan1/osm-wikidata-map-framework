@@ -23,7 +23,7 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = ({
 }) => {
     const [url, setUrl] = useState<string | undefined>(undefined);
     const onSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
-        if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIDs.includes(e.sourceId)) {
+        if (!e.isSourceLoaded || e.dataType !== "source" || e.sourceDataType === "metadata" || !sourceIDs.includes(e.sourceId)) {
             // console.debug("QueryLinkControl: Source not loaded or not in list, hiding", e, sourceIDs);
             return;
         }

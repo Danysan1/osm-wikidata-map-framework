@@ -51,7 +51,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     handlers: Record<ColorSchemeID, () => void> = useMemo(() => {
       console.debug(
         "StatisticsColorControl: creating handlers",
-        { lang: i18n.language, layerIDs, map, setLayerColor, t }
+        { lang: i18n.language, layerIDs, map, t }
       );
       const setFixedColor = (color: string) => {
         setLayerColor(color);
@@ -164,7 +164,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
   }, [preset.osm_text_key, preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setColorSchemeID, t]);
 
   const onSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
-    if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIDs.includes(e.sourceId))
+    if (!e.isSourceLoaded || e.dataType !== "source" || e.sourceDataType === "metadata" || !sourceIDs.includes(e.sourceId))
       return;
 
     console.debug(

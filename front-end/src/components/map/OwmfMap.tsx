@@ -205,40 +205,31 @@ export const OwmfMap = () => {
    */
   const mapSourceDataHandler = useCallback(
     (e: MapSourceDataEvent) => {
-      if (!e.isSourceLoaded || e.dataType !== "source") return;
+      if (!e.isSourceLoaded || e.dataType !== "source" || e.sourceDataType === "metadata" || e.sourceId !== DETAILS_SOURCE)
+        return;
 
-      const detailsSourceEvent = e.sourceId === DETAILS_SOURCE,
-        elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
+      console.debug("mapSourceDataHandler: data loaded", e);
 
-      if (detailsSourceEvent || elementsSourceEvent) {
-        console.debug("mapSourceDataHandler: data loaded", {
-          detailsSourceEvent,
-          elementsSourceEvent,
-          e,
-          source: e.sourceId,
-        });
+      const noFeatures =
+        e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
+        e.target.querySourceFeatures(DETAILS_SOURCE).length === 0;
 
-        const noFeatures =
-          detailsSourceEvent &&
-          e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
-          e.target.querySourceFeatures(DETAILS_SOURCE).length === 0;
-
-        if (noFeatures)
-          showSnackbar(
-            t("snackbar.no_data_in_this_area", "No data in this area"),
-            "wheat",
-            3000
-          );
-        else if (detailsSourceEvent)
-          showSnackbar(
-            t(
-              "snackbar.data_loaded_instructions",
-              "Data loaded, click on any highlighted element to show its details"
-            ),
-            "lightgreen",
-            10000
-          );
-        // showLoadingSpinner(false); // Better handled by its own useEffect
+      if (noFeatures) {
+        showSnackbar(
+          t("snackbar.no_data_in_this_area", "No data in this area"),
+          "wheat",
+          3000
+        );
+      } else {
+        showSnackbar(
+          t(
+            "snackbar.data_loaded_instructions",
+            "Data loaded, click on any highlighted element to show its details"
+          ),
+          "lightgreen",
+          10000
+        );
+      // showLoadingSpinner(false); // Better handled by its own useEffect
       }
     },
     [showSnackbar, t]
