@@ -149,7 +149,6 @@ export class QLeverMapService implements MapService {
     }
 
     private fillQueryPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox, year: number): string {
-        // TODO Use onlyCentroids
         if (backEndID.includes("osm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
@@ -199,6 +198,7 @@ export class QLeverMapService implements MapService {
             if (osmEtymologyUnionBranches.length > 1)
                 osmEtymologyExpression = "{\n        " + osmEtymologyUnionBranches.join("\n    } UNION {\n        ") + "\n    }";
             sparqlQuery = sparqlQuery
+                .replaceAll('${osmGeometryProperty}', onlyCentroids ? 'geo:hasCentroid' : 'geo:hasGeometry')
                 .replaceAll('${osmTextSelect}', osm_text_key?.length ? '?etymology_text' : "")
                 .replaceAll('${osmDescriptionSelect}', osm_description_key?.length ? '?etymology_description' : "")
                 .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression);

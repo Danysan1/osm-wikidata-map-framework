@@ -21,7 +21,7 @@ SELECT
     ?location
 WHERE {
     ?osm osm2rdfkey:wikidata ?item;
-         geo:hasGeometry/geo:asWKT ?location;
+         ${osmGeometryProperty}/geo:asWKT ?location;
 		 geo:hasCentroid/geo:asWKT ?centroid.
     ${osmCountryQuery}
 

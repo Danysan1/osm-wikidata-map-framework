@@ -102,7 +102,7 @@ export class OverpassService extends BaseOsmMapService {
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members() < ${this.maxRelationMembers})` : "",
-            notTooBig = this.preset.ignore_big_elements ? `[!"sqkm"][!"boundary"]["type"!="boundary"]` : "",
+            notTooBig = this.preset.ignore_big_elements ? `[!"sqkm"][!"boundary"]["type"!="boundary"]["place"!="island"]["place"!="archipelago"]` : "",
             dateFilters = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ? [
                 // Filter for openstreetmap.org or openhistoricalmap.org in the current year
                 '[!"end_date"]["route"!="historic"]'

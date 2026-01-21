@@ -14,25 +14,25 @@ export function runServiceTests(
     goodBackEndIDs: string[],
     bbox: BBox
 ) {
-    describe("canHandleBackEnd = true", () => {
+    describe(`${name} canHandleBackEnd = true`, () => {
         goodBackEndIDs.forEach(
-            backEndID => test(`${name} "${backEndID}"`, () => {
+            backEndID => test(backEndID, () => {
                 expect(service.canHandleBackEnd(backEndID)).toBeTruthy();
             })
         );
     });
 
-    describe("canHandleBackEnd = false", () => {
+    describe(`${name} canHandleBackEnd = false`, () => {
         badBackEndIDs.forEach(
-            backEndID => test(`${name} "${backEndID}"`, () => {
+            backEndID => test(backEndID, () => {
                 expect(service.canHandleBackEnd(backEndID)).toBeFalsy();
             })
         );
     });
 
-    describe("fetchMapElements", () => {
+    describe(`${name} fetchMapElements`, () => {
         goodBackEndIDs.forEach(backEndID => {
-            test(`${name} "${backEndID}" centroids`, async () => {
+            test(`${backEndID} centroids`, async () => {
                 const geoJson = await service.fetchMapElements(
                     backEndID, true, bbox, LANGUAGE, new Date().getFullYear()
                 );
@@ -46,7 +46,7 @@ export function runServiceTests(
                 expect(geoJson.features.every(f => f.geometry.type === "Point")).toBeTruthy();
             }, 20_000);
 
-            test(`${name} "${backEndID}" geometries`, async () => {
+            test(`${backEndID} geometries`, async () => {
                 const geoJson = await service.fetchMapElements(
                     backEndID, false, bbox, LANGUAGE, new Date().getFullYear()
                 );

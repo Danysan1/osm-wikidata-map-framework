@@ -4,10 +4,13 @@ import { WikidataDetailsService } from "./WikidataDetailsService";
 
 const LANGUAGE = "en_GB",
     BAD_QIDS: string[][] = [
-        [],
-        ["Q1", ""],
-        ["foo"],
-        ["Q"],
+        [], // No IDs
+        ["Q1", ""], // Empty ID
+        ["foo"], // random string
+        ["Q"], // no number
+        ["Q1", "Q"],
+        ["1"], // missing Q prefix
+        [" Q1"], // leading space
     ],
     GOOD_QIDS: string[][] = [
         ["Q1"],
@@ -35,7 +38,7 @@ describe("fetchEtymologyDetails good Q-IDs", () => {
 
             expect(ret).toHaveProperty("Q1");
             expect(ret.Q1).toHaveProperty("wikidata", "Q1");
-            expect(ret.Q1).toHaveProperty("name", "Universe");
+            expect(ret.Q1).toHaveProperty("name", "universe");
         })
     );
 });

@@ -25,7 +25,7 @@ SELECT
 WHERE {
     ${osmEtymologyExpression}
     ${osmCountryQuery}
-    ?osm geo:hasGeometry/geo:asWKT ?location;
+    ?osm ${osmGeometryProperty}/geo:asWKT ?location;
 		 geo:hasCentroid/geo:asWKT ?centroid.
 
     # # Filter by location (geo:sfWithin)

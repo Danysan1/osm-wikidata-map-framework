@@ -79,7 +79,7 @@ WHERE {
         # OPTIONAL { ?item wdt:P18 ?_itemPicture. }
     }
 
-    ?osm osm2rdfkey:wikidata ?item; geo:hasGeometry/geo:asWKT ?osm_location.
+    ?osm osm2rdfkey:wikidata ?item; ${osmGeometryProperty}/geo:asWKT ?osm_location.
     # TODO: ?osm osm2rdfkey:wikidata/owl:sameAs? ?item
     # TODO: make the link optional and filter ?item is bound (BOUND() is not yet implemented in QLever)
     OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
