@@ -75,7 +75,7 @@
         "entity_link_count": "Nach Zahl der Wikilinks der Entität",
         "feature_link_count": "Nach Zahl der Wikilinks des Elements",
         "feature_picture": "Nach Bildverfügbarkeit",
-        "feature_osm_link": "Nach Vorhandensein von wikidata=* in OSM",
+        "feature_osm_link": "Nach Anwesenheit von wikidata=* auf OSM",
         "available": "Verfügbar",
         "unavailable": "Nicht verfügbar",
         "osm_text_only": "OSM (nur Text)",
