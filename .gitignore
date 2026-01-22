@@ -1,0 +1,14 @@
+**.log
+**.zip
+**.geojson
+**.gz
+**.mvt
+**.pmtiles
+**.pbf
+**.sqlite
+**.db
+**.backup
+**.sqlite-journal
+**.pbf.*
+**.tmp.*
+.claude/settings.local.json

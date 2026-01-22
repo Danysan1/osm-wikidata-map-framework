@@ -13,30 +13,33 @@ For example, the title and description of Open Etymology Map are located in the 
 All other translations are located in the [`front-end/public/locales/{LANGUAGE_CODE}/common.json`](front-end/public/locales/) files of this repository.
 **You can translate this framework in new languages or fix errors in existing translations [on Transifex](https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/). If you want to translate a specific site in a new language, you will need to translate BOTH the framework and that site's specific Transifex project** (ex. for etymology.dsantini.it translate also [this project](https://app.transifex.com/osm-wikidata-maps/open-etymology-map/dashboard/)).
 
-## Architecture info for contributors
+## Contributing to the code
 
 This project is composed by two distinct components:
 
-### Front-End 
+### [front-end](./front-end/) folder
 
-This is the web application used for the actual visualization and exploration of the data. You can find all the info inside the [front-end](./front-end/) folder
+This is the web application used for the actual visualization and exploration of the data. You can find all the info inside its [README](./front-end/README.md) and in [CLAUDE.md](CLAUDE.md).
 
-### DB initialization
+### [airflow](./airflow/) folder
 
-This is a data pipeline responsible for generating the .pmtiles and .csv file that can be optionally used to make the front-end faster. You can find all the info inside the [airflow](./airflow/) folder.
+This is a data pipeline responsible for downloading OSM and WD data on a local DB and generating the .pmtiles and .csv files that can be used to make the front-end faster. You can find all the info inside the [airflow](./airflow/README.md) folder.
 
-## Excluded elements
+## Boundary elements
 
-OWMF makes the choice to remove extremely big elements when fetching from OpenStreetMap for two reasons:
-
-- They are often complex and heavy to download, elaborate and store from both a time and space point of view. Downloading the data for a small city without excluding containing areas can easily lead to download hundreds of megabytes, causing very long elaboration times on the back-end and causing almost all front-end user devices to hang or crash
-- They hinder visualization of small elements. Map are always approximations of reality and it's normal to hide big elements at high zoom and most small elements at low zoom, in order to not overload the user with too many items. Being OWMF designed to show details only at high zoom it's appropriate to remove very big elements.
-
-Tags causing elements to be removed include:
+OWMF identifies the OSM elements with the following tags as boundaries:
 
 - `boundary=*`
 - `type=boundary`
 - `sqkm=*` (ex: [Persian Gulf](https://www.openstreetmap.org/relation/9326283), [Lake Superior](https://www.openstreetmap.org/relation/4039486))
-- `end_date=*` or `route=historic`
+- `place=region`
+- `place=sea`
+- `place=island`
+- `place=archipelago`
 
-This filtering is done in [OwmfFilterDAG](airflow/dags/OwmfFilterDAG.py) for the DB data and by [OverpassService](src/services/OverpassService.ts) for Overpass data.
+In the DB & vector tile initialization pipeline this filtering is done in [OwmfFilterDAG](./airflow/plugins/OwmfFilterDAG.py) and the boundary features are shown only above the threshold zoom level.
+
+When fetching from OpenStreetMap via Overpass/Postpass for presets with `ignore_big_elements=true`, [OverpassService](./front-end/src/services/OverpassService/OverpassService.ts)/[PostpassService](./front-end/src/services/PostpassService/PostpassService.ts) removes altogether boundary features for two reasons:
+
+- They are often complex and heavy to download, elaborate and store from both a time and space point of view. Downloading the data for a small city without excluding containing areas can easily lead to download hundreds of megabytes, causing very long elaboration times on the back-end and causing almost all front-end user devices to hang or crash
+- They hinder visualization of small elements. Map are always approximations of reality and it's normal to hide big elements at high zoom and most small elements at low zoom, in order to not overload the user with too many items. For backends and presets designed to show details only at high zoom it's appropriate to remove very big elements.

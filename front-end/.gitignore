@@ -1,16 +1,3 @@
-**.log
-**.zip
-**.geojson
-**.gz
-**.mvt
-**.pmtiles
-**.pbf
-**.sqlite
-**.db
-**.backup
-**.sqlite-journal
-**.pbf.*
-**.tmp.*
 i18n.json
 src/**/*.js
 
