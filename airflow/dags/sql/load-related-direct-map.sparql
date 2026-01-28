@@ -27,7 +27,7 @@ WHERE {
 
     ?stmt ?_from_ps ?etymology.
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology) && STRENDS(STR(?item),'${lastDigit}')) # Paging through last Q-ID digit because ORDER BY + LIMIT + OFFSET is too slow
-    
+
     ?locationStatement ps:P625 ?location.
     OPTIONAL { ?item rdfs:label ?label_mul FILTER(LANG(?label_mul) = "mul") }
     OPTIONAL { ?item rdfs:label ?label_en FILTER(LANG(?label_en) = "en") }

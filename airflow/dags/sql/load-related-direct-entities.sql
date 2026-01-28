@@ -13,7 +13,7 @@ SELECT
     osm_id,
     from_wd.wd_id,
     REPLACE(value->'from_prop'->>'value', 'http://www.wikidata.org/prop/', '')
-FROM json_array_elements(($1::JSON)->'results'->'bindings')
+FROM json_array_elements((%(json)s::JSON)->'results'->'bindings')
 JOIN owmf.wikidata AS to_wd ON to_wd.wd_wikidata_cod = REPLACE(value->'etymology'->>'value', 'http://www.wikidata.org/entity/', '')
 JOIN owmf.wikidata AS from_wd ON from_wd.wd_wikidata_cod = REPLACE(value->'item'->>'value', 'http://www.wikidata.org/entity/', '')
 JOIN owmf.osmdata AS from_osm ON osm_wd_id = from_wd.wd_id

@@ -10,9 +10,9 @@ def get_last_pbf_url(
     Gets the URL of the OSM PBF file to download.
     The file urls, names and paths are calculated from the parameters `pbf_url`/`rss_url`/`html_url`.
     """
-    from urllib.request import urlopen
-    from re import findall
     from os.path import basename
+    from re import findall
+    from urllib.request import urlopen
 
     source_url:str|None = None
     if download_url:
@@ -34,7 +34,7 @@ def get_last_pbf_url(
             print("XML root element:", root)
             links = root.findall("./channel/item/link")
             print("Links found:", links)
-            urls = [link.text for link in links]
+            urls = [link.text for link in links if link.text]
             print("URLs found:", urls)
             extension = f'.{download_ext}.torrent'
             urls = list(filter(lambda f: f is not None and f!="" and basename(f).startswith(prefix) and f.endswith(extension), urls))
@@ -76,6 +76,7 @@ def get_pbf_date(pbf_basename:str) -> str:
     If the date is not available in the name of the file (for example if the "*-latest.osm.pbf" has been chosen) uses today's, date.  
     """
     from re import search
+
     from pendulum import now
 
     date_match = search('-(\\d{2})(\\d{2})(\\d{2})\\.', pbf_basename)

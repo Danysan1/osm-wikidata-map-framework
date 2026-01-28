@@ -15,12 +15,12 @@ from airflow.providers.standard.operators.python import (BranchPythonOperator,
                                                          ShortCircuitOperator)
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
 from airflow.sdk import DAG, Param, TaskGroup
-from operators.LoadRelatedDockerOperator import LoadRelatedDockerOperator
 from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
 from operators.TileJoinOperator import TileJoinOperator
 from operators.TippecanoeOperator import TippecanoeOperator
 from pendulum import datetime, now
+from utils.wikidata import fetch_direct_entities, load_direct_entities
 
 LOAD_ON_DB_METHOD = "load_on_db_method"
 DEFAULT_LOAD_ON_DB_METHOD = "osmium"
@@ -237,12 +237,12 @@ def choose_load_wikidata_task(**context) -> str:
     direct_properties = Variable.get("osm_wikidata_properties", deserialize_json=True, default_var=None)
     indirect_property = Variable.get("wikidata_indirect_property", default_var=None)
     if direct_properties:
-        next_task = "download_wikidata_direct_related"
+        next_task = "fetch_wikidata_direct_entities"
     elif indirect_property:
-        next_task = "download_wikidata_reverse_related"
+        next_task = "fetch_wikidata_reverse_entities"
     else:
-        next_task = "choose_propagation_method"
-    return f"elaborate_data.{next_task}"
+        next_task = "fetch_wikidata_entities"
+    return next_task
 
 def choose_propagation_method(propagate_data:str) -> str:
     """
@@ -255,11 +255,11 @@ def choose_propagation_method(propagate_data:str) -> str:
     """
 
     if propagate_data == "global" or propagate_data == "true":
-        return "elaborate_data.propagate_etymologies_globally"
+        return "propagate_etymologies_globally"
     elif propagate_data == "local":
-        return "elaborate_data.propagate_etymologies_locally"
+        return "propagate_etymologies_locally"
     else:
-        return "elaborate_data.join_post_propagation"
+        return "join_post_propagation"
 
 class OwmfDbInitDAG(DAG):
     """
@@ -351,6 +351,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             **kwargs
         )
 
+#region prepare_db
         db_prepare_group = TaskGroup("prepare_db", tooltip="Prepare the DB", dag=self)
 
         task_check_pg_local = ShortCircuitOperator(
@@ -367,8 +368,8 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
 
         task_create_work_dir = BashOperator(
             task_id = "create_work_dir",
-            bash_command = 'mkdir -p "$workDir"',
-            env = { "workDir": workdir, },
+            bash_command = 'mkdir -p "$workdir"',
+            env = { "workdir": workdir, },
             dag = self,
         )
         
@@ -399,7 +400,9 @@ Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
 """
         )
         task_setup_db_ext >> task_setup_schema
+#endregion
 
+#region load_data_on_db
         group_db_load = TaskGroup("load_data_on_db", prefix_group_id=False, tooltip="Load the data on the DB", dag=self)
         db_prepare_group >> group_db_load
 
@@ -490,7 +493,9 @@ Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*
             doc_md="Dummy task for joining the path after the branching done to choose between DB load methods."
         )
         [task_load_ele_pg, task_convert_osm2pgsql, task_load_ele_imposm] >> join_post_load_ele
+#endregion
 
+#region elaborate_data
         elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=self)
         group_db_load >> elaborate_group
 
@@ -572,42 +577,74 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
 """
         )
         task_convert_wd_ent >> task_convert_ety
+#endregion
 
-        task_check_load_wd_related = BranchPythonOperator(
-            task_id = "check_whether_to_load_named_after",
+#region download_wikidata
+        wikidata_group = TaskGroup("download_wikidata", tooltip="Download and merge data from Wikidata", prefix_group_id=False, dag=self)
+        
+        task_check_load_wd_entities = BranchPythonOperator(
+            task_id = "check_how_to_load_wikidata_entities",
             python_callable = choose_load_wikidata_task,
             dag = self,
-            task_group = elaborate_group,
+            task_group = wikidata_group,
             doc_md = dedent(choose_load_wikidata_task.__doc__ or "")
         )
-        task_convert_ety >> task_check_load_wd_related
 
-        task_load_wd_direct = LoadRelatedDockerOperator(
-            task_id = "download_wikidata_direct_related",
-            container_name = "airflow-load_direct_related",
-            postgres_conn_id = local_db_conn_id,
-            wikidata_country = wikidata_country,
+        task_fetch_direct_entities = PythonOperator(
+            task_id = "fetch_wikidata_direct_entities",
+            python_callable = fetch_direct_entities,
+            op_kwargs = {
+                "workdir": workdir,
+                "wikidata_country": wikidata_country,
+            },
+            retries = 3,
             dag = self,
-            task_group=elaborate_group,
-            doc_md = dedent(LoadRelatedDockerOperator.__doc__ or "")
+            task_group=wikidata_group,
+            doc_md = dedent(fetch_direct_entities.__doc__ or "")
         )
-        task_check_load_wd_related >> task_load_wd_direct
+        task_check_load_wd_entities >> task_fetch_direct_entities
 
-        task_load_wd_reverse = EmptyOperator(
-            task_id = "download_wikidata_reverse_related",
+        task_load_wd_direct = PythonOperator(
+            task_id = "load_wikidata_direct_entities",
+            python_callable = load_direct_entities,
+            op_kwargs = {
+                "workdir": workdir,
+                "postgres_conn_id": local_db_conn_id,
+            },
             dag = self,
-            task_group=elaborate_group,
+            task_group=wikidata_group,
+            doc_md = dedent(load_direct_entities.__doc__ or "")
+        )
+        [task_fetch_direct_entities, task_convert_ety] >> task_load_wd_direct
+
+        task_fetch_wd_reverse = EmptyOperator(
+            task_id = "fetch_wikidata_reverse_entities",
+            dag = self,
+            task_group=wikidata_group,
             doc_md = """
 # Load Wikidata reverse related entities
             
 # YET TO BE IMPLEMENTED
-
-For each existing Wikidata entity representing an OSM element:
-* load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
-* load into the `etymology` table of the local PostGIS DB the reverse related relationships
 """
         )
-        task_check_load_wd_related >> task_load_wd_reverse
+        task_check_load_wd_entities >> task_fetch_wd_reverse
+
+        task_load_wd_entities = EmptyOperator(
+            task_id = "fetch_wikidata_entities",
+            dag = self,
+            task_group=wikidata_group,
+            doc_md = """
+# Load Wikidata entities
+            
+# YET TO BE IMPLEMENTED
+"""
+        )
+        task_check_load_wd_entities >> task_load_wd_entities
+#endregion
+
+#region propagate
+        propagate_group = TaskGroup("propagate", tooltip="Propagate linked entities", prefix_group_id=False, dag=self)
+        [wikidata_group, elaborate_group] >> propagate_group
 
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
@@ -617,17 +654,17 @@ For each existing Wikidata entity representing an OSM element:
                 "propagate_data": '{{ var.value.propagate_data }}',
             },
             dag = self,
-            task_group=elaborate_group,
+            task_group=propagate_group,
             doc_md = dedent(choose_propagation_method.__doc__ or "")
         )
-        [task_check_load_wd_related, task_load_wd_direct, task_load_wd_reverse] >> task_check_propagation
+        [task_load_wd_direct, task_fetch_wd_reverse, task_load_wd_entities] >> task_check_propagation
 
         task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
             conn_id = local_db_conn_id,
             sql = "sql/11-propagate-etymologies-global.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=propagate_group,
             doc_md = """
 # Propagate the linked entities by name
 
@@ -642,7 +679,7 @@ Then propagate reliable linked entities to case-insensitive homonymous elements 
             conn_id = local_db_conn_id,
             sql = "sql/11-propagate-etymologies-global.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=propagate_group,
         )
         task_check_propagation >> task_propagate_locally
 
@@ -650,7 +687,7 @@ Then propagate reliable linked entities to case-insensitive homonymous elements 
             task_id = "join_post_propagation",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=elaborate_group,
+            task_group=propagate_group,
             doc_md="""
 # Join branches back together
 
@@ -658,9 +695,11 @@ Dummy task for joining the path after the branching
 """
         )
         [task_check_propagation, task_propagate_locally, task_propagate_globally] >> join_post_propagation
+#endregion
 
+#region post_elaboration
         post_elaborate_group = TaskGroup("post_elaboration", tooltip="Actions after data elaboration", dag=self)
-        elaborate_group >> post_elaborate_group
+        propagate_group >> post_elaborate_group
 
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
@@ -791,10 +830,11 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
             task_group=post_elaborate_group
         )
         [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
+#endregion
 
+#region vector_tiles
         group_vector_tiles = TaskGroup("vector_tiles", tooltip="Generate the vector tiles and/or PMTiles", dag=self)
-        group_cleanup = TaskGroup("cleanup", tooltip="Cleanup the DAG temporary files", dag=self)
-        post_elaborate_group >> [group_vector_tiles, group_cleanup]
+        post_elaborate_group >> group_vector_tiles
 
         task_check_dump = ShortCircuitOperator(
             task_id = "check_dump",
@@ -921,8 +961,11 @@ Dump all the elements from the local DB with their respective linked entities in
             doc_md = "Dump the content of the dataset view into a CSV file to be uploaded to S3"
         )
         task_check_pmtiles >> task_dump_dataset
+#endregion
 
+#region upload_tiles_to_s3
         group_upload_s3 = TaskGroup("upload_tiles_to_s3", tooltip="Upload elaborated tiles to the S3 bucket", dag=self)
+        group_vector_tiles >> group_upload_s3
 
         task_check_pmtiles_upload_conn_id = ShortCircuitOperator(
            task_id = "check_pmtiles_upload_conn_id",
@@ -997,8 +1040,11 @@ Links:
 """
         )
         task_upload_pmtiles_s3 >> task_upload_date_s3
+#endregion
         
+#region upload_to_remote_db
         group_upload_db = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
+        post_elaborate_group >> group_upload_db
 
         task_check_pg_restore = ShortCircuitOperator(
             task_id = "check_upload_conn_id",
@@ -1099,7 +1145,11 @@ Links:
 """
         )
         task_prepare_upload >> task_pg_restore
+#endregion
 
+#region cleanup
+        group_cleanup = TaskGroup("cleanup", tooltip="Cleanup the DAG temporary files", dag=self)
+        post_elaborate_group >> group_cleanup
 
         task_wait_cleanup = TimeDeltaSensorAsync(
             task_id = 'wait_for_cleanup_time',
@@ -1121,8 +1171,8 @@ Links:
     
         task_cleanup = BashOperator(
             task_id = "cleanup",
-            bash_command = 'rm -r "$workDir"',
-            env = { "workDir": workdir, },
+            bash_command = 'rm -r "$workdir"',
+            env = { "workdir": workdir, },
             dag = self,
             task_group = group_cleanup,
             doc_md = """
@@ -1132,3 +1182,4 @@ Remove the DAG run folder
 """
         )
         task_wait_cleanup >> task_cleanup
+#endregion
