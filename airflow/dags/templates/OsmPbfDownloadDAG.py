@@ -1,18 +1,24 @@
+from datetime import timedelta
 from os.path import join
 from textwrap import dedent
-from pendulum import datetime, now
-from airflow import DAG, Dataset
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
+
 from airflow.models.taskinstance import TaskInstance
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.sensors.python import PythonSensor
-from airflow.sensors.time_delta import TimeDeltaSensorAsync
-from datetime import timedelta
-from get_last_pbf_url import get_last_pbf_url, get_pbf_date
-from TransmissionStartTorrentOperator import TransmissionStartTorrentOperator
-from TransmissionWaitTorrentSensor import TransmissionWaitTorrentSensor
-from TransmissionRemoveTorrentOperator import TransmissionRemoveTorrentOperator
+from airflow.providers.common.compat.sdk import TriggerRule
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import (BranchPythonOperator,
+                                                         PythonOperator,
+                                                         ShortCircuitOperator)
+from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
+from operators.TransmissionRemoveTorrentOperator import \
+    TransmissionRemoveTorrentOperator
+from operators.TransmissionStartTorrentOperator import \
+    TransmissionStartTorrentOperator
+from operators.TransmissionWaitTorrentSensor import \
+    TransmissionWaitTorrentSensor
+from pendulum import datetime, now
+from utils.get_last_pbf_url import get_last_pbf_url, get_pbf_date
+
+from airflow import DAG, Dataset
 
 SKIP_IF_ALREADY_DOWNLOADED = "skip_if_already_downloaded"
 DEFAULT_SKIP_IF_ALREADY_DOWNLOADED = True
@@ -31,14 +37,14 @@ def get_source_url(work_dir:str, ti:TaskInstance, **context):
         The task also calculates the paths of all files that will be generated.
 
         Links:
-        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.providers.standard.operators.python.PythonOperator)
         * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
         * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.6.0/best-practices.html)
         * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/models/taskinstance/index.html)
     """
-    from os import path, makedirs
     import re
+    from os import makedirs, path
 
     params = context["params"]
     
@@ -85,13 +91,14 @@ def check_whether_to_procede(date_path:str, ti:TaskInstance, **context) -> bool:
         Check whether the available file is newer than the existing dataset: if it is, proceed to download the data, otherwise stop here.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.providers.standard.operators.python.ShortCircuitOperator)
         * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
-    from pendulum import parse
-    from os import path
     import re
+    from os import path
+
+    from pendulum import parse
 
     skip_if_already_downloaded = context["params"].get(SKIP_IF_ALREADY_DOWNLOADED, DEFAULT_SKIP_IF_ALREADY_DOWNLOADED)
     if not path.exists(date_path):
@@ -170,7 +177,7 @@ class OsmPbfDownloadDAG(DAG):
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
-                tags=['owmf', f'owmf-{prefix}', 'pbf-download', 'produces'],
+                tags=['owmf', prefix or "not-prefix", 'pbf-download', 'produces'],
                 params=default_params,
                 doc_md="""
 # OSM-Wikidata Map Framework DB initialization
@@ -188,7 +195,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             op_kwargs = { "work_dir": workdir },
             do_xcom_push = True,
             dag = self,
-            doc_md = dedent(get_source_url.__doc__)
+            doc_md = dedent(get_source_url.__doc__ or "")
         )
 
         task_check_whether_to_procede = ShortCircuitOperator(
@@ -196,7 +203,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             python_callable = check_whether_to_procede,
             op_kwargs = { "date_path": pbf_date_path },
             dag = self,
-            doc_md = dedent(check_whether_to_procede.__doc__)
+            doc_md = dedent(check_whether_to_procede.__doc__ or "")
         )
         task_get_source_url >> task_check_whether_to_procede
 
@@ -240,7 +247,7 @@ Download the source PBF file from the URL calculated by get_source_url and check
 
 Links:
 * [curl documentation](https://curl.se/docs/manpage.html)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.providers.standard.operators.bash.BashOperator)
 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
 """
         )

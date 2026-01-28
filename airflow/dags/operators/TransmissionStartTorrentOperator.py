@@ -1,5 +1,6 @@
-from airflow.operators.python import PythonOperator
 from airflow.models.taskinstance import TaskInstance
+from airflow.providers.standard.operators.python import PythonOperator
+
 
 class TransmissionStartTorrentOperator(PythonOperator):
     """

@@ -7,12 +7,12 @@ The code in this folder defines the [Apache Airflow](https://airflow.apache.org/
 Each `db-init-*.py` file in the [dags/](./dags/) folder defines the flow for an area of the world. If you need the pipelines for a new area you can request it in an issue or propose it in a PR.
 The DB initialization flow for each area is split in three Airflow data pipelines (`DAG`s) that automatically run in sequence once enabled.
 
-1. OSM dump download ([`OsmPbfDownloadDAG`](./dags/OsmPbfDownloadDAG.py), for example `download-planet-from-rss`)
+1. OSM dump download ([`OsmPbfDownloadDAG`](./plugins/OsmPbfDownloadDAG.py), for example `download-planet-from-rss`)
    - This pipeline downloads a .pbf OpenStreetMap dump ([a local extract](https://download.geofabrik.de/) or [a full planet export](https://planet.openstreetmap.org/))
-2. OSM dump filtering ([`OwmfFilterDAG`](./dags/OwmfFilterDAG.py), for example `filter-planet`)
+2. OSM dump filtering ([`OwmfFilterDAG`](./plugins/OwmfFilterDAG.py), for example `filter-planet`)
    - This pipeline filters the downloaded OSM dump with [`osmium tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html) to keep only potentially useful data
    - The filtered .pbf is also exported to a tab-separated-values file with [`osmium export`](https://docs.osmcode.org/osmium/latest/osmium-export.html)
-3. Data elaboration + Tiles generation ([`OwmfDbInitDAG`](./dags/OwmfDbInitDAG.py), for example `db-init-planet`)
+3. Data elaboration + Tiles generation ([`OwmfDbInitDAG`](./plugins/OwmfDbInitDAG.py), for example `db-init-planet`)
    - This pipeline imports the filtered data into the DB (by default by loading the tab-separated-values file, but it can also be configured to load it from the filtered .pbf with [osm2pgsql](https://osm2pgsql.org/))
    - Then OSM linked entities are extracted from OSM data and downloaded from Wikidata.
    - If enabled, propagation is executed.

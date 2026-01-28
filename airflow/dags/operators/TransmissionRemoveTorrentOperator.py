@@ -1,8 +1,9 @@
-from airflow.sensors.python import PythonSensor
+from airflow.providers.standard.operators.python import PythonOperator
 
-class TransmissionWaitTorrentSensor(PythonSensor):
+
+class TransmissionRemoveTorrentOperator(PythonOperator):
     """
-    # Operator to check whether a torrent in a Transmision daemon has finished downloading
+    # Removes a torrent from a Transmision daemon
     
     Links:
     * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
@@ -11,7 +12,7 @@ class TransmissionWaitTorrentSensor(PythonSensor):
 
     def __init__(self, torrent_hash:str, torrent_daemon_conn_id:str, **kwargs) -> None:
         super().__init__(
-            python_callable = check_if_torrent_is_complete,
+            python_callable = remove_torrent,
             op_kwargs = {
                 "torrent_hash": torrent_hash,
                 "torrent_daemon_conn_id": torrent_daemon_conn_id
@@ -19,9 +20,8 @@ class TransmissionWaitTorrentSensor(PythonSensor):
             **kwargs
         )
 
-def check_if_torrent_is_complete(torrent_hash:str, torrent_daemon_conn_id:str, **context) -> bool:
+def remove_torrent(torrent_hash:str, torrent_daemon_conn_id:str, **context):
     from transmission_rpc import Client
     conn = context["conn"].get(torrent_daemon_conn_id)
     c = Client(host=conn.host, port=conn.port)
-    torrent = c.get_torrent(torrent_hash)
-    return torrent.status == "seeding"
+    c.remove_torrent(torrent_hash, delete_data=True)

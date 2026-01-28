@@ -1,7 +1,8 @@
-from OsmPbfDownloadDAG import OsmPbfDownloadDAG
-from OwmfFilterDAG import OwmfFilterDAG
-from OwmfDbInitDAG import OwmfDbInitDAG
-from airflow.models import DAG # ! Don't delete, necessary for Airflow to recognize this file as containing DAGs
+from airflow.models import \
+    DAG  # ! Don't delete, necessary for Airflow to recognize this file as containing DAGs
+from templates.OsmPbfDownloadDAG import OsmPbfDownloadDAG
+from templates.OwmfDbInitDAG import OwmfDbInitDAG
+from templates.OwmfFilterDAG import OwmfFilterDAG
 
 download_germany_pbf = OsmPbfDownloadDAG(
     dag_id="download-germany-latest",

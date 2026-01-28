@@ -1,6 +1,7 @@
-from OsmDockerOperator import OsmDockerOperator
-from airflow.hooks.postgres_hook import PostgresHook
 from os import environ
+
+from operators.OsmDockerOperator import OsmDockerOperator
+
 
 class Osm2pgsqlOperator(OsmDockerOperator):
     """

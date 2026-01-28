@@ -1,18 +1,20 @@
-from os.path import dirname, abspath, join
-from textwrap import dedent
 from datetime import timedelta
+from os.path import abspath, dirname, join
+from textwrap import dedent
+
+from airflow.providers.common.compat.sdk import TriggerRule
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
+from operators.OsmiumExportOperator import OsmiumExportOperator
+from operators.OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from pendulum import datetime, now
+
 from airflow import DAG, Dataset
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.sensors.time_delta import TimeDeltaSensorAsync
-from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
-from OsmiumExportOperator import OsmiumExportOperator
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 1
 
-def get_absolute_path(filename:str, folder:str = None) -> str:
+def get_absolute_path(filename:str, folder:str|None = None) -> str:
     file_dir_path = dirname(abspath(__file__))
     if folder != None:
         file_dir_path = join(file_dir_path, folder)
@@ -35,7 +37,7 @@ class OwmfFilterDAG(DAG):
     """
 
     def __init__(self,
-            prefix:str=None,
+            prefix:str|None=None,
             days_before_cleanup:int = DEFAULT_DAYS_BEFORE_CLEANUP,
             **kwargs
         ):
@@ -80,7 +82,7 @@ class OwmfFilterDAG(DAG):
             start_date=start_date,
             catchup=False,
             schedule = [pbf_dataset],
-            tags=['owmf', f'owmf-{prefix}', 'owmf-filter', 'consumes', 'produces'],
+            tags=['owmf', prefix or "not-prefix", 'owmf-filter', 'consumes', 'produces'],
             doc_md = """
                 # OSM-Wikidata Map Framework OSM data filtering
 
@@ -113,7 +115,7 @@ class OwmfFilterDAG(DAG):
                 Filter the OpenStreetMap PBF data to keep only elements which have a name.
 
                 Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
-            """) + dedent(OsmiumTagsFilterOperator.__doc__)
+            """) + dedent(OsmiumTagsFilterOperator.__doc__ or "")
         )
         task_create_work_dir >> task_keep_name
 
@@ -147,7 +149,7 @@ class OwmfFilterDAG(DAG):
                 * elements for which the etymology could be propagated from homonymous elements (to keep a reasonable computation time only some highways are kept for this purpose) 
 
                 Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
-            """) + dedent(OsmiumTagsFilterOperator.__doc__)
+            """) + dedent(OsmiumTagsFilterOperator.__doc__ or "")
         )
         task_keep_name >> task_keep_possible_ety
 
@@ -172,7 +174,7 @@ class OwmfFilterDAG(DAG):
                 * items with known wrong tags
                 
                 Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
-            """) + dedent(OsmiumTagsFilterOperator.__doc__)
+            """) + dedent(OsmiumTagsFilterOperator.__doc__ or "")
         )
         task_keep_possible_ety >> task_remove_non_interesting
 
@@ -204,7 +206,7 @@ class OwmfFilterDAG(DAG):
                 Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/osmium.json)) into the working directory.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.providers.standard.operators.python.PythonOperator)
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
             """
         )
@@ -215,7 +217,7 @@ class OwmfFilterDAG(DAG):
             container_name = "airflow-osmium_export_pbf_to_pg",
             source_path = join(workdir,"filtered.osm.pbf"),
             dest_path = join(workdir,"filtered.osm.pg"),
-            cache_path = f"/tmp/osmium_{prefix}_{{{{ ti.job_id }}}}",
+            cache_path = f"/tmp/osmium_{prefix}_{{{{ run_id }}}}",
             config_path = join(workdir,"osmium.json"),
             dag = self,
             doc_md=dedent("""
@@ -224,7 +226,7 @@ class OwmfFilterDAG(DAG):
                 Export the filtered OpenStreetMap data from the filtered PBF file to a PG tab-separated-values file ready for importing into the DB.
 
                 Uses `osmium export` through `OsmiumExportOperator`:
-            """) + dedent(OsmiumExportOperator.__doc__)
+            """) + dedent(OsmiumExportOperator.__doc__ or "")
         )
         [task_remove_non_interesting,task_copy_config] >> task_export_to_pg
 

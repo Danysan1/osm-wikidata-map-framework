@@ -1,24 +1,26 @@
-from os.path import dirname, abspath, join
-from textwrap import dedent
 from datetime import timedelta
-from pendulum import datetime, now
-from airflow import DAG, Dataset
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
-from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.models.param import Param
-from airflow.operators.empty import EmptyOperator
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.utils.task_group import TaskGroup
-from airflow.utils.edgemodifier import Label
-from airflow.sensors.time_delta import TimeDeltaSensorAsync
-from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
+from os.path import abspath, dirname, join
+from textwrap import dedent
+
+from airflow.datasets import Dataset
 from airflow.exceptions import AirflowNotFoundException
-from Osm2pgsqlOperator import Osm2pgsqlOperator
-from LoadRelatedDockerOperator import LoadRelatedDockerOperator
-from TippecanoeOperator import TippecanoeOperator
-from TileJoinOperator import TileJoinOperator
-from Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
+from airflow.providers.amazon.aws.transfers.local_to_s3 import \
+    LocalFilesystemToS3Operator
+from airflow.providers.common.compat.sdk import TriggerRule
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
+from airflow.providers.standard.operators.python import (BranchPythonOperator,
+                                                         PythonOperator,
+                                                         ShortCircuitOperator)
+from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
+from airflow.sdk import DAG, Param, TaskGroup
+from operators.LoadRelatedDockerOperator import LoadRelatedDockerOperator
+from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
+from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
+from operators.TileJoinOperator import TileJoinOperator
+from operators.TippecanoeOperator import TippecanoeOperator
+from pendulum import datetime, now
 
 LOAD_ON_DB_METHOD = "load_on_db_method"
 DEFAULT_LOAD_ON_DB_METHOD = "osmium"
@@ -52,7 +54,7 @@ def postgres_copy_table(conn_id:str, filepath:str, separator:str, schema:str, ta
     See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
     See https://github.com/psycopg/psycopg2/issues/1294
     """
-    from airflow.hooks.postgres_hook import PostgresHook
+    from airflow.providers.postgres.hooks.postgres import PostgresHook
     
     pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
@@ -71,7 +73,8 @@ def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, ta
     See https://github.com/psycopg/psycopg2/issues/1294
     """
     import csv
-    from airflow.hooks.postgres_hook import PostgresHook
+
+    from airflow.providers.postgres.hooks.postgres import PostgresHook
 
     pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
@@ -102,11 +105,11 @@ def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> boo
         The connection ID is passed through the params object to allow customization when triggering the DAG.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.providers.standard.operators.python.ShortCircuitOperator)
         * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
-    from airflow.hooks.postgres_hook import PostgresHook
+    from airflow.providers.postgres.hooks.postgres import PostgresHook
     
     enable_upload_from_params = context["params"].get(UPLOAD_TO_DB, DEFAULT_UPLOAD_TO_DB)
     if require_upload and not enable_upload_from_params:
@@ -145,12 +148,12 @@ def check_s3_conn_id(conn_id:str, base_s3_uri_var_id:str, require_upload = True,
         The connection ID is passed through the params object to allow customization when triggering the DAG.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.providers.standard.operators.python.ShortCircuitOperator)
         * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
-    from airflow.hooks.S3_hook import S3Hook
     from airflow.models.variable import Variable
+    from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
     enable_upload_from_params = context["params"].get(UPLOAD_TO_S3, DEFAULT_UPLOAD_TO_S3)
 
@@ -198,7 +201,7 @@ def choose_load_osm_data_task(base_file_path:str, **context) -> str:
         * it would anyway be impossible to use osm2pgsql data update features
  
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.providers.standard.operators.python.BranchPythonOperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     
@@ -227,7 +230,7 @@ def choose_load_wikidata_task(**context) -> str:
         # Check whether and how to download data from Wikidata into the DB
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.providers.standard.operators.python.BranchPythonOperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     from airflow.models import Variable
@@ -246,7 +249,7 @@ def choose_propagation_method(propagate_data:str) -> str:
         # Check whether and how to propagate
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.providers.standard.operators.python.BranchPythonOperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/concepts/params.html)
         * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/core-concepts/variables.html)
     """
@@ -342,7 +345,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             start_date=start_date,
             catchup=False,
             schedule = [pg_dataset],
-            tags=['owmf', f'owmf-{prefix}', 'owmf-db-init', 'consumes'],
+            tags=['owmf', prefix or "not-prefix", 'owmf-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
             **kwargs
@@ -359,7 +362,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             },
             dag = self,
             task_group = db_prepare_group,
-            doc_md = dedent(check_postgres_conn_id.__doc__)
+            doc_md = dedent(check_postgres_conn_id.__doc__ or "")
         )
 
         task_create_work_dir = BashOperator(
@@ -398,6 +401,7 @@ Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
         task_setup_db_ext >> task_setup_schema
 
         group_db_load = TaskGroup("load_data_on_db", prefix_group_id=False, tooltip="Load the data on the DB", dag=self)
+        db_prepare_group >> group_db_load
 
         task_osmium_or_osm2pgsql = BranchPythonOperator(
             task_id = "choose_load_osm_data_method",
@@ -407,7 +411,7 @@ Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
             },
             dag = self,
             task_group=group_db_load,
-            doc_md = dedent(choose_load_osm_data_task.__doc__)
+            doc_md = dedent(choose_load_osm_data_task.__doc__ or "")
         )
 
         task_load_ele_pg = PythonOperator(
@@ -429,7 +433,7 @@ Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
 Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
 
 Links:
-* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.providers.standard.operators.python.PythonOperator)
 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
 """
         )
@@ -488,6 +492,7 @@ Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*
         [task_load_ele_pg, task_convert_osm2pgsql, task_load_ele_imposm] >> join_post_load_ele
 
         elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=self)
+        group_db_load >> elaborate_group
 
         task_remove_ele_too_big = SQLExecuteQueryOperator(
             task_id = "remove_elements_too_big",
@@ -573,7 +578,7 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
             python_callable = choose_load_wikidata_task,
             dag = self,
             task_group = elaborate_group,
-            doc_md = dedent(choose_load_wikidata_task.__doc__)
+            doc_md = dedent(choose_load_wikidata_task.__doc__ or "")
         )
         task_convert_ety >> task_check_load_wd_related
 
@@ -584,7 +589,7 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
             wikidata_country = wikidata_country,
             dag = self,
             task_group=elaborate_group,
-            doc_md = dedent(LoadRelatedDockerOperator.__doc__)
+            doc_md = dedent(LoadRelatedDockerOperator.__doc__ or "")
         )
         task_check_load_wd_related >> task_load_wd_direct
 
@@ -613,7 +618,7 @@ For each existing Wikidata entity representing an OSM element:
             },
             dag = self,
             task_group=elaborate_group,
-            doc_md = dedent(choose_propagation_method.__doc__)
+            doc_md = dedent(choose_propagation_method.__doc__ or "")
         )
         [task_check_load_wd_related, task_load_wd_direct, task_load_wd_reverse] >> task_check_propagation
 
@@ -655,6 +660,7 @@ Dummy task for joining the path after the branching
         [task_check_propagation, task_propagate_locally, task_propagate_globally] >> join_post_propagation
 
         post_elaborate_group = TaskGroup("post_elaboration", tooltip="Actions after data elaboration", dag=self)
+        elaborate_group >> post_elaborate_group
 
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
@@ -707,7 +713,7 @@ Creates the indexes on the `etymology` table, necessary for the runtime queries
 Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate linked entities.
 
 Links:
-* [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+* [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.providers.standard.operators.python.BranchPythonOperator)
 """
         )
         task_setup_ety_fk >> task_check_whether_to_drop
@@ -787,6 +793,8 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
         [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
 
         group_vector_tiles = TaskGroup("vector_tiles", tooltip="Generate the vector tiles and/or PMTiles", dag=self)
+        group_cleanup = TaskGroup("cleanup", tooltip="Cleanup the DAG temporary files", dag=self)
+        post_elaborate_group >> [group_vector_tiles, group_cleanup]
 
         task_check_dump = ShortCircuitOperator(
             task_id = "check_dump",
@@ -860,7 +868,7 @@ Dump all the elements from the local DB with their respective linked entities in
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/front-end/src/components/map/DetailsLayers.tsx
             max_zoom = 12,
             extra_params = "--force",
-            doc_md = dedent(TippecanoeOperator.__doc__)
+            doc_md = dedent(TippecanoeOperator.__doc__ or "")
         )
         [task_check_pmtiles, task_dump_details_fgb] >> task_generate_details_pmtiles
 
@@ -878,7 +886,7 @@ Dump all the elements from the local DB with their respective linked entities in
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/front-end/src/components/map/DetailsLayers.tsx
             max_zoom = 11,
             extra_params = "--force", # Not using --drop-densest-as-needed as it causes some countries to be dropped
-            doc_md = dedent(TippecanoeOperator.__doc__)
+            doc_md = dedent(TippecanoeOperator.__doc__ or "")
         )
         [task_check_pmtiles, task_dump_boundaries_fgb] >> task_generate_boundaries_pmtiles
 
@@ -893,7 +901,7 @@ Dump all the elements from the local DB with their respective linked entities in
             output_file = pmtiles_file_path,
             layer_name = PMTILES_LAYER_NAME,
             extra_params = "--force",
-            doc_md = dedent(TippecanoeOperator.__doc__)
+            doc_md = dedent(TippecanoeOperator.__doc__ or "")
         )
         [task_generate_boundaries_pmtiles, task_generate_details_pmtiles] >> task_join_pmtiles
 
@@ -925,7 +933,7 @@ Dump all the elements from the local DB with their respective linked entities in
            },
            dag = self,
            task_group = group_upload_s3,
-           doc_md = dedent(check_s3_conn_id.__doc__)
+           doc_md = dedent(check_s3_conn_id.__doc__ or "")
         )
         task_join_pmtiles >> task_check_pmtiles_upload_conn_id
 
@@ -1001,7 +1009,7 @@ Links:
             },
             dag = self,
             task_group = group_upload_db,
-            doc_md = dedent(check_postgres_conn_id.__doc__)
+            doc_md = dedent(check_postgres_conn_id.__doc__ or "")
         )
         task_join_post_elaboration >> task_check_pg_restore
         
@@ -1026,7 +1034,7 @@ Backup the data from the local DB with pg_dump into the backup file.
 
 Links:
 * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.providers.standard.operators.bash.BashOperator)
 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
 """
@@ -1059,7 +1067,7 @@ Setup PostGIS and HSTORE on the remote DB configured in upload_db_conn_id if the
 Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the owmf schema 
 
 Links:
-* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.providers.standard.operators.python.PythonOperator)
 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
 """
         )
@@ -1085,14 +1093,13 @@ Upload the data from the backup file on the remote DB configured in upload_db_co
 
 Links:
 * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.providers.standard.operators.bash.BashOperator)
 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
 * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
 """
         )
         task_prepare_upload >> task_pg_restore
 
-        group_cleanup = TaskGroup("cleanup", tooltip="Cleanup the DAG temporary files", dag=self)
 
         task_wait_cleanup = TimeDeltaSensorAsync(
             task_id = 'wait_for_cleanup_time',

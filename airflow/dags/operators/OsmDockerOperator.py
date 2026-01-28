@@ -1,6 +1,8 @@
+from os import environ, getuid
+
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
-from os import getuid, environ
+
 
 class OsmDockerOperator(DockerOperator):
     """

@@ -1,8 +1,8 @@
-# Derived from https://airflow.apache.org/docs/apache-airflow/2.10.3/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/3.1.6/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/3.1.6/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/2.6.0/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/2.6.0/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/3.1.6/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/3.1.6/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:2.10.3
+#                                Default: apache/airflow:3.1.6
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
@@ -52,24 +52,26 @@
 ---
 x-airflow-common:
   &airflow-common
-  # In order to add custom dependencies or upgrade provider packages you can use your extended image.
+  # In order to add custom dependencies or upgrade provider distributions you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/airflow:2.10.3
-  build:
-    context: .
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.6}
+  build: .
+  env_file:
+    - ${ENV_FILE_PATH:-.env}
   environment:
     &airflow-common-env
-    # https://airflow.apache.org/docs/apache-airflow/2.6.0/executor/index.html
-    # https://airflow.apache.org/docs/apache-airflow/2.6.0/core-concepts/executor/celery.html
+    # https://airflow.apache.org/docs/apache-airflow/3.1.6/core-concepts/executor/index.html
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
+    AIRFLOW__API_AUTH__JWT_SECRET: '5RNkiXq04qzciBE77KMQjw==' # https://github.com/apache/airflow/issues/49646#issuecomment-2827640289
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
@@ -79,13 +81,12 @@ x-airflow-common:
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # The following line can be used to set a custom config file, stored in the local config folder
-    # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
-    # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
-    # https://airflow.apache.org/docs/apache-airflow/2.6.0/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
+    # https://airflow.apache.org/docs/apache-airflow/3.1.6/faq.html#when-there-are-a-lot-1000-of-dag-files-how-to-speed-up-parsing-of-new-files
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90
-    # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
+    # https://airflow.apache.org/docs/apache-airflow/3.1.6/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
     AIRFLOW_CONN_PLANET_LOCAL_POSTGIS_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_planet_db_database:-planet} # connection to the configured OWMF PostGIS DB
@@ -118,7 +119,7 @@ x-airflow-common:
 
 services:
   postgres:
-    image: postgres:13
+    image: postgres:16
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
@@ -141,8 +142,6 @@ services:
     image: redis:7.2-bookworm
     expose:
       - 6379
-    volumes:
-      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -153,13 +152,13 @@ services:
     networks:
       - airflow-internal
 
-  airflow-webserver:
+  airflow-apiserver:
     <<: *airflow-common
-    command: webserver
+    command: api-server
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -173,12 +172,28 @@ services:
       - airflow-internal
       - airflow-postgis-bridge
 
-  # https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/scheduler.html
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    depends_on:
+      <<: *airflow-common-depends-on
+      # airflow-init:
+      #   condition: service_completed_successfully
+    networks:
+      - airflow-internal
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type DagProcessorJob --hostname "$${HOSTNAME}"']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -211,6 +226,8 @@ services:
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
+      airflow-apiserver:
+        condition: service_healthy
       # airflow-init:
       #   condition: service_completed_successfully
     networks:
@@ -261,6 +278,7 @@ services:
           echo "For other operating systems you can get rid of the warning with manually created .env file:"
           echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
           echo
+          export AIRFLOW_UID=$$(id -u)
         fi
         one_meg=1048576
         mem_available=$$(($$(getconf _PHYS_PAGES) * $$(getconf PAGE_SIZE) / one_meg))
@@ -295,9 +313,37 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/logs /sources/dags /sources/plugins /workdir
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins} /workdir
-        exec /entrypoint airflow version
+        echo
+        echo "Creating missing opt dirs if missing:"
+        echo
+        mkdir -v -p /opt/airflow/{logs,dags,plugins,config}
+        echo
+        echo "Airflow version:"
+        /entrypoint airflow version
+        echo
+        echo "Files in shared volumes:"
+        echo
+        ls -la /opt/airflow/{logs,dags,plugins,config}
+        echo
+        echo "Running airflow config list to create default config file if missing."
+        echo
+        /entrypoint airflow config list >/dev/null
+        echo
+        echo "Files in shared volumes:"
+        echo
+        ls -la /opt/airflow/{logs,dags,plugins,config}
+        echo
+        echo "Change ownership of files in /opt/airflow to ${AIRFLOW_UID}:0"
+        echo
+        chown -R "${AIRFLOW_UID}:0" /opt/airflow/ /workdir
+        echo
+        echo "Change ownership of files in shared volumes to ${AIRFLOW_UID}:0"
+        echo
+        chown -v -R "${AIRFLOW_UID}:0" /opt/airflow/{logs,dags,plugins,config}
+        echo
+        echo "Files in shared volumes:"
+        echo
+        ls -la /opt/airflow/{logs,dags,plugins,config}
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
@@ -327,6 +373,8 @@ services:
       - bash
       - -c
       - airflow
+    depends_on:
+      <<: *airflow-common-depends-on
 
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
@@ -369,7 +417,6 @@ services:
       retries: 5
     ports:
       - 9091:9091
-      - 51413:51413
       - 51413:51413/udp
     restart: unless-stopped
 

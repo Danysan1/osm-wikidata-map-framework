@@ -1,4 +1,5 @@
-from OsmDockerOperator import OsmDockerOperator
+from operators.OsmDockerOperator import OsmDockerOperator
+
 
 class TippecanoeOperator(OsmDockerOperator):
     """
@@ -11,7 +12,16 @@ class TippecanoeOperator(OsmDockerOperator):
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/3.8.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator)
     """
 
-    def __init__(self, input_file: str, min_zoom: int, max_zoom: int = None, extra_params: str = None, layer_name: str = None, output_file: str = None, output_dir: str = None, **kwargs) -> None:
+    def __init__(
+            self,
+            input_file: str,
+            min_zoom: int,
+            max_zoom: int|None = None,
+            extra_params: str|None = None,
+            layer_name: str|None = None,
+            output_file: str|None = None,
+            output_dir: str|None = None,
+            **kwargs) -> None:
         output = f"--output-to-directory='{output_dir}'" if output_file is None else f"--output='{output_file}'"
         layer = "" if layer_name is None else f"--layer={layer_name}"
         

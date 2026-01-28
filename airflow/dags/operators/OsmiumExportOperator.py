@@ -1,4 +1,4 @@
-from OsmDockerOperator import OsmDockerOperator
+from operators.OsmDockerOperator import OsmDockerOperator
 
 
 class OsmiumExportOperator(OsmDockerOperator):
