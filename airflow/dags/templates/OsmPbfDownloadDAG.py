@@ -127,10 +127,10 @@ class OsmPbfDownloadDAG(DAG):
     """
 
     def __init__(self,
+            prefix:str,
             pbf_url:str|None=None,
             rss_url:str|None=None,
             html_url:str|None=None,
-            prefix:str|None=None,
             days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
             verify_md5:bool=True,
             **kwargs
@@ -160,8 +160,8 @@ class OsmPbfDownloadDAG(DAG):
         pbf_date_path = f'{dest_folder}/{prefix}.osm.pbf.date.txt'
         pbf_dataset = Dataset(f'file://{pbf_path}')
         
+        # Path to the temporary folder where the DAG will store the intermediate files
         workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
-        """Path to the temporary folder where the DAG will store the intermediate files"""
 
         default_params = {
             "pbf_url": pbf_url,
@@ -177,7 +177,7 @@ class OsmPbfDownloadDAG(DAG):
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
-                tags=['owmf', prefix or "no-prefix", 'pbf-download', 'produces'],
+                tags=['owmf', prefix, 'pbf-download', 'produces'],
                 params=default_params,
                 doc_md="""
 # OSM-Wikidata Map Framework DB initialization

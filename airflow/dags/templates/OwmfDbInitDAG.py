@@ -310,26 +310,24 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         
         base_file_path = f'/workdir/{prefix}/{prefix}.filtered.osm' # .pbf / pbf.date.txt / .pg / .pg.date.txt
 
+        # URI of the input Airflow dataset for the DAG
         pg_dataset = Dataset(f'file://{base_file_path}.pg')
-        """URI of the input Airflow dataset for the DAG"""
 
+        # Airflow connection ID for the Postgres DB the DAG will upload the data to
         upload_db_conn_id = f"{prefix}-postgres"
-        """Airflow connection ID for the Postgres DB the DAG will upload the data to"""
 
+        # Airflow connection ID with the AWS credentials used for uploading the vector tiles and CSV to S3
         upload_s3_conn_id = "aws_s3"
-        """Airflow connection ID with the AWS credentials used for uploading the vector tiles and CSV to S3"""
 
+        # Airflow variable ID with the base S3 URI on which the vector tiles and CSV will be uploaded.
+        # For example, for a pipeline with prefix 'planet' the base S3 URI must be configured in the Airflow variable 'planet_base_s3_uri'.
         upload_s3_bucket_var_id = f"{prefix}_base_s3_uri"
-        """
-        Airflow variable ID with the base S3 URI on which the vector tiles and CSV will be uploaded.
-        For example, for a pipeline with prefix 'planet' the base S3 URI must be configured in the Airflow variable 'planet_base_s3_uri'.
-        """
 
+        # Base S3 URI on which the vector tiles and CSV will be uploaded
         base_s3_uri = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}"
-        """Base S3 URI on which the vector tiles and CSV will be uploaded"""
-        
-        workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
-        """Path to the temporary folder where the DAG will store the intermediate files"""
+
+        # Path to the temporary folder where the DAG will store the intermediate files
+        workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
 
         local_db_conn_id=f"{prefix}_local_postgis_db"
 
@@ -345,7 +343,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             start_date=start_date,
             catchup=False,
             schedule = [pg_dataset],
-            tags=['owmf', prefix or "no-prefix", 'owmf-db-init', 'consumes'],
+            tags=['owmf', prefix, 'owmf-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
             **kwargs

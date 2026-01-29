@@ -5,16 +5,16 @@ from textwrap import dedent
 
 from airflow.datasets import Dataset
 from airflow.providers.common.compat.sdk import TriggerRule
-from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
-from airflow.sdk import chain, dag, task
+from airflow.sdk import dag, task
 from operators.OsmiumExportOperator import OsmiumExportOperator
 from operators.OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
-from pendulum import datetime, now
+from pendulum import datetime
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 1
 
-def get_absolute_path(filename:str, folder:str|None = None) -> str:
+
+def get_absolute_path(filename: str, folder: str | None = None) -> str:
     file_dir_path = dirname(abspath(__file__))
     if folder != None:
         file_dir_path = join(file_dir_path, folder)
@@ -22,10 +22,10 @@ def get_absolute_path(filename:str, folder:str|None = None) -> str:
 
 
 def OwmfFilterDAG(
-        prefix:str|None = None,
-        days_before_cleanup:int = DEFAULT_DAYS_BEFORE_CLEANUP,
-        **kwargs
-    ):
+    prefix: str,
+    days_before_cleanup: int = DEFAULT_DAYS_BEFORE_CLEANUP,
+    **kwargs
+):
     """
     Apache Airflow DAG for OSM-Wikidata Map Framework OSM data filtering.
     Triggered on the availability of the PBF file for the prefix.
@@ -45,11 +45,12 @@ def OwmfFilterDAG(
     # https://pendulum.eustace.io/docs/#instantiation
     start_date = datetime(year=2022, month=9, day=15, tz='local')
 
-    if not prefix or prefix=="":
+    if not prefix or prefix == "":
         raise Exception("Prefix must be specified")
-    
-    base_file_path = join('/workdir',prefix,prefix) # .osm.pbf / .osm.pbf.date.txt / ...
-    
+
+    # .osm.pbf / .osm.pbf.date.txt / ...
+    base_file_path = join('/workdir', prefix, prefix)
+
     pbf_path = f'{base_file_path}.osm.pbf'
     pbf_date_path = f'{base_file_path}.osm.pbf.date.txt'
     pbf_dataset = Dataset(f'file://{pbf_path}')
@@ -61,15 +62,15 @@ def OwmfFilterDAG(
     pg_path = f'{base_file_path}.filtered.osm.pg'
     pg_date_path = f'{base_file_path}.filtered.osm.pg.date.txt'
     pg_dataset = Dataset(f'file://{pg_path}')
-    
-    workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
-    """Path to the temporary folder where the DAG will store the intermediate files"""
+
+    # Path to the temporary folder where the DAG will store the intermediate files
+    workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
 
     @dag(
         start_date=start_date,
         catchup=False,
-        schedule = [pbf_dataset],
-        tags=['owmf', prefix or "no-prefix", 'owmf-filter', 'consumes', 'produces'],
+        schedule=[pbf_dataset],
+        tags=['owmf', prefix, 'owmf-filter', 'consumes', 'produces'],
         **kwargs
     )
     def owmf_filter():
@@ -83,7 +84,7 @@ def OwmfFilterDAG(
         """
 
         @task
-        def create_work_dir(_workdir:str) -> None:
+        def create_work_dir(_workdir: str) -> None:
             """
             Create the temporary working directory
             """
@@ -92,13 +93,13 @@ def OwmfFilterDAG(
         task_create_work_dir = create_work_dir(workdir)
 
         task_keep_name = OsmiumTagsFilterOperator(
-            task_id = "keep_elements_with_name",
-            container_name = "airflow-keep_elements_with_name",
-            source_path= pbf_path,
-            dest_path = join(workdir,"with_name.osm.pbf"),
+            task_id="keep_elements_with_name",
+            container_name="airflow-keep_elements_with_name",
+            source_path=pbf_path,
+            dest_path=join(workdir, "with_name.osm.pbf"),
             tags='{{ var.json.osm_filter_tags|join(" ") }}',
-            remove_tags= True,
-            doc_md = dedent("""
+            remove_tags=True,
+            doc_md=dedent("""
                 # Keep only elements with a name
 
                 Filter the OpenStreetMap PBF data to keep only elements which have a name.
@@ -109,10 +110,10 @@ def OwmfFilterDAG(
         task_create_work_dir >> task_keep_name
 
         task_keep_possible_ety = OsmiumTagsFilterOperator(
-            task_id = "keep_elements_with_possible_etymology",
-            container_name = "airflow-keep_elements_with_possible_etymology",
-            source_path = join(workdir,"with_name.osm.pbf"),
-            dest_path = join(workdir,"possible_etymology.osm.pbf"),
+            task_id="keep_elements_with_possible_etymology",
+            container_name="airflow-keep_elements_with_possible_etymology",
+            source_path=join(workdir, "with_name.osm.pbf"),
+            dest_path=join(workdir, "possible_etymology.osm.pbf"),
             tags=[
                 'w/highway=residential',
                 'w/highway=unclassified',
@@ -127,8 +128,8 @@ def OwmfFilterDAG(
                 'subject:wikidata',
                 'buried:wikidata',
             ],
-            remove_tags= True,
-            doc_md = dedent("""
+            remove_tags=True,
+            doc_md=dedent("""
                 # Keep only elements that could have an etymology
 
                 Filter the OpenStreetMap PBF data to keep only elements which could have an etymology:
@@ -143,17 +144,19 @@ def OwmfFilterDAG(
 
         # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#excluded-elements
         task_remove_non_interesting = OsmiumTagsFilterOperator(
-            task_id = "remove_non_interesting_elements",
-            container_name = "airflow-remove_non_interesting_elements",
-            source_path = join(workdir,"possible_etymology.osm.pbf"),
-            dest_path = join(workdir,"filtered.osm.pbf"),
+            task_id="remove_non_interesting_elements",
+            container_name="airflow-remove_non_interesting_elements",
+            source_path=join(workdir, "possible_etymology.osm.pbf"),
+            dest_path=join(workdir, "filtered.osm.pbf"),
             tags=[
-                'man_made=flagpole', # Flag poles
-                'end_date=*', 'boundary=historic', 'boundary=disused', 'route=historic', # Items that don't exist anymore (troll tags)
-                'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
+                'man_made=flagpole',  # Flag poles
+                # Items that don't exist anymore (troll tags)
+                'end_date=*', 'boundary=historic', 'boundary=disused', 'route=historic',
+                # Wrong value for wikidata=* (stepping stone)
+                'wikidata=Q314003'
             ],
-            invert_match= True,
-            doc_md = dedent("""
+            invert_match=True,
+            doc_md=dedent("""
                 # Remove non interesting elements
 
                 Filter the OpenStreetMap PBF data to remove elements which are not interesting:
@@ -165,8 +168,8 @@ def OwmfFilterDAG(
         )
         task_keep_possible_ety >> task_remove_non_interesting
 
-        @task(outlets = filtered_pbf_dataset)
-        def copy_files(_workdir:str, _filtered_pbf_path:str, _pbf_date_path:str, _filtered_date_path:str) -> None:
+        @task(outlets=filtered_pbf_dataset)
+        def copy_files(_workdir: str, _filtered_pbf_path: str, _pbf_date_path: str, _filtered_date_path: str) -> None:
             """
             # Copy some files to their position for the next steps
 
@@ -176,7 +179,7 @@ def OwmfFilterDAG(
             """
             from shutil import copyfile
 
-            source_filtered_path = join(_workdir,"filtered.osm.pbf")
+            source_filtered_path = join(_workdir, "filtered.osm.pbf")
             print(f"Copying {source_filtered_path} to {_filtered_pbf_path}")
             copyfile(source_filtered_path, _filtered_pbf_path)
 
@@ -184,19 +187,20 @@ def OwmfFilterDAG(
             copyfile(_pbf_date_path, _filtered_date_path)
 
             source_osmium_path = get_absolute_path("osmium.json")
-            dest_osmium_path = join(_workdir,"osmium.json")
+            dest_osmium_path = join(_workdir, "osmium.json")
             print(f"Copying {source_osmium_path} to {dest_osmium_path}")
             copyfile(source_osmium_path, dest_osmium_path)
-        task_copy_files = copy_files(workdir, filtered_pbf_path, pbf_date_path, filtered_date_path)
+        task_copy_files = copy_files(
+            workdir, filtered_pbf_path, pbf_date_path, filtered_date_path)
         task_remove_non_interesting >> task_copy_files
 
         task_export_to_pg = OsmiumExportOperator(
-            task_id = "osmium_export_pbf_to_pg",
-            container_name = "airflow-osmium_export_pbf_to_pg",
-            source_path = join(workdir,"filtered.osm.pbf"),
-            dest_path = join(workdir,"filtered.osm.pg"),
-            cache_path = f"/tmp/osmium_{prefix}_{{{{ run_id }}}}",
-            config_path = join(workdir,"osmium.json"),
+            task_id="osmium_export_pbf_to_pg",
+            container_name="airflow-osmium_export_pbf_to_pg",
+            source_path=join(workdir, "filtered.osm.pbf"),
+            dest_path=join(workdir, "filtered.osm.pg"),
+            cache_path=f"/tmp/osmium_{prefix}_{{{{ run_id }}}}",
+            config_path=join(workdir, "osmium.json"),
             doc_md=dedent("""
                 # Export OSM data from PBF to PG
 
@@ -207,21 +211,21 @@ def OwmfFilterDAG(
         )
         task_copy_files >> task_export_to_pg
 
-        @task(outlets = pg_dataset)
-        def save_pg_dataset(_workdir:str):
+        @task(outlets=pg_dataset)
+        def save_pg_dataset(_workdir: str):
             """
             Move the filtered TSV .pg dataset to the destination folder
             """
             from shutil import copy, move
-            move(join(_workdir,"filtered.osm.pg"), pg_path)
+            move(join(_workdir, "filtered.osm.pg"), pg_path)
             copy(filtered_date_path, pg_date_path)
         task_export_to_pg >> save_pg_dataset(workdir)
 
         task_wait_cleanup = TimeDeltaSensorAsync(
-            task_id = 'wait_for_cleanup_time',
-            delta = timedelta(days=days_before_cleanup),
-            trigger_rule = TriggerRule.NONE_SKIPPED,
-            doc_md = """
+            task_id='wait_for_cleanup_time',
+            delta=timedelta(days=days_before_cleanup),
+            trigger_rule=TriggerRule.NONE_SKIPPED,
+            doc_md="""
                 # Wait for the time to cleanup the temporary files
 
                 Links:
@@ -234,7 +238,7 @@ def OwmfFilterDAG(
         task_export_to_pg >> task_wait_cleanup
 
         @task
-        def cleanup(_workdir:str) -> None:
+        def cleanup(_workdir: str) -> None:
             """
             # Cleanup the work directory
 
@@ -243,5 +247,5 @@ def OwmfFilterDAG(
             print(f"Deleting {_workdir}")
             rmdir(_workdir)
         task_wait_cleanup >> cleanup(workdir)
-    
+
     return owmf_filter()
