@@ -4,8 +4,6 @@ from textwrap import dedent
 
 from airflow.datasets import Dataset
 from airflow.exceptions import AirflowNotFoundException
-from airflow.providers.amazon.aws.transfers.local_to_s3 import \
-    LocalFilesystemToS3Operator
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.standard.operators.bash import BashOperator
@@ -19,7 +17,7 @@ from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
 from operators.TileJoinOperator import TileJoinOperator
 from operators.TippecanoeOperator import TippecanoeOperator
-from pendulum import datetime, now
+from pendulum import datetime
 from utils.wikidata import fetch_direct_entities, load_direct_entities
 
 LOAD_ON_DB_METHOD = "load_on_db_method"
@@ -35,10 +33,7 @@ GENERATE_PMTILES = "generate_pmtiles"
 DEFAULT_GENERATE_PMTILES = True
 PMTILES_LAYER_NAME = "detail" # If you need to change this, remember to change also the corresponding front-end constant (in OwmfMap.tsx)
 
-UPLOAD_TO_S3 = "upload_to_s3"
-DEFAULT_UPLOAD_TO_S3 = True
-
-DEFAULT_DAYS_BEFORE_CLEANUP = 7
+DEFAULT_DAYS_BEFORE_CLEANUP = 1
 
 def get_absolute_path(filename:str, folder:str|None = None) -> str:
     file_dir_path = dirname(abspath(__file__))
@@ -139,55 +134,6 @@ def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> boo
     print(f"Remote DB connection ID ('{conn_id}') is available, uploading")
     return True
 
-def check_s3_conn_id(conn_id:str, base_s3_uri_var_id:str, require_upload = True, **context) -> bool:
-    """
-        # Check S3 connection ID
-
-        Check whether the connection ID to an S3 bucket is available: if it is, proceed, otherwise stop here.
-
-        The connection ID is passed through the params object to allow customization when triggering the DAG.
-
-        Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.providers.standard.operators.python.ShortCircuitOperator)
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
-    """
-    from airflow.models.variable import Variable
-    from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-
-    enable_upload_from_params = context["params"].get(UPLOAD_TO_S3, DEFAULT_UPLOAD_TO_S3)
-
-    if require_upload and not enable_upload_from_params:
-        print("Upload to S3 bucket disabled in the DAG parameters, skipping upload")
-        return False
-
-    if not conn_id:
-        print(f"AWS connection ('{conn_id}') not available, skipping upload")
-        return False
-
-    if not Variable.get(base_s3_uri_var_id, None):
-        print(f"S3 base URI variable ('{base_s3_uri_var_id}') not available, skipping upload")
-        return False
-    
-    base_s3_uri = Variable.get(base_s3_uri_var_id)
-    try:
-        s3_hook = S3Hook(conn_id)
-        # See https://airflow.apache.org/docs/apache-airflow/1.10.10/_api/airflow/hooks/S3_hook/index.html
-        if s3_hook.check_for_key(f"{base_s3_uri}/"):
-            print(f"Base S3 URI '{base_s3_uri}/' exists and is reachable with connection ID '{conn_id}', uploading")
-            return True
-        else:
-            print(f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload")
-            return False
-    except AirflowNotFoundException as e:
-        print(f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload. Detailed error:")
-        print(e)
-        return False
-    except Exception as e:
-        print(f"Failed connecting to S3 (connection ID '{conn_id}', base S3 URI '{base_s3_uri}/'), skipping upload. Detailed error:")
-        print(e)
-        return False
-
 def choose_load_osm_data_task(base_file_path:str, **context) -> str:
     """
         # Check how to load data into the DB
@@ -287,7 +233,6 @@ class OwmfDbInitDAG(DAG):
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
-        See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
         """
 
         # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
@@ -305,9 +250,6 @@ class OwmfDbInitDAG(DAG):
 Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
 """
 
-        if not prefix or prefix=="":
-            raise Exception("Prefix must be specified")
-        
         base_file_path = f'/workdir/{prefix}/{prefix}.filtered.osm' # .pbf / pbf.date.txt / .pg / .pg.date.txt
 
         # URI of the input Airflow dataset for the DAG
@@ -316,15 +258,11 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         # Airflow connection ID for the Postgres DB the DAG will upload the data to
         upload_db_conn_id = f"{prefix}-postgres"
 
-        # Airflow connection ID with the AWS credentials used for uploading the vector tiles and CSV to S3
-        upload_s3_conn_id = "aws_s3"
-
-        # Airflow variable ID with the base S3 URI on which the vector tiles and CSV will be uploaded.
-        # For example, for a pipeline with prefix 'planet' the base S3 URI must be configured in the Airflow variable 'planet_base_s3_uri'.
-        upload_s3_bucket_var_id = f"{prefix}_base_s3_uri"
-
-        # Base S3 URI on which the vector tiles and CSV will be uploaded
-        base_s3_uri = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}"
+        tiles_dir = join("/workdir", prefix, "tiles")
+        pmtiles_path = join(tiles_dir, "tiles.pmtiles")
+        date_path = join(tiles_dir, "date.txt")
+        dataset_path = join(tiles_dir, "dataset.csv")
+        tiles_dataset = Dataset(f'file://{tiles_dir}')
 
         # Path to the temporary folder where the DAG will store the intermediate files
         workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
@@ -336,7 +274,6 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             DROP_TEMPORARY_TABLES: DEFAULT_DROP_TEMPORARY_TABLES,
             UPLOAD_TO_DB: DEFAULT_UPLOAD_TO_DB,
             GENERATE_PMTILES: DEFAULT_GENERATE_PMTILES,
-            UPLOAD_TO_S3: DEFAULT_UPLOAD_TO_S3,
         }
 
         super().__init__(
@@ -364,13 +301,6 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             doc_md = dedent(check_postgres_conn_id.__doc__ or "")
         )
 
-        task_create_work_dir = BashOperator(
-            task_id = "create_work_dir",
-            bash_command = 'mkdir -p "$workdir"',
-            env = { "workdir": workdir, },
-            dag = self,
-        )
-        
         task_setup_db_ext = SQLExecuteQueryOperator(
             task_id = "setup_db_extensions",
             conn_id = local_db_conn_id,
@@ -699,6 +629,14 @@ Dummy task for joining the path after the branching
         post_elaborate_group = TaskGroup("post_elaboration", tooltip="Actions after data elaboration", dag=self)
         propagate_group >> post_elaborate_group
 
+        task_create_work_dir = BashOperator(
+            task_id = "create_work_dir",
+            bash_command = 'mkdir -p "$workdir" && mkdir -p "$tiles_dir"',
+            env = { "workdir": workdir, "tiles_dir": tiles_dir },
+            dag = self,
+            task_group = post_elaborate_group,
+        )
+
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
             conn_id = local_db_conn_id,
@@ -843,8 +781,7 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
         )
         task_join_post_elaboration >> task_check_dump
 
-        pmtiles_base_name = "{{ 'owmf' if (var.value.source_presets is none or var.value.source_presets.startswith('[')) else var.value.source_presets }}"
-        details_fgb_file_path = join(workdir,f'{pmtiles_base_name}_details.fgb')
+        details_fgb_file_path = join(workdir, 'details.fgb')
         task_dump_details_fgb = Ogr2ogrDumpOperator(
             task_id = "dump_details_fgb",
             container_name = "airflow-dump_details",
@@ -862,7 +799,7 @@ Dump all the elements from the local DB with their respective linked entities in
         )
         task_check_dump >> task_dump_details_fgb
 
-        boundaries_fgb_file_path = join(workdir,f'{pmtiles_base_name}_boundaries.fgb')
+        boundaries_fgb_file_path = join(workdir, 'boundaries.fgb')
         task_dump_boundaries_fgb = Ogr2ogrDumpOperator(
             task_id = "dump_boundaries_fgb",
             container_name = "airflow-dump_boundaries",
@@ -892,7 +829,7 @@ Dump all the elements from the local DB with their respective linked entities in
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#show-countries-at-low-zoom-levels-but-states-at-higher-zoom-levels
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#discontinuous-polygon-features-buildings-of-rhode-island-visible-at-all-zoom-levels
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#dropping-a-fixed-fraction-of-features-by-zoom-level
-        details_pmtiles_file_path = join(workdir,f'{pmtiles_base_name}_details.pmtiles')
+        details_pmtiles_file_path = join(workdir, 'details.pmtiles')
         task_generate_details_pmtiles = TippecanoeOperator(
             task_id = "generate_details_pmtiles",
             container_name = "airflow-generate_details",
@@ -910,7 +847,7 @@ Dump all the elements from the local DB with their respective linked entities in
         )
         [task_check_pmtiles, task_dump_details_fgb] >> task_generate_details_pmtiles
 
-        boundaries_pmtiles_file_path = join(workdir,f'{pmtiles_base_name}_boundaries.pmtiles')
+        boundaries_pmtiles_file_path = join(workdir, 'boundaries.pmtiles')
         task_generate_boundaries_pmtiles = TippecanoeOperator(
             task_id = "generate_boundaries_pmtiles",
             container_name = "airflow-generate_boundaries",
@@ -928,22 +865,19 @@ Dump all the elements from the local DB with their respective linked entities in
         )
         [task_check_pmtiles, task_dump_boundaries_fgb] >> task_generate_boundaries_pmtiles
 
-        pmtiles_file_name = f"{pmtiles_base_name}.pmtiles"
-        pmtiles_file_path = join(workdir,pmtiles_file_name)
         task_join_pmtiles = TileJoinOperator(
             task_id = "join_pmtiles",
             container_name = "airflow-join_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
             input_files = [details_pmtiles_file_path, boundaries_pmtiles_file_path],
-            output_file = pmtiles_file_path,
+            output_file = pmtiles_path,
             layer_name = PMTILES_LAYER_NAME,
             extra_params = "--force",
             doc_md = dedent(TippecanoeOperator.__doc__ or "")
         )
         [task_generate_boundaries_pmtiles, task_generate_details_pmtiles] >> task_join_pmtiles
 
-        dataset_path = join(workdir,'dataset.csv')
         task_dump_dataset = PythonOperator(
             task_id = "dump_dataset",
             python_callable=dump_postgres_table,
@@ -956,88 +890,23 @@ Dump all the elements from the local DB with their respective linked entities in
             },
             dag = self,
             task_group = group_vector_tiles,
-            doc_md = "Dump the content of the dataset view into a CSV file to be uploaded to S3"
+            doc_md = "Dump the content of the dataset view into a CSV file"
         )
         task_check_pmtiles >> task_dump_dataset
-#endregion
 
-#region upload_tiles_to_s3
-        group_upload_s3 = TaskGroup("upload_tiles_to_s3", tooltip="Upload elaborated tiles to the S3 bucket", dag=self)
-        group_vector_tiles >> group_upload_s3
-
-        task_check_pmtiles_upload_conn_id = ShortCircuitOperator(
-           task_id = "check_pmtiles_upload_conn_id",
-           python_callable=check_s3_conn_id,
-           op_kwargs = {
-               "conn_id": upload_s3_conn_id,
-               "base_s3_uri_var_id": upload_s3_bucket_var_id,
-           },
-           dag = self,
-           task_group = group_upload_s3,
-           doc_md = dedent(check_s3_conn_id.__doc__ or "")
-        )
-        task_join_pmtiles >> task_check_pmtiles_upload_conn_id
-
-        task_upload_pmtiles_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_pmtiles_to_s3",
+        task_copy_tiles_date = BashOperator(
+            task_id = "copy_tiles_date",
+            bash_command='echo $last_update > "$date_path"',
+            env = {
+                "date_path": date_path,
+                "last_update": "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='last_data_update') }}"
+            },
+            outlets = tiles_dataset,
             dag = self,
-            filename = pmtiles_file_path,
-            dest_key = f"{base_s3_uri}/{pmtiles_file_name}",
-            replace = True,
-            aws_conn_id = upload_s3_conn_id,
-            task_group = group_upload_s3,
-            doc_md = """
-# Upload the PMTiles file to AWS S3
-
-Links:
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-"""
+            task_group = group_vector_tiles,
+            doc_md = "Dump the content of the dataset view into a CSV file"
         )
-        task_check_pmtiles_upload_conn_id >> task_upload_pmtiles_s3
-
-        task_dataset_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_dataset_to_s3",
-            dag = self,
-            filename = dataset_path,
-            dest_key = f'{base_s3_uri}/dataset.csv',
-            replace = True,
-            aws_conn_id = upload_s3_conn_id,
-            task_group = group_upload_s3,
-            doc_md = """
-# Upload dataset to S3
-
-Upload the dataset CSV file to AWS S3.
-
-Links:
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-"""
-        )
-        [task_upload_pmtiles_s3, task_dump_dataset] >> task_dataset_s3
-
-        task_upload_date_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_date_pmtiles_to_s3",
-            dag = self,
-            filename = "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='date_file_path') }}",
-            dest_key = f'{base_s3_uri}/date.txt',
-            replace = True,
-            aws_conn_id = upload_s3_conn_id,
-            task_group = group_upload_s3,
-            doc_md = """
-# Upload PMTiles date to S3
-
-Upload the date file for PMTiles to AWS S3.
-
-Links:
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-"""
-        )
-        task_upload_pmtiles_s3 >> task_upload_date_s3
+        [task_join_pmtiles, task_dump_dataset] >> task_copy_tiles_date
 #endregion
         
 #region upload_to_remote_db

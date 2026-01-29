@@ -23,7 +23,7 @@ from airflow import DAG, Dataset
 SKIP_IF_ALREADY_DOWNLOADED = "skip_if_already_downloaded"
 DEFAULT_SKIP_IF_ALREADY_DOWNLOADED = True
 
-DEFAULT_DAYS_BEFORE_CLEANUP = 15
+DEFAULT_DAYS_BEFORE_CLEANUP = 1
 
 def get_source_url(work_dir:str, ti:TaskInstance, **context):
     """

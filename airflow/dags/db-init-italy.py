@@ -3,6 +3,7 @@ from airflow.models import \
 from templates.OsmPbfDownloadDAG import OsmPbfDownloadDAG
 from templates.OwmfDbInitDAG import OwmfDbInitDAG
 from templates.OwmfFilterDAG import OwmfFilterDAG
+from templates.OwmfUploadToAwsDAG import OwmfUploadToAwsDAG
 
 download_italy_pbf = OsmPbfDownloadDAG(
     dag_id = "download-italy-latest",
@@ -27,4 +28,9 @@ db_init_italy = OwmfDbInitDAG(
     dag_id="db-init-italy",
     prefix="italy",
     wikidata_country="Q38", # Italy
+)
+
+upload_to_aws_italy = OwmfUploadToAwsDAG(
+    dag_id="upload-to-aws-italy",
+    prefix="italy"
 )

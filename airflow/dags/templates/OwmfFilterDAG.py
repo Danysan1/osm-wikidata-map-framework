@@ -1,5 +1,5 @@
 from datetime import timedelta
-from os import makedirs, rmdir
+from os import makedirs
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
@@ -38,15 +38,11 @@ def OwmfFilterDAG(
     days_before_cleanup: int
         number of days to wait before cleaning up the DAG run temporary folder
 
-    See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
     """
 
     # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
     # https://pendulum.eustace.io/docs/#instantiation
     start_date = datetime(year=2022, month=9, day=15, tz='local')
-
-    if not prefix or prefix == "":
-        raise Exception("Prefix must be specified")
 
     # .osm.pbf / .osm.pbf.date.txt / ...
     base_file_path = join('/workdir', prefix, prefix)
@@ -244,8 +240,9 @@ def OwmfFilterDAG(
 
             Remove the DAG run folder
             """
+            from shutil import rmtree
             print(f"Deleting {_workdir}")
-            rmdir(_workdir)
+            rmtree(_workdir)
         task_wait_cleanup >> cleanup(workdir)
 
     return owmf_filter()

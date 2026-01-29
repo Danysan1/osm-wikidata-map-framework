@@ -3,6 +3,7 @@ from airflow.models import \
 from templates.OsmPbfDownloadDAG import OsmPbfDownloadDAG
 from templates.OwmfDbInitDAG import OwmfDbInitDAG
 from templates.OwmfFilterDAG import OwmfFilterDAG
+from templates.OwmfUploadToAwsDAG import OwmfUploadToAwsDAG
 
 download_planet_pbf = OsmPbfDownloadDAG(
     dag_id="download-planet-latest",
@@ -41,4 +42,9 @@ db_init_planet = OwmfDbInitDAG(
     dag_id="db-init-planet",
     days_before_cleanup=8,
     prefix="planet",
+)
+
+upload_to_aws_planet = OwmfUploadToAwsDAG(
+    dag_id="upload-to-aws-planet",
+    prefix="planet"
 )
