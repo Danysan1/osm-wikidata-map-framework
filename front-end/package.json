@@ -29,8 +29,6 @@
   ],
   "private": true,
   "scripts": {
-    "build-load-related": "tsc src/load-related/load-related.ts",
-    "load-related": "node src/load-related/load-related.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

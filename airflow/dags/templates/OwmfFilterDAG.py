@@ -1,16 +1,16 @@
 from datetime import timedelta
+from os import makedirs, rmdir
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
+from airflow.datasets import Dataset
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.bash import BashOperator
-from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
+from airflow.sdk import chain, dag, task
 from operators.OsmiumExportOperator import OsmiumExportOperator
 from operators.OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from pendulum import datetime, now
-
-from airflow import DAG, Dataset
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 1
 
@@ -21,85 +21,75 @@ def get_absolute_path(filename:str, folder:str|None = None) -> str:
     return join(file_dir_path, filename)
 
 
-
-def do_copy_file(source_path:str, dest_path:str) -> None:
-    """
-    Copy a file from one path to another
-    """
-    from shutil import copyfile
-    copyfile(source_path, dest_path)
-
-class OwmfFilterDAG(DAG):
+def OwmfFilterDAG(
+        prefix:str|None = None,
+        days_before_cleanup:int = DEFAULT_DAYS_BEFORE_CLEANUP,
+        **kwargs
+    ):
     """
     Apache Airflow DAG for OSM-Wikidata Map Framework OSM data filtering.
     Triggered on the availability of the PBF file for the prefix.
     Filters the appropriate OSM data and exports it to a PG tab-separated-values file ready for importing into the DB.
+
+    Keyword arguments:
+    ----------
+    prefix: str
+        prefix to search in the PBF filename 
+    days_before_cleanup: int
+        number of days to wait before cleaning up the DAG run temporary folder
+
+    See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
     """
 
-    def __init__(self,
-            prefix:str|None=None,
-            days_before_cleanup:int = DEFAULT_DAYS_BEFORE_CLEANUP,
-            **kwargs
-        ):
+    # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
+    # https://pendulum.eustace.io/docs/#instantiation
+    start_date = datetime(year=2022, month=9, day=15, tz='local')
+
+    if not prefix or prefix=="":
+        raise Exception("Prefix must be specified")
+    
+    base_file_path = join('/workdir',prefix,prefix) # .osm.pbf / .osm.pbf.date.txt / ...
+    
+    pbf_path = f'{base_file_path}.osm.pbf'
+    pbf_date_path = f'{base_file_path}.osm.pbf.date.txt'
+    pbf_dataset = Dataset(f'file://{pbf_path}')
+
+    filtered_pbf_path = f'{base_file_path}.filtered.osm.pbf'
+    filtered_date_path = f'{base_file_path}.filtered.osm.pbf.date.txt'
+    filtered_pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
+
+    pg_path = f'{base_file_path}.filtered.osm.pg'
+    pg_date_path = f'{base_file_path}.filtered.osm.pg.date.txt'
+    pg_dataset = Dataset(f'file://{pg_path}')
+    
+    workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
+    """Path to the temporary folder where the DAG will store the intermediate files"""
+
+    @dag(
+        start_date=start_date,
+        catchup=False,
+        schedule = [pbf_dataset],
+        tags=['owmf', prefix or "no-prefix", 'owmf-filter', 'consumes', 'produces'],
+        **kwargs
+    )
+    def owmf_filter():
         """
-        Apache Airflow DAG for OSM-Wikidata Map Framework OSM data filtering.
+        # OSM-Wikidata Map Framework OSM data filtering
 
-        Keyword arguments:
-        ----------
-        prefix: str
-            prefix to search in the PBF filename 
-        days_before_cleanup: int
-            number of days to wait before cleaning up the DAG run temporary folder
+        * ingests downloaded OSM PBF data
+        * filters OSM data to keep only relevant data
 
-        See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
+        Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
-        # https://pendulum.eustace.io/docs/#instantiation
-        start_date = datetime(year=2022, month=9, day=15, tz='local')
-
-        if not prefix or prefix=="":
-            raise Exception("Prefix must be specified")
-        
-        base_file_path = join('/workdir',prefix,prefix) # .osm.pbf / .osm.pbf.date.txt / ...
-        
-        pbf_path = f'{base_file_path}.osm.pbf'
-        pbf_date_path = f'{base_file_path}.osm.pbf.date.txt'
-        pbf_dataset = Dataset(f'file://{pbf_path}')
-
-        filtered_pbf_path = f'{base_file_path}.filtered.osm.pbf'
-        filtered_pbf_date_path = f'{base_file_path}.filtered.osm.pbf.date.txt'
-        filtered_pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
-
-        pg_path = f'{base_file_path}.filtered.osm.pg'
-        pg_date_path = f'{base_file_path}.filtered.osm.pg.date.txt'
-        pg_dataset = Dataset(f'file://{pg_path}')
-        
-        workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
-        """Path to the temporary folder where the DAG will store the intermediate files"""
-
-        super().__init__(
-            start_date=start_date,
-            catchup=False,
-            schedule = [pbf_dataset],
-            tags=['owmf', prefix or "not-prefix", 'owmf-filter', 'consumes', 'produces'],
-            doc_md = """
-                # OSM-Wikidata Map Framework OSM data filtering
-
-                * ingests downloaded OSM PBF data
-                * filters OSM data to keep only relevant data
-
-                Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
-            """,
-            **kwargs
-        )
-
-        task_create_work_dir = BashOperator(
-            task_id = "create_work_dir",
-            bash_command = 'mkdir -p "$workDir"',
-            env = { "workDir": workdir, },
-            dag = self,
-        )
+        @task
+        def create_work_dir(_workdir:str) -> None:
+            """
+            Create the temporary working directory
+            """
+            print(f"Creating {_workdir}")
+            makedirs(_workdir, exist_ok=True)
+        task_create_work_dir = create_work_dir(workdir)
 
         task_keep_name = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_name",
@@ -108,7 +98,6 @@ class OwmfFilterDAG(DAG):
             dest_path = join(workdir,"with_name.osm.pbf"),
             tags='{{ var.json.osm_filter_tags|join(" ") }}',
             remove_tags= True,
-            dag = self,
             doc_md = dedent("""
                 # Keep only elements with a name
 
@@ -139,7 +128,6 @@ class OwmfFilterDAG(DAG):
                 'buried:wikidata',
             ],
             remove_tags= True,
-            dag = self,
             doc_md = dedent("""
                 # Keep only elements that could have an etymology
 
@@ -165,7 +153,6 @@ class OwmfFilterDAG(DAG):
                 'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],
             invert_match= True,
-            dag = self,
             doc_md = dedent("""
                 # Remove non interesting elements
 
@@ -178,39 +165,30 @@ class OwmfFilterDAG(DAG):
         )
         task_keep_possible_ety >> task_remove_non_interesting
 
-        task_save_filtered_pbf_dataset = BashOperator(
-            task_id = "save_filtered_pbf_dataset",
-            bash_command = 'cp "$sourceFilePath" "$filteredPbfPath" && cp "$pbfDatePath" "$filteredPbfDatePath"',
-            env = {
-                "sourceFilePath": join(workdir,"filtered.osm.pbf"),
-                "filteredPbfPath": filtered_pbf_path,
-                "pbfDatePath": pbf_date_path,
-                "filteredPbfDatePath": filtered_pbf_date_path,
-            },
-            outlets = filtered_pbf_dataset,
-            dag = self
-        )
-        task_remove_non_interesting >> task_save_filtered_pbf_dataset
-
-        task_copy_config = PythonOperator(
-            task_id = "copy_osmium_export_config",
-            python_callable = do_copy_file,
-            op_kwargs = {
-                "source_path": get_absolute_path("osmium.json"),
-                "dest_path": join(workdir,"osmium.json"),
-            },
-            dag = self,
-            doc_md="""
-                # Copy the Osmium configuration
-
-                Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/osmium.json)) into the working directory.
-
-                Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.providers.standard.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
+        @task(outlets = filtered_pbf_dataset)
+        def copy_files(_workdir:str, _filtered_pbf_path:str, _pbf_date_path:str, _filtered_date_path:str) -> None:
             """
-        )
-        task_create_work_dir >> task_copy_config
+            # Copy some files to their position for the next steps
+
+            * Copy the filtered osm.pbf file to its destination
+            * Copy the date file to its destination
+            * Copy the configuration for `osmium export` (osmium.json) into the working directory.
+            """
+            from shutil import copyfile
+
+            source_filtered_path = join(_workdir,"filtered.osm.pbf")
+            print(f"Copying {source_filtered_path} to {_filtered_pbf_path}")
+            copyfile(source_filtered_path, _filtered_pbf_path)
+
+            print(f"Copying {_pbf_date_path} to {_filtered_date_path}")
+            copyfile(_pbf_date_path, _filtered_date_path)
+
+            source_osmium_path = get_absolute_path("osmium.json")
+            dest_osmium_path = join(_workdir,"osmium.json")
+            print(f"Copying {source_osmium_path} to {dest_osmium_path}")
+            copyfile(source_osmium_path, dest_osmium_path)
+        task_copy_files = copy_files(workdir, filtered_pbf_path, pbf_date_path, filtered_date_path)
+        task_remove_non_interesting >> task_copy_files
 
         task_export_to_pg = OsmiumExportOperator(
             task_id = "osmium_export_pbf_to_pg",
@@ -219,7 +197,6 @@ class OwmfFilterDAG(DAG):
             dest_path = join(workdir,"filtered.osm.pg"),
             cache_path = f"/tmp/osmium_{prefix}_{{{{ run_id }}}}",
             config_path = join(workdir,"osmium.json"),
-            dag = self,
             doc_md=dedent("""
                 # Export OSM data from PBF to PG
 
@@ -228,27 +205,22 @@ class OwmfFilterDAG(DAG):
                 Uses `osmium export` through `OsmiumExportOperator`:
             """) + dedent(OsmiumExportOperator.__doc__ or "")
         )
-        [task_remove_non_interesting,task_copy_config] >> task_export_to_pg
+        task_copy_files >> task_export_to_pg
 
-        task_save_pg_dataset = BashOperator(
-            task_id = "save_pg_dataset",
-            bash_command = 'mv "$sourceFilePath" "$pgPath" && cp "$filteredPbfDatePath" "$pgDatePath"',
-            env = {
-                "sourceFilePath": join(workdir,"filtered.osm.pg"),
-                "pgPath": pg_path,
-                "filteredPbfDatePath": filtered_pbf_date_path,
-                "pgDatePath": pg_date_path,
-            },
-            outlets = pg_dataset,
-            dag = self
-        )
-        task_export_to_pg >> task_save_pg_dataset
+        @task(outlets = pg_dataset)
+        def save_pg_dataset(_workdir:str):
+            """
+            Move the filtered TSV .pg dataset to the destination folder
+            """
+            from shutil import copy, move
+            move(join(_workdir,"filtered.osm.pg"), pg_path)
+            copy(filtered_date_path, pg_date_path)
+        task_export_to_pg >> save_pg_dataset(workdir)
 
         task_wait_cleanup = TimeDeltaSensorAsync(
             task_id = 'wait_for_cleanup_time',
             delta = timedelta(days=days_before_cleanup),
             trigger_rule = TriggerRule.NONE_SKIPPED,
-            dag = self,
             doc_md = """
                 # Wait for the time to cleanup the temporary files
 
@@ -260,18 +232,16 @@ class OwmfFilterDAG(DAG):
             """
         )
         task_export_to_pg >> task_wait_cleanup
-    
-        task_cleanup = BashOperator(
-            task_id = "cleanup",
-            bash_command = 'rm -r "$workDir"',
-            env = {
-                "workDir": workdir,
-            },
-            dag = self,
-            doc_md = """
-                # Cleanup the work directory
 
-                Remove the DAG run folder
+        @task
+        def cleanup(_workdir:str) -> None:
             """
-        )
-        task_wait_cleanup >> task_cleanup
+            # Cleanup the work directory
+
+            Remove the DAG run folder
+            """
+            print(f"Deleting {_workdir}")
+            rmdir(_workdir)
+        task_wait_cleanup >> cleanup(workdir)
+    
+    return owmf_filter()

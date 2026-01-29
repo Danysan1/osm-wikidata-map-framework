@@ -21,8 +21,6 @@ export default defineConfig([globalIgnores([
     "**/node_modules/",
     "**/.next/",
     "src/generated/",
-    "src/load-related/load-related.js",
-    "src/services/WikidataBulkService/WikidataBulkService.js",
 ]), {
     extends: [
         ...nextCoreWebVitals,

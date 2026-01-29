@@ -345,7 +345,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             start_date=start_date,
             catchup=False,
             schedule = [pg_dataset],
-            tags=['owmf', prefix or "not-prefix", 'owmf-db-init', 'consumes'],
+            tags=['owmf', prefix or "no-prefix", 'owmf-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
             **kwargs

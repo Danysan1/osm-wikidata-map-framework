@@ -28,7 +28,6 @@ Main files and folders:
   - [context](./src/context/) -> Code used for interfacing with the browser's IndexedDB for caching
   - [generated](./src/generated/) -> Auto-generated code used for interfacing with external APIs
   - [i18n](./src/i18n) -> Code used for the  app internationalization
-  - [load-related](./src/i18n) -> Code NOT used by the web app, used instead during DB initialization (through the `registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related` Docker image built with [Dockerfile.load-related](./Dockerfile.load-related))
   - [model](./src/model/) -> Data model Typescript interfaces
   - [services](./src/services/) -> Code responsible for handling the querying of external APIs, transforming the result and combining it with with other sources
 - [next.config.mjs](./next.config.mjs) -> Next.js configuration (includes)
