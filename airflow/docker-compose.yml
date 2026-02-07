@@ -1,8 +1,8 @@
-# Derived from https://airflow.apache.org/docs/apache-airflow/3.1.6/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/3.1.6/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/3.1.7/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/3.1.7/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/3.1.6/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/3.1.6/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/3.1.7/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/3.1.7/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:3.1.6
+#                                Default: apache/airflow:3.1.7
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
@@ -55,13 +55,13 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider distributions you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.6}
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.7}
   build: .
   env_file:
     - ${ENV_FILE_PATH:-.env}
   environment:
     &airflow-common-env
-    # https://airflow.apache.org/docs/apache-airflow/3.1.6/core-concepts/executor/index.html
+    # https://airflow.apache.org/docs/apache-airflow/3.1.7/core-concepts/executor/index.html
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -84,9 +84,9 @@ x-airflow-common:
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
-    # https://airflow.apache.org/docs/apache-airflow/3.1.6/faq.html#when-there-are-a-lot-1000-of-dag-files-how-to-speed-up-parsing-of-new-files
+    # https://airflow.apache.org/docs/apache-airflow/3.1.7/faq.html#when-there-are-a-lot-1000-of-dag-files-how-to-speed-up-parsing-of-new-files
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90
-    # https://airflow.apache.org/docs/apache-airflow/3.1.6/howto/connection.html#storing-connections-in-environment-variables
+    # https://airflow.apache.org/docs/apache-airflow/3.1.7/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
     AIRFLOW_CONN_PLANET_LOCAL_POSTGIS_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_planet_db_database:-planet} # connection to the configured OWMF PostGIS DB

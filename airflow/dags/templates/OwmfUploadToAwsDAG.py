@@ -26,11 +26,6 @@ def check_s3_conn_id(conn_id: str, base_s3_uri_var_id: str) -> bool:
         Check whether the connection ID to an S3 bucket is available: if it is, proceed, otherwise stop here.
 
         The connection ID is passed through the params object to allow customization when triggering the DAG.
-
-        Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.providers.standard.operators.python.ShortCircuitOperator)
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
 
     if not conn_id:
@@ -80,7 +75,7 @@ def OwmfUploadToAwsDAG(
         prefix to search in the PBF filename
     """
 
-    # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
+    # https://airflow.apache.org/docs/apache-airflow/3.1.7/authoring-and-scheduling/timezone.html
     # https://pendulum.eustace.io/docs/#instantiation
     start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -143,9 +138,9 @@ def OwmfUploadToAwsDAG(
 # Upload the PMTiles file to AWS S3
 
 Links:
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/transfer/local_to_s3.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/connections/aws.html)
 """
         )
         task_check_pmtiles_upload_conn_id >> task_upload_pmtiles_s3
@@ -162,9 +157,9 @@ Links:
 Upload the dataset CSV file to AWS S3.
 
 Links:
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/transfer/local_to_s3.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/connections/aws.html)
 """
         )
         task_upload_pmtiles_s3 >> task_dataset_s3
@@ -181,9 +176,9 @@ Links:
 Upload the date file for PMTiles to AWS S3.
 
 Links:
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/transfer/local_to_s3.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/connections/aws.html)
 """
         )
         task_upload_pmtiles_s3 >> task_upload_date_s3

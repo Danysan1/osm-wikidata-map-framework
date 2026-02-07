@@ -5,7 +5,7 @@ from textwrap import dedent
 
 from airflow.datasets import Dataset
 from airflow.providers.common.compat.sdk import TriggerRule
-from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
+from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
 from airflow.sdk import dag, task
 from operators.OsmiumExportOperator import OsmiumExportOperator
 from operators.OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
@@ -40,7 +40,7 @@ def OwmfFilterDAG(
 
     """
 
-    # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
+    # https://airflow.apache.org/docs/apache-airflow/3.1.7/authoring-and-scheduling/timezone.html
     # https://pendulum.eustace.io/docs/#instantiation
     start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -80,12 +80,12 @@ def OwmfFilterDAG(
         """
 
         @task
-        def create_work_dir(_workdir: str) -> None:
+        def create_work_dir(workdir_eval: str) -> None:
             """
             Create the temporary working directory
             """
-            print(f"Creating {_workdir}")
-            makedirs(_workdir, exist_ok=True)
+            print(f"Creating {workdir_eval}")
+            makedirs(workdir_eval, exist_ok=True)
         task_create_work_dir = create_work_dir(workdir)
 
         task_keep_name = OsmiumTagsFilterOperator(
@@ -165,7 +165,7 @@ def OwmfFilterDAG(
         task_keep_possible_ety >> task_remove_non_interesting
 
         @task(outlets=filtered_pbf_dataset)
-        def copy_files(_workdir: str, _filtered_pbf_path: str, _pbf_date_path: str, _filtered_date_path: str) -> None:
+        def copy_files(workdir_eval: str, filtered_pbf_path_eval: str, pbf_date_path_eval: str, filtered_date_path_eval: str) -> None:
             """
             # Copy some files to their position for the next steps
 
@@ -175,15 +175,16 @@ def OwmfFilterDAG(
             """
             from shutil import copyfile
 
-            source_filtered_path = join(_workdir, "filtered.osm.pbf")
-            print(f"Copying {source_filtered_path} to {_filtered_pbf_path}")
-            copyfile(source_filtered_path, _filtered_pbf_path)
+            source_filtered_path = join(workdir_eval, "filtered.osm.pbf")
+            print(
+                f"Copying {source_filtered_path} to {filtered_pbf_path_eval}")
+            copyfile(source_filtered_path, filtered_pbf_path_eval)
 
-            print(f"Copying {_pbf_date_path} to {_filtered_date_path}")
-            copyfile(_pbf_date_path, _filtered_date_path)
+            print(f"Copying {pbf_date_path_eval} to {filtered_date_path_eval}")
+            copyfile(pbf_date_path_eval, filtered_date_path_eval)
 
             source_osmium_path = get_absolute_path("osmium.json")
-            dest_osmium_path = join(_workdir, "osmium.json")
+            dest_osmium_path = join(workdir_eval, "osmium.json")
             print(f"Copying {source_osmium_path} to {dest_osmium_path}")
             copyfile(source_osmium_path, dest_osmium_path)
         task_copy_files = copy_files(
@@ -208,41 +209,39 @@ def OwmfFilterDAG(
         task_copy_files >> task_export_to_pg
 
         @task(outlets=pg_dataset)
-        def save_pg_dataset(_workdir: str):
+        def save_pg_dataset(workdir_eval: str):
             """
             Move the filtered TSV .pg dataset to the destination folder
             """
             from shutil import copy, move
-            move(join(_workdir, "filtered.osm.pg"), pg_path)
+            move(join(workdir_eval, "filtered.osm.pg"), pg_path)
             copy(filtered_date_path, pg_date_path)
         task_export_to_pg >> save_pg_dataset(workdir)
 
-        task_wait_cleanup = TimeDeltaSensorAsync(
+        task_wait_cleanup = TimeDeltaSensor(
             task_id='wait_for_cleanup_time',
             delta=timedelta(days=days_before_cleanup),
             trigger_rule=TriggerRule.NONE_SKIPPED,
+            deferrable=True,
             doc_md="""
-                # Wait for the time to cleanup the temporary files
+# Wait for the time to cleanup the temporary files
 
-                Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
-                * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
-            """
+Links:
+* [TimeDeltaSensor documentation](https://airflow.apache.org/docs/apache-airflow-providers-standard/1.11.0/sensors/datetime.html)
+"""
         )
         task_export_to_pg >> task_wait_cleanup
 
         @task
-        def cleanup(_workdir: str) -> None:
+        def cleanup(workdir_eval: str) -> None:
             """
             # Cleanup the work directory
 
             Remove the DAG run folder
             """
             from shutil import rmtree
-            print(f"Deleting {_workdir}")
-            rmtree(_workdir)
+            print(f"Deleting {workdir_eval}")
+            rmtree(workdir_eval)
         task_wait_cleanup >> cleanup(workdir)
 
     return owmf_filter()

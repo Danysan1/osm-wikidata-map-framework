@@ -1,5 +1,5 @@
 # https://airflow.apache.org/docs/docker-stack/build.html#adding-packages-from-requirements-txt
-FROM apache/airflow:slim-3.1.6
+FROM apache/airflow:slim-3.1.7
 
 USER root
 RUN apt-get update && \

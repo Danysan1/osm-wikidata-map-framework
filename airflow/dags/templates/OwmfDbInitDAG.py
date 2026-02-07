@@ -11,7 +11,7 @@ from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.operators.python import (BranchPythonOperator,
                                                          PythonOperator,
                                                          ShortCircuitOperator)
-from airflow.providers.standard.sensors.time_delta import TimeDeltaSensorAsync
+from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
 from airflow.sdk import DAG, Param, TaskGroup
 from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
@@ -235,7 +235,7 @@ class OwmfDbInitDAG(DAG):
 
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/3.1.7/authoring-and-scheduling/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -1018,20 +1018,18 @@ Links:
         group_cleanup = TaskGroup("cleanup", tooltip="Cleanup the DAG temporary files", dag=self)
         post_elaborate_group >> group_cleanup
 
-        task_wait_cleanup = TimeDeltaSensorAsync(
+        task_wait_cleanup = TimeDeltaSensor(
             task_id = 'wait_for_cleanup_time',
             delta = timedelta(days=days_before_cleanup),
             trigger_rule = TriggerRule.NONE_SKIPPED,
+            deferrable=True,
             dag = self,
             task_group = group_cleanup,
             doc_md = """
 # Wait for the time to cleanup the temporary files
 
 Links:
-* [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
-* [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
-* [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-* [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
+* [TimeDeltaSensor documentation](https://airflow.apache.org/docs/apache-airflow-providers-standard/1.11.0/sensors/datetime.html)
 """
         )
         task_join_post_elaboration >> task_wait_cleanup

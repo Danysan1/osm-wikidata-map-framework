@@ -30,7 +30,7 @@ class TippecanoeOperator(OsmDockerOperator):
         elif max_zoom > min_zoom:
             max_zoom_arg = f"-z{max_zoom}"
         else:
-            print(f"Invalid max_zoom={max_zoom} <= min_zoom={min_zoom}, using max_zoom={min_zoom+1}")
+            #print(f"Invalid max_zoom={max_zoom} <= min_zoom={min_zoom}, using max_zoom={min_zoom+1}")
             max_zoom_arg = f"-z{min_zoom + 1}"
         
         super().__init__(
