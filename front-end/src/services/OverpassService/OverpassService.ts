@@ -147,16 +147,19 @@ export class OverpassService extends BaseOsmMapService {
                     filter_clause = filter_value ? `"${filter_key}"="${filter_value}"` : `"${filter_key}"`;
 
                 if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
-                    non_filter_wd_keys.forEach(
-                        key => query += `nwr${commonFilters}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
-                    );
-                    if (osm_text_key && !osm_text_key_is_filter)
-                        query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
-
-                    if (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link !== "true" && !any_linked_entity)
+                    if (this.preset.require_wikidata_link) {
+                        non_filter_wd_keys.forEach(
+                            key => query += `nwr${commonFilters}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
+                        );
+                        
+                        if (osm_text_key && !osm_text_key_is_filter)
+                            query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
+                        
+                        if (use_wikidata)
+                            query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
+                    } else {
                         query += `nwr${commonFilters}[${filter_clause}]; // filter only\n`;
-                    else if (use_wikidata)
-                        query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
+                    }
                 }
             });
 

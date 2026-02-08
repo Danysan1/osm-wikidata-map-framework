@@ -9,5 +9,6 @@
     "osm_wikidata_properties": [
         "P10241"
     ],
+    "require_wikidata_link": true,
     "use_min_zoom_level": true
 }

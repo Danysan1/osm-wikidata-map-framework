@@ -124,4 +124,10 @@ export interface SourcePreset {
      * @example "P1442"
      */
     wikidata_image_property?: string;
+
+    /**
+     * Whether all OSM elements, even in presets without linked entities, should have either a direct or secondary wikidata link.
+     * In practice this means that only OSM elements with wikidata=* or *:wikidata=* will be fetched.
+     */
+    require_wikidata_link?: boolean;
 }

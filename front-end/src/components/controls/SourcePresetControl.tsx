@@ -40,7 +40,7 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = ({ position }) 
       {sourcePreset?.id === sourcePresetID && <>
         <ul>
           {sourcePreset.osm_filter_tags?.map(tag => <li key={tag}><TagLink tag={tag} /></li>)}
-          {sourcePreset.feature_filter_classes?.map(id => <li key={id}><a key={`https://www.wikidata.org/wiki/Property:${id}`} href={id}>{id}</a></li>)}
+          {sourcePreset.feature_filter_classes?.map(id => <li key={id}><a href="https://www.wikidata.org/wiki/Property:P31">P31</a> <a href={`https://www.wikidata.org/wiki/${id}`}>{id}</a></li>)}
         </ul>
         {(!!sourcePreset.osm_wikidata_keys?.length || sourcePreset.osm_text_key) && <Button
           href={`/${i18n.language}/contributing/${sourcePresetID}/#contribute_linked_entity`}

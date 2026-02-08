@@ -2,9 +2,18 @@
   "background_color": "hsl(210, 100%, 96%)",
   "ignore_big_elements": true,
   "mapcomplete_theme": "transit",
-  "osm_filter_tags": ["network:wikidata", "network", "public_transport"],
+  "osm_filter_tags": [
+    "network:wikidata",
+    "network",
+    "public_transport"
+  ],
   "osm_text_key": "network",
-  "osm_wikidata_keys": ["network:wikidata"],
-  "osm_wikidata_properties": ["P16"],
+  "osm_wikidata_keys": [
+    "network:wikidata"
+  ],
+  "osm_wikidata_properties": [
+    "P16"
+  ],
+  "require_wikidata_link": true,
   "use_min_zoom_level": true
 }

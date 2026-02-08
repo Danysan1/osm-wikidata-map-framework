@@ -10,6 +10,15 @@
     "osm_wikidata_keys": [
         "model:wikidata"
     ],
-    "osm_wikidata_properties": ["P31"],
-    "linked_entity_filter_classes": ["Q45296117", "Q15056995", "Q15056993", "Q111722634", "Q110055303"]
+    "osm_wikidata_properties": [
+        "P31"
+    ],
+    "linked_entity_filter_classes": [
+        "Q45296117",
+        "Q15056995",
+        "Q15056993",
+        "Q111722634",
+        "Q110055303"
+    ],
+    "require_wikidata_link": false
 }

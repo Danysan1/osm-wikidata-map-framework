@@ -16,5 +16,6 @@
     "osm_wikidata_properties": [
         "P170",
         "P50"
-    ]
+    ],
+    "require_wikidata_link": true
 }

@@ -9,12 +9,17 @@
     "osm_text_key": "name:etymology",
     "osm_description_key": "name:etymology:description",
     "osm_wikidata_keys": [
-        "name:etymology:wikidata", "subject:wikidata"
+        "name:etymology:wikidata",
+        "subject:wikidata"
     ],
     "osm_wikidata_properties": [
-        "P138", "P825", "P547"
+        "P138",
+        "P825",
+        "P547"
     ],
+    "require_wikidata_link": true,
     "feature_filter_classes": [
-        "Q1371047", "Q126443332"
+        "Q1371047",
+        "Q126443332"
     ]
 }

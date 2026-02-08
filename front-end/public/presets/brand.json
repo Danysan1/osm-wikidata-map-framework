@@ -1,9 +1,19 @@
 {
   "background_color": "hsl(60, 100%, 96%)",
   "mapcomplete_theme": "shops",
-  "osm_filter_tags": ["brand:wikidata", "brand", "shop", "amenity"],
+  "osm_filter_tags": [
+    "brand:wikidata",
+    "brand",
+    "shop",
+    "amenity"
+  ],
   "osm_text_key": "brand",
-  "osm_wikidata_keys": ["brand:wikidata"],
-  "osm_wikidata_properties": ["P1716"],
+  "osm_wikidata_keys": [
+    "brand:wikidata"
+  ],
+  "osm_wikidata_properties": [
+    "P1716"
+  ],
+  "require_wikidata_link": true,
   "use_min_zoom_level": true
 }

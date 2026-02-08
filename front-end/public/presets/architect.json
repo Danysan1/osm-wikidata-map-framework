@@ -12,8 +12,14 @@
     "place=square"
   ],
   "osm_text_key": "architect",
-  "osm_wikidata_keys": ["architect:wikidata"],
-  "osm_wikidata_properties": ["P84", "P287"],
+  "osm_wikidata_keys": [
+    "architect:wikidata"
+  ],
+  "osm_wikidata_properties": [
+    "P84",
+    "P287"
+  ],
   "relation_propagation_type": "site",
+  "require_wikidata_link": true,
   "use_min_zoom_level": true
 }

@@ -13,10 +13,14 @@
   ],
   "osm_text_key": "buried",
   "osm_description_key": "buried:description",
-  "osm_wikidata_keys": ["buried:wikidata", "subject:wikidata"],
+  "osm_wikidata_keys": [
+    "buried:wikidata",
+    "subject:wikidata"
+  ],
   "relation_member_role": "tomb",
   "wikidata_indirect_property": "P119",
   "wikidata_image_property": "P1442",
   "use_linked_entity_count": true,
+  "require_wikidata_link": true,
   "use_min_zoom_level": true
 }
