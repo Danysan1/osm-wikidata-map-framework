@@ -1,0 +1,102 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+        "background_color": {
+            "description": "Background color for controls and popups",
+            "type": "string"
+        },
+        "feature_filter_classes": {
+            "description": "Whitelist of Q-IDs of Wikidata classes to consider when filtering features from Wikidata",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "fetch_parts_of_linked_entities": {
+            "description": "Whether to fetch parts of linked entities (e.g. the members of a duo)",
+            "type": "boolean"
+        },
+        "id": {
+            "description": "Unique identifier for the source preset.",
+            "type": "string"
+        },
+        "ignore_big_elements": {
+            "description": "When using Overpass-based back-ends, big elements like country/region borders and the biggest lakes can create major slowdowns.\nTo display them pmtiles-based back-ends are recommended.\nThis setting allows to filter out big elements in the Overpass queries used by Overpass-based back-ends.",
+            "type": "boolean"
+        },
+        "linked_entity_filter_classes": {
+            "description": "Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "mapcomplete_theme": {
+            "description": "ID of the MapComplete theme to link to from the button in the feature details popup",
+            "type": "string"
+        },
+        "osm_description_key": {
+            "description": "OSM key whose value contains the description of the linked entity",
+            "type": "string"
+        },
+        "osm_filter_tags": {
+            "description": "OSM tags to use for filtering the results.\nFor optimal performance if you initialize the DB from OSM PBF dump sort the tags from the most frequent to the least frequent.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "osm_text_key": {
+            "description": "OSM key whose value contains the human readable name of the linked entity",
+            "type": "string"
+        },
+        "osm_wikidata_keys": {
+            "description": "OSM keys which connect the subject (map element) to the linked entity (popup element)",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "osm_wikidata_properties": {
+            "description": "P-IDs of the Wikidata properties which connect the subject (map element) to the linked entity (popup element)",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "relation_member_role": {
+            "description": "OSM relation role to consider when using an OSM relation as linked entity",
+            "type": "string"
+        },
+        "relation_propagation_role": {
+            "description": "OSM relation member role to consider when propagating linked entities from relations to their members",
+            "type": "string"
+        },
+        "relation_propagation_type": {
+            "description": "OSM relation type to consider when propagating linked entities from relations to their members",
+            "type": "string"
+        },
+        "require_wikidata_link": {
+            "description": "Whether all OSM elements, even in presets without linked entities, should have either a direct or secondary wikidata link.\nIn practice this means that only OSM elements with wikidata=* or *:wikidata=* will be fetched.",
+            "type": "boolean"
+        },
+        "use_linked_entity_count": {
+            "description": "Whether to show linked entity count (instead of feature count) in clusters",
+            "type": "boolean"
+        },
+        "use_min_zoom_level": {
+            "description": "Whether to use the min_zoom_level setting",
+            "type": "boolean"
+        },
+        "wikidata_image_property": {
+            "description": "P-ID of the Wikidata property which connects the linked entity (popup element) to a Wikimedia Commons image of the subject (map element)",
+            "type": "string"
+        },
+        "wikidata_indirect_property": {
+            "description": "P-ID of the Wikidata property which connects the linked entity (popup element) to a relation whose P625 qualifier identifies the coordinates of the subject (map element)",
+            "type": "string"
+        }
+    },
+    "type": "object"
+}
+

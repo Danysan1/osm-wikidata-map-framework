@@ -34,6 +34,7 @@
     "start": "next start",
     "serve": "serve out",
     "lint": "eslint .",
+    "generate-schema": "typescript-json-schema src/model/SourcePreset.ts SourcePreset -o src/generated/preset.schema.json",
     "test": "jest"
   },
   "dependencies": {
@@ -89,7 +90,8 @@
     "serve": "^14.2.3",
     "sharp": "^0.33.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-json-schema": "^0.67.1"
   },
   "overrides": {
     "osmtogeojson": {

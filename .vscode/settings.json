@@ -50,6 +50,12 @@
   },
   "i18n-ally.keystyle": "nested",
   "i18n-ally.indent": 4,
+  "json.schemas": [{
+    "fileMatch": [
+      "/front-end/public/presets/*"
+    ],
+    "url": "./front-end/src/generated/preset.schema.json"
+  }],
   "jest.runMode": "on-demand",
   "jest.rootPath": "front-end"
 }
