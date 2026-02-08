@@ -1,0 +1,18 @@
+{
+    "background_color": "hsl(120, 100%, 96%)",
+    "feature_filter_classes": [
+        "Q811534"
+    ],
+    "osm_filter_tags": [
+        "denotation=natural_monument"
+    ],
+    "mapcomplete_theme": "trees",
+    "osm_text_key": "species",
+    "osm_wikidata_keys": [
+        "species:wikidata"
+    ],
+    "osm_wikidata_properties": [
+        "P10241"
+    ],
+    "use_min_zoom_level": true
+}

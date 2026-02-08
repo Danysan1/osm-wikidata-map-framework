@@ -115,6 +115,7 @@ export class OverpassService extends BaseOsmMapService {
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
             osm_text_key_is_filter = !!osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
+            any_linked_entity = !!wd_keys.length || !!osm_text_key,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
 
         let query = `
@@ -136,7 +137,7 @@ export class OverpassService extends BaseOsmMapService {
             );
             if (osm_text_key_is_filter)
                 query += `nwr${commonFilters}["${osm_text_key}"]; // filter & text etymology key\n`;
-            if (!filter_tags && !wd_keys.length && !osm_text_key)
+            if (!filter_tags && !any_linked_entity)
                 query += `nwr${commonFilters}["wikidata"];\n`; // Base preset, no filters nor linked entities => Get only items with wikidata=*
 
             filter_tags?.forEach(filter_tag => {
@@ -152,7 +153,7 @@ export class OverpassService extends BaseOsmMapService {
                     if (osm_text_key && !osm_text_key_is_filter)
                         query += `nwr${commonFilters}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
 
-                    if (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link !== "true" && !wd_keys.length && !osm_text_key)
+                    if (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link !== "true" && !any_linked_entity)
                         query += `nwr${commonFilters}[${filter_clause}]; // filter only\n`;
                     else if (use_wikidata)
                         query += `nwr${commonFilters}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;

@@ -67,13 +67,14 @@ export class PostpassService extends BaseOsmMapService {
             ,
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
             osm_text_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
+            any_linked_entity = !!osm_wd_keys.length || !!osm_text_key,
             filter_wd_keys = filter_tags ? osm_wd_keys.filter(key => filter_tags.includes(key)) : osm_wd_keys;
 
         const non_filter_wd_keys = osm_wd_keys.filter(key => !filter_tags?.includes(key)),
             linked_entity_clauses = non_filter_wd_keys.map(key => `tags ? '${key}'`);
         if (osm_text_key && !osm_text_key_is_filter)
             linked_entity_clauses.push(`tags ? '${osm_text_key}'`);
-        if (use_wikidata && (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link === "true" || !filter_tags?.length || !!osm_wd_keys?.length || !!osm_text_key))
+        if (use_wikidata && (process.env.NEXT_PUBLIC_OWMF_require_wikidata_link === "true" || !filter_tags?.length || any_linked_entity))
             linked_entity_clauses.push(`tags ? 'wikidata'`);
         const linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : "";
 

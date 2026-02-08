@@ -8,6 +8,7 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import Image from "next/image";
 import Link from "next/link";
 import { FC, Fragment } from "react";
+import { TagLink } from "../TagLink/TagLink";
 import styles from "./Contributing.module.css";
 
 interface ContributingProps {
@@ -45,25 +46,23 @@ export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }
                     If the source row includes the &quot;{t("etymology_details.propagation")}&quot; step, skip to the <a href="#propagation">next section below</a>.
                 </li>}
                 {!!sourcePreset.osm_text_key && <li>
-                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and does not include any &quot;Wikidata&quot; link</strong>, then the text-only linked entity is taken from the <a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_text_key}`}><code>{sourcePreset.osm_text_key}</code></a> tag on the OSM element for this feature.
+                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and does not include any &quot;Wikidata&quot; link</strong>, then the text-only linked entity is taken from the <TagLink tag={sourcePreset.osm_text_key} /> tag on the OSM element for this feature.
                     &nbsp;<strong>Open the OSM item for this feature</strong> by clicking the &quot;OpenStreetMap&quot; link in the source row.
-                    On the left of the OSM element&apos;s page the value for the tag <a href={`https://wiki.openstreetmap.org/wiki/Key:${sourcePreset.osm_text_key}`}><code>{sourcePreset.osm_text_key}</code></a> will be the wrong entity you noticed. 
+                    On the left of the OSM element&apos;s page the value for the tag <TagLink tag={sourcePreset.osm_text_key} /> will be the wrong entity you noticed.
                     If you are an OSM mapper you can fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
                 </li>}
                 {!!sourcePreset.osm_wikidata_keys && <li>
                     <strong>If the source row starts with &quot;OpenStreetMap&quot; and does include only one &quot;Wikidata&quot; link</strong>, then the OSM element for this map feature is directly linking to the Wikidata entity.
                     &nbsp;<strong>Open the OSM item for this feature</strong> by clicking the &quot;OpenStreetMap&quot; link in the source row.
                     On the left of the OSM element&apos;s page one of the following tags should be present:
-                    <ul>{sourcePreset.osm_wikidata_keys.map(key => <li key={key}>
-                        <a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}><code>{key}</code></a>
-                    </li>)}</ul>
+                    <ul>{sourcePreset.osm_wikidata_keys.map(key => <li key={key}><TagLink tag={key} /></li>)}</ul>
                     The value for that tag should be the ID of the wrong Wikidata linked entity that you noticed.
                     If you are an OSM mapper you can fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
                 </li>}
                 {(!!sourcePreset.osm_wikidata_properties || !!sourcePreset?.wikidata_indirect_property) && <li>
-                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and includes multiple &quot;Wikidata&quot; links</strong> it means that the OSM element for this feature links to the Wikidata item for this feature through the <a href="https://wiki.openstreetmap.org/wiki/Key:wikidata"><code>wikidata</code></a> tag.
+                    <strong>If the source row starts with &quot;OpenStreetMap&quot; and includes multiple &quot;Wikidata&quot; links</strong> it means that the OSM element for this feature links to the Wikidata item for this feature through the <TagLink tag="wikidata" /> tag.
                     &nbsp;<strong>Open the Wikidata item for this feature</strong> by clicking the first &quot;Wikidata&quot; link in the source row.
-                    If the content of the opened page DOES NOT represent the map feature (e.g. it represents the linked entity or something else) then the OSM element&apos;s <a href="https://wiki.openstreetmap.org/wiki/Key:wikidata"><code>wikidata</code></a> tag points to the wrong item.
+                    If the content of the opened page DOES NOT represent the map feature (e.g. it represents the linked entity or something else) then the OSM element&apos;s <TagLink tag="wikidata" /> tag points to the wrong item.
                     Go back to the source row and open the OSM element by clicking on the first &quot;OpenStreetMap&quot; link.
                     On the left of the OSM element&apos;s page a <code>wikidata</code> tag will be present and its value will be wrong.
                     If you are an OSM mapper you can fix it yourself, otherwise click on the dialog button on the right to add a note to the map and describe the problem.
@@ -231,14 +230,14 @@ export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }
                             {sourcePreset.osm_wikidata_keys.map((key, index) => <Fragment key={index}>
                                 {index > 0 && index < (sourcePreset.osm_wikidata_keys!.length - 1) && ", "}
                                 {index > 0 && index === (sourcePreset.osm_wikidata_keys!.length - 1) && " or "}
-                                <a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}><code>{key}</code></a>
+                                <TagLink tag={key} />
                             </Fragment>)}
                             &nbsp;
                             tag and this website&apos;s data has been updated since it has been added, then the element should already be available on the map.
                         </li>}
                         <li>If one of these tags is present and this website&apos;s data has been updated but the element isn&apos;t available on the map, then the tag value may contain an error (like not being a valid Wikidata ID).</li>
                         <li>If one of these tags is available but links to the wrong entity, search on Wikidata the ID for the correct entity ID and edit the incorrect tag with the new ID.</li>
-                        <li>If the element has a <a href="https://wiki.openstreetmap.org/wiki/Key:wikidata"><code>wikidata</code></a> tag check the referenced Wikidata entity.
+                        <li>If the element has a <TagLink tag="wikidata" /> tag check the referenced Wikidata entity.
                             <ul>
                                 <li>If it does not represent the same real world object of the OSM element, search the correct one and change it.</li>
                                 <li>
