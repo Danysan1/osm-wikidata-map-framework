@@ -76,7 +76,7 @@
         "entity_link_count": "Entitás szerint Wikilinkek száma",
         "feature_link_count": "Elemenként Wikilinkek száma",
         "feature_picture": "Kép elérhetősége szerint",
-        "feature_osm_link": "A wikidata=* jelenléte szerint az OSM-en",
+        "feature_osm_link": "Az OSM-en megtalálható wikidata=* címkék alapján",
         "available": "Elérhető",
         "unavailable": "Nem elérhető",
         "osm_text_only": "OSM (csak szöveg)",
