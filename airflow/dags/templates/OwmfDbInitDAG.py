@@ -235,7 +235,7 @@ class OwmfDbInitDAG(DAG):
 
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/3.1.7/authoring-and-scheduling/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/3.2.0/authoring-and-scheduling/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 

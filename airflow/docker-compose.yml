@@ -1,8 +1,8 @@
-# Derived from https://airflow.apache.org/docs/apache-airflow/3.1.7/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/3.1.7/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/3.2.0/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/3.2.0/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/3.1.7/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/3.1.7/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/3.2.0/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/3.2.0/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:3.1.7
+#                                Default: apache/airflow:3.2.0
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
@@ -55,23 +55,24 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider distributions you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.1.7}
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.2.0}
   build: .
   env_file:
     - ${ENV_FILE_PATH:-.env}
   environment:
     &airflow-common-env
-    # https://airflow.apache.org/docs/apache-airflow/3.1.7/core-concepts/executor/index.html
+    # https://airflow.apache.org/docs/apache-airflow/3.2.0/core-concepts/executor/index.html
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
-    AIRFLOW__API_AUTH__JWT_SECRET: '5RNkiXq04qzciBE77KMQjw==' # https://github.com/apache/airflow/issues/49646#issuecomment-2827640289
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET:-airflow_jwt_secret}
+    AIRFLOW__API_AUTH__JWT_ISSUER: ${AIRFLOW__API_AUTH__JWT_ISSUER:-airflow}
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
@@ -84,9 +85,9 @@ x-airflow-common:
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
-    # https://airflow.apache.org/docs/apache-airflow/3.1.7/faq.html#when-there-are-a-lot-1000-of-dag-files-how-to-speed-up-parsing-of-new-files
+    # https://airflow.apache.org/docs/apache-airflow/3.2.0/faq.html#when-there-are-a-lot-1000-of-dag-files-how-to-speed-up-parsing-of-new-files
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90
-    # https://airflow.apache.org/docs/apache-airflow/3.1.7/howto/connection.html#storing-connections-in-environment-variables
+    # https://airflow.apache.org/docs/apache-airflow/3.2.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
     AIRFLOW_CONN_PLANET_LOCAL_POSTGIS_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_planet_db_database:-planet} # connection to the configured OWMF PostGIS DB
@@ -158,7 +159,7 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -211,9 +212,7 @@ services:
     command: celery worker
     healthcheck:
       # yamllint disable rule:line-length
-      test:
-        - "CMD-SHELL"
-        - 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
+      test: ["CMD-SHELL", 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -344,6 +343,7 @@ services:
         echo "Files in shared volumes:"
         echo
         ls -la /opt/airflow/{logs,dags,plugins,config}
+
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
