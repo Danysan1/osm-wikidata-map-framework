@@ -26,8 +26,8 @@ export const ImageWithAttribution: React.FC<ImageWithAttributionProps> = ({
           className={styles.pic_img}
           src={previewUrl}
           alt={title}
-          width={350}
-          height={350}
+          width={330}
+          height={330}
         />
       </a>
       {attribution && (

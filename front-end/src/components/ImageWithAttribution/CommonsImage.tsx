@@ -3,6 +3,8 @@ import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageWithAttribution } from "./ImageWithAttribution";
 
+const THUMBNAIL_WIDTH = 330; // https://www.mediawiki.org/wiki/Common_thumbnail_sizes
+
 interface CommonsImageProps {
   /**
    * Name or URL of a Commons image
@@ -38,7 +40,7 @@ export const CommonsImage: FC<CommonsImageProps> = ({ name, className }) => {
    * @example "https://commons.wikimedia.org/wiki/Special:FilePath/Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif?width=300px"
    * (links to https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif/lossy-page1-300px-Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif.jpg )
    */
-  const imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedImg}?width=350px`;
+  const imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedImg}?width=${THUMBNAIL_WIDTH}px`;
 
   /**
    * Link to original image page.
