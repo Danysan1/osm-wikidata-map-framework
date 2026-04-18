@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import directPreset from "../../../public/presets/etymology.json";
 import { SourcePreset } from '../../model/SourcePreset';
 import { BOLOGNA_BBOX, runServiceTests } from '../MapServiceTest';

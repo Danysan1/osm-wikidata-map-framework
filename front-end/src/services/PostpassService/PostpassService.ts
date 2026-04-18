@@ -69,6 +69,13 @@ export class PostpassService extends BaseOsmMapService {
             osm_text_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? osm_wd_keys.filter(key => filter_tags.includes(key)) : osm_wd_keys;
 
+        /**
+         * Filter clause that requires the element to potentially have a linked entity.
+         * This is checked by requiring either
+         * - a secondary Wikidata key (but only if it's not also a filter key, because filter linked entity keys are sufficient on their own to include an element through the tag filters below) or
+         * - a textual entity key (but only if it's not also a filter key, for the same reason) or
+         * - if use_wikidata is true, the presence of a wikidata=* tag
+         */
         let linked_entity_clause = "";
         if (this.preset.require_wikidata_link) {
             const non_filter_wd_keys = osm_wd_keys.filter(key => !filter_tags?.includes(key)),
@@ -76,12 +83,22 @@ export class PostpassService extends BaseOsmMapService {
             if (osm_text_key && !osm_text_key_is_filter)
                 linked_entity_clauses.push(`tags ? '${osm_text_key}'`);
 
-            if (use_wikidata && this.preset.require_wikidata_link)
+            if (use_wikidata)
                 linked_entity_clauses.push(`tags ? 'wikidata'`);
+            
+            if (!linked_entity_clauses.length) {
+                console.warn("PostpassService: preset requires Wikidata link, overriding use_wikidata to true", this.preset);
+                linked_entity_clauses.push(`tags ? 'wikidata'`);
+            }
 
             linked_entity_clause = linked_entity_clauses.length ? `AND (${linked_entity_clauses.join(" OR ")})` : "";
         }
 
+        /**
+         * If there are wikidata/textual linked entity keys that are also filter keys, these are sufficient on their own to ensure that an element has a linked entity, so we don't need to include the linked entity clause for elements that match these tag filters.
+         * In this case we need to print these filter linked clauses on their own without the linked entity clause, and then include the linked entity clause in the other filter clauses to ensure that we don't get elements that match the tag filters but don't have a Wikidata link.
+         * Otherwise, we can apply this clause once to all elements without repeating it in every tag filter clause.
+         */
         const same_linked_entity_clause_for_all = !filter_wd_keys.length && !osm_text_key_is_filter,
             tagFilters = filter_wd_keys.map(key => `tags ? '${key}'`);
         if (osm_text_key_is_filter)
@@ -96,7 +113,7 @@ export class PostpassService extends BaseOsmMapService {
                 tagFilters.push(same_linked_entity_clause_for_all ? filter_clause : `(${filter_clause} ${linked_entity_clause})`);
             }
         });
-        const tagFilterClause = tagFilters.length ? `AND (${tagFilters.join(" OR ")})` : "";
+        const tagFilterClause = tagFilters.length ? `AND (${tagFilters.join(" OR ")}) -- Tag filters` : "";
 
         let query = `
 -- Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
