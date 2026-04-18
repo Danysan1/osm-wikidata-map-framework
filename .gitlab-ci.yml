@@ -1,15 +1,11 @@
 include:
-  #  - template: Docker.gitlab-ci.yml
-  #  - template: Security/DAST.gitlab-ci.yml # https://docs.gitlab.com/ee/user/application_security/dast/#dast-run-options
-  - template: Security/SAST.gitlab-ci.yml # https://docs.gitlab.com/ee/user/application_security/sast/#configuration
-  # - template: Security/License-Scanning.gitlab-ci.yml
-  - template: Security/Dependency-Scanning.gitlab-ci.yml # https://docs.gitlab.com/ee/user/application_security/dependency_scanning/index.html#configuration
-  # - template: Security/Secret-Detection.gitlab-ci.yml
-  # - template: Security/Container-Scanning.gitlab-ci.yml
+  - component: $CI_SERVER_FQDN/components/sast/sast@3.4.0
+  - component: $CI_SERVER_FQDN/components/dependency-scanning/main@1.1.1
+  - component: $CI_SERVER_FQDN/components/secret-detection/secret-detection@2.3.0
 
 stages:
   - release
-  #  - dast
+  - test
   - build
   - deploy
 
@@ -53,12 +49,15 @@ next_js_build:
         - front-end/package.json
       when: manual
 
-publish_pages:
+pages:
   stage: deploy
-  image: node:22.2.0-alpine3.19
   needs:
     - next_js_build
-  pages:
-    publish: front-end/out
+  script:
+    - cp -r front-end/out public
+  artifacts:
+    paths:
+      - public
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
