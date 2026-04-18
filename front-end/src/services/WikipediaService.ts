@@ -15,6 +15,8 @@ export class WikipediaService {
             title = split[1];
             url = `https://${split[0]}.wikipedia.org/api/rest_v1/page/summary/${split[1]}?redirect=true`;
         }
+        if(!url.split("/")[2]?.endsWith(".wikipedia.org"))
+            throw new Error(`Invalid Wikipedia URL: ${url}`);
         console.debug("Fetching Wikipedia extract...", { article, title, url });
         const response = await fetch(url);
         if (response.status === 302)
