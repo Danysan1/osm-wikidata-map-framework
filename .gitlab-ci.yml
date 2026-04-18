@@ -28,6 +28,7 @@ next_js_build:
   script:
     - cd front-end
     - cp ../.env.example .env
+    - sed -i 's|base_path=|base_path=osm-wikidata-map-framework/|' .env
     - echo "Building the app"
     - npm clean-install
     - npm run build
