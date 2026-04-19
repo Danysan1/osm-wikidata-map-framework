@@ -3,10 +3,9 @@ from os import makedirs
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
-from airflow.datasets import Dataset
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import dag, task
+from airflow.sdk import Asset, dag, task
 from operators.OsmiumExportOperator import OsmiumExportOperator
 from operators.OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from pendulum import datetime
@@ -49,15 +48,15 @@ def OwmfFilterDAG(
 
     pbf_path = f'{base_file_path}.osm.pbf'
     pbf_date_path = f'{base_file_path}.osm.pbf.date.txt'
-    pbf_dataset = Dataset(f'file://{pbf_path}')
+    pbf_asset = Asset(f'file://{pbf_path}')
 
     filtered_pbf_path = f'{base_file_path}.filtered.osm.pbf'
     filtered_date_path = f'{base_file_path}.filtered.osm.pbf.date.txt'
-    filtered_pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
+    filtered_pbf_asset = Asset(f'file://{filtered_pbf_path}')
 
     pg_path = f'{base_file_path}.filtered.osm.pg'
     pg_date_path = f'{base_file_path}.filtered.osm.pg.date.txt'
-    pg_dataset = Dataset(f'file://{pg_path}')
+    pg_asset = Asset(f'file://{pg_path}')
 
     # Path to the temporary folder where the DAG will store the intermediate files
     workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
@@ -65,7 +64,7 @@ def OwmfFilterDAG(
     @dag(
         start_date=start_date,
         catchup=False,
-        schedule=[pbf_dataset],
+        schedule=[pbf_asset],
         tags=['owmf', prefix, 'owmf-filter', 'consumes', 'produces'],
         **kwargs
     )
@@ -164,7 +163,7 @@ def OwmfFilterDAG(
         )
         task_keep_possible_ety >> task_remove_non_interesting
 
-        @task(outlets=filtered_pbf_dataset)
+        @task(outlets=filtered_pbf_asset)
         def copy_files(workdir_eval: str, filtered_pbf_path_eval: str, pbf_date_path_eval: str, filtered_date_path_eval: str) -> None:
             """
             # Copy some files to their position for the next steps
@@ -208,15 +207,15 @@ def OwmfFilterDAG(
         )
         task_copy_files >> task_export_to_pg
 
-        @task(outlets=pg_dataset)
-        def save_pg_dataset(workdir_eval: str):
+        @task(outlets=pg_asset)
+        def save_pg_asset(workdir_eval: str):
             """
-            Move the filtered TSV .pg dataset to the destination folder
+            Move the filtered TSV .pg asset file to the destination folder
             """
             from shutil import copy, move
             move(join(workdir_eval, "filtered.osm.pg"), pg_path)
             copy(filtered_date_path, pg_date_path)
-        task_export_to_pg >> save_pg_dataset(workdir)
+        task_export_to_pg >> save_pg_asset(workdir)
 
         task_wait_cleanup = TimeDeltaSensor(
             task_id='wait_for_cleanup_time',

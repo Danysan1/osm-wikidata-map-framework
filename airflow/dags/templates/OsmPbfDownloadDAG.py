@@ -2,12 +2,11 @@ from datetime import timedelta
 from os import listdir
 from os.path import exists, join
 
-from airflow.datasets import Dataset
 from airflow.models.taskinstance import TaskInstance
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import dag, get_current_context, task
+from airflow.sdk import Asset, dag, get_current_context, task
 from operators.TransmissionRemoveTorrentOperator import \
     TransmissionRemoveTorrentOperator
 from operators.TransmissionStartTorrentOperator import \
@@ -53,7 +52,7 @@ def OsmPbfDownloadDAG(
     dest_folder = f'/workdir/{prefix}'
     pbf_path = f'{dest_folder}/{prefix}.osm.pbf'
     pbf_date_path = f'{dest_folder}/{prefix}.osm.pbf.date.txt'
-    pbf_dataset = Dataset(f'file://{pbf_path}')
+    pbf_asset = Asset(f'file://{pbf_path}')
 
     # Path to the temporary folder where the DAG will store the intermediate files
     workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
@@ -118,10 +117,10 @@ def OsmPbfDownloadDAG(
         ====================================================================================================''')
                     raise e
 
-            dataset_dir = f'/workdir/{params["prefix"]}'
-            if not path.exists(dataset_dir):
-                print(f"Creating dataset directory '{dataset_dir}'")
-                makedirs(dataset_dir)
+            asset_dir = f'/workdir/{params["prefix"]}'
+            if not path.exists(asset_dir):
+                print(f"Creating assets directory '{asset_dir}'")
+                makedirs(asset_dir)
 
             source_url = get_last_pbf_url(
                 download_url=params["pbf_url"] if "pbf_url" in params else None,
@@ -152,7 +151,7 @@ def OsmPbfDownloadDAG(
             """
                 # Check whether to procede
 
-                Check whether the available file is newer than the existing dataset: if it is, proceed to download the data, otherwise stop here.
+                Check whether the available file is newer than the existing asset file: if it is, proceed to download the data, otherwise stop here.
             """
             from re import match
 
@@ -277,7 +276,7 @@ Check the torrent daemon until the torrent download has completed.
                 "date": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}",
                 "datePath": pbf_date_path,
             },
-            outlets=pbf_dataset
+            outlets=pbf_asset
         )
         task_join >> task_save_pbf
 

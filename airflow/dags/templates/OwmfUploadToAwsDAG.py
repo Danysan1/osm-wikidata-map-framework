@@ -1,14 +1,13 @@
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
-from airflow.datasets import Dataset
 from airflow.exceptions import AirflowNotFoundException
 from airflow.models.variable import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import \
     LocalFilesystemToS3Operator
 from airflow.providers.standard.operators.python import ShortCircuitOperator
-from airflow.sdk import dag
+from airflow.sdk import Asset, dag
 from pendulum import datetime
 
 
@@ -84,8 +83,8 @@ def OwmfUploadToAwsDAG(
     date_path = join(tiles_dir, "date.txt")
     dataset_path = join(tiles_dir, "dataset.csv")
 
-    # URI of the input Airflow dataset for the DAG
-    tiles_dataset = Dataset(f'file://{tiles_dir}')
+    # URI of the input Airflow asset directory for the DAG
+    tiles_asset = Asset(f'file://{tiles_dir}')
 
     # Airflow connection ID with the AWS credentials used for uploading the vector tiles and CSV to S3
     upload_s3_conn_id = "aws_s3"
@@ -100,7 +99,7 @@ def OwmfUploadToAwsDAG(
     @dag(
         start_date=start_date,
         catchup=False,
-        schedule=[tiles_dataset],
+        schedule=[tiles_asset],
         tags=['owmf', prefix, 'owmf-upload-to-aws', 'consumes'],
         **kwargs
     )

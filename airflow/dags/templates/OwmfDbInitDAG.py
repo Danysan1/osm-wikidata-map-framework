@@ -2,7 +2,6 @@ from datetime import timedelta
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
-from airflow.datasets import Dataset
 from airflow.exceptions import AirflowNotFoundException
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
@@ -12,7 +11,7 @@ from airflow.providers.standard.operators.python import (BranchPythonOperator,
                                                          PythonOperator,
                                                          ShortCircuitOperator)
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import DAG, Param, TaskGroup
+from airflow.sdk import DAG, Asset, Param, TaskGroup
 from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
 from operators.TileJoinOperator import TileJoinOperator
@@ -252,8 +251,8 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
 
         base_file_path = f'/workdir/{prefix}/{prefix}.filtered.osm' # .pbf / pbf.date.txt / .pg / .pg.date.txt
 
-        # URI of the input Airflow dataset for the DAG
-        pg_dataset = Dataset(f'file://{base_file_path}.pg')
+        # URI of the input Airflow asset file for the DAG
+        pg_asset = Asset(f'file://{base_file_path}.pg')
 
         # Airflow connection ID for the Postgres DB the DAG will upload the data to
         upload_db_conn_id = f"{prefix}-postgres"
@@ -262,7 +261,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         pmtiles_path = join(tiles_dir, "tiles.pmtiles")
         date_path = join(tiles_dir, "date.txt")
         dataset_path = join(tiles_dir, "dataset.csv")
-        tiles_dataset = Dataset(f'file://{tiles_dir}')
+        tiles_asset = Asset(f'file://{tiles_dir}')
 
         # Path to the temporary folder where the DAG will store the intermediate files
         workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
@@ -279,7 +278,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         super().__init__(
             start_date=start_date,
             catchup=False,
-            schedule = [pg_dataset],
+            schedule = [pg_asset],
             tags=['owmf', prefix, 'owmf-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
@@ -901,7 +900,7 @@ Dump all the elements from the local DB with their respective linked entities in
                 "date_path": date_path,
                 "last_update": "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='last_data_update') }}"
             },
-            outlets = tiles_dataset,
+            outlets = tiles_asset,
             dag = self,
             task_group = group_vector_tiles,
             doc_md = "Dump the content of the dataset view into a CSV file"
