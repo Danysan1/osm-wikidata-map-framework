@@ -1,6 +1,6 @@
-import { t } from "i18next";
 import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { ControlPosition, IControl, MapInstance, useControl } from "react-map-gl/maplibre";
 import { InfoPopup } from "../popup/InfoPopup";
 import styles from "./control.module.css";
@@ -38,13 +38,14 @@ interface InfoControlProps {
 
 export const InfoControl: FC<InfoControlProps> = (props) => {
   const [isPopupOpen, setPopupOpen] = useState(true),
+    { t } = useTranslation(),
     showInstructionsOnFirstLoad = process.env.NEXT_PUBLIC_OWMF_instructions_on_load === "true",
     [showInstructions, setShowInstructions] = useState(showInstructionsOnFirstLoad),
     openPopup = useCallback(() => {
       setPopupOpen(true);
       setShowInstructions(true);
-    }, []),
-    closePopup = useCallback(() => setPopupOpen(false), []);
+    }, [setPopupOpen, setShowInstructions]),
+    closePopup = useCallback(() => setPopupOpen(false), [setPopupOpen]);
 
   const ctrl = useControl<InfoControlObject>(() => new InfoControlObject(), {
     position: props.position,
@@ -71,7 +72,7 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
         )}
       </div>
     ),
-    [props.className, openPopup, isPopupOpen, map, closePopup, showInstructions]
+    [props.className, openPopup, t, isPopupOpen, map, closePopup, showInstructions]
   );
 
   return (

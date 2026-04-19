@@ -17,11 +17,6 @@ interface InfoPanelProps {
 export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
   const { t, i18n } = useTranslation();
 
-  if (!i18n.language) {
-    console.debug("No language set in i18n, not rendering InfoPanel");
-    return null;
-  }
-
   return (
     <div className={styles.info_panel}>
       <header>
