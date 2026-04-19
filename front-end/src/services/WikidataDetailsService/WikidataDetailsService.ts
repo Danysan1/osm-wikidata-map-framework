@@ -13,7 +13,7 @@ export class WikidataDetailsService extends WikidataService {
         this.db = db;
         this.language = language.split("_")[0]; // Ignore country
         this.resolveQuery = resolveQuery ?? (
-            () => fetch("/wdqs/entity-details.sparql", { cache: "force-cache" }).then(r => r.text())
+            () => fetch(`${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/wdqs/entity-details.sparql`, { cache: "force-cache" }).then(r => r.text())
         );
     }
 

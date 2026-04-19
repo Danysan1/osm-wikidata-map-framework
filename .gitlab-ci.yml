@@ -51,6 +51,11 @@ next_js_build:
     - exists:
         - front-end/package.json
       when: manual
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .next/cache/
 
 pages:
   stage: deploy
