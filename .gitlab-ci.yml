@@ -29,6 +29,8 @@ next_js_build:
     - cd front-end
     - cp ../.env.example .env
     - sed -i 's|base_path=|base_path=/osm-wikidata-map-framework|' .env
+    - sed -i 's|pmtiles_preset=|pmtiles_preset=etymology|' .env
+    - sed -i 's|pmtiles_base_url=|pmtiles_base_url=https://etymology.dsantini.it/|' .env
     - echo "Building the app"
     - npm clean-install
     - npm run build
