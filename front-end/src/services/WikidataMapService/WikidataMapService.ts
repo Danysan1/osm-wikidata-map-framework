@@ -39,7 +39,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number | null): Promise<OwmfResponse> {
         void onlyCentroids; // Wikidata has only centroids
         language = language.split("_")[0]; // Ignore country
 
@@ -62,6 +62,9 @@ export class WikidataMapService extends WikidataService implements MapService {
             sparqlQueryTemplate = await this.getIndirectSparqlQuery(backEndID);
         else
             throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
+
+        if (year === null || isNaN(year))
+            year = new Date().getFullYear();
 
         const wikidataCountry = process.env.NEXT_PUBLIC_OWMF_wikidata_country,
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',

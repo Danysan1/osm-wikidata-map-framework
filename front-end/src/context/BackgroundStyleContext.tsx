@@ -136,7 +136,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       }
 
       if (style?.canFilterByDate) {
-        const mapYear = isNaN(year) ? new Date().getFullYear() : year;
+        const mapYear = year === null || isNaN(year) ? new Date().getFullYear() : year;
         /**
          * Filter the features by date, where applicable
          *
@@ -160,6 +160,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
             else if (Array.isArray(l.filter))
               l.filter = [
                 "all",
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                 l.filter as ExpressionSpecification,
                 startFilter,
                 endFilter,

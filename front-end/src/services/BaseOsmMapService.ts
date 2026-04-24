@@ -41,7 +41,7 @@ export abstract class BaseOsmMapService implements MapService {
 
     public abstract canHandleBackEnd(backEndID: string): boolean;
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number | null): Promise<OwmfResponse> {
         language = ''; // Not used in OSM queries
 
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
@@ -89,7 +89,7 @@ export abstract class BaseOsmMapService implements MapService {
         return out;
     }
 
-    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number): Promise<OwmfResponse> {
+    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, year: number | null): Promise<OwmfResponse> {
         let osm_wikidata_keys: string[] = [],
             use_wikidata = false,
             relation_member_role: string | undefined,
@@ -150,7 +150,7 @@ export abstract class BaseOsmMapService implements MapService {
         out.bbox = bbox;
         out.sourcePresetID = this.preset.id;
         out.onlyCentroids = onlyCentroids;
-        out.year = year;
+        out.year = year ?? undefined;
         out.backEndID = backEndID;
         out.timestamp = new Date().toISOString();
         out.truncated = out.features.length === this.maxElements;
@@ -345,6 +345,6 @@ export abstract class BaseOsmMapService implements MapService {
         relation_member_role: string | undefined,
         use_wikidata: boolean,
         onlyCentroids: boolean,
-        year: number
+        year: number | null
     ): Promise<OwmfResponse>;
 }

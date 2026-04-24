@@ -16,5 +16,5 @@ export interface MapService {
      * 
      * @param onlyCentroids Whether to fetch only centroids or full elements with details
      */
-    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse>;
+    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string, year: number|null): Promise<OwmfResponse>;
 }

@@ -70,7 +70,7 @@ export class QLeverMapService implements MapService {
         return /^qlever_((wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+))$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number | null): Promise<OwmfResponse> {
         language = language.split("_")[0]; // Ignore country
 
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
@@ -89,11 +89,14 @@ export class QLeverMapService implements MapService {
             backend = "wikidata";
         }
 
+        if (year === null || isNaN(year))
+            year = new Date().getFullYear();
+
         const sparqlQueryTemplate = await this.getSparqlQueryTemplate(backEndID),
-            sparqlQuery = this.fillQueryPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox, year)
+            sparqlQuery = this.fillQueryPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox)
+                .replaceAll('${year}', year.toFixed(0))
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
-            // TODO Filter by date
             ret: SparqlResponse = (await this.api.postSparqlQuery(backend, sparqlQuery, "json")).data;
 
         if (!ret.results?.bindings)
@@ -148,7 +151,7 @@ export class QLeverMapService implements MapService {
             throw new Error(`Invalid QLever back-end ID: "${backEndID}"`);
     }
 
-    private fillQueryPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox, year: number): string {
+    private fillQueryPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {
         if (backEndID.includes("osm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
@@ -241,7 +244,6 @@ export class QLeverMapService implements MapService {
         return sparqlQuery
             .replaceAll('${osmCountryQuery}', osmCountryQuery)
             .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
-            .replaceAll('${year}', year.toFixed(0))
             .replaceAll('${westLon}', bbox[0].toString())
             .replaceAll('${southLat}', bbox[1].toString())
             .replaceAll('${eastLon}', bbox[2].toString())

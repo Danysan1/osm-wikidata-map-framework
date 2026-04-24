@@ -61,7 +61,7 @@ export class CombinedCachedMapService implements MapService {
         return this.services?.some(service => service.canHandleBackEnd(backEndID));
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number): Promise<OwmfResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number | null): Promise<OwmfResponse> {
         const existingPromise = this.alreadyFetchingPromises[+onlyCentroids];
         if (existingPromise) {
             console.debug("fetchMapElements: Already fetching data from back-end, skipping another fetch");
@@ -71,9 +71,6 @@ export class CombinedCachedMapService implements MapService {
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
-
-        if(isNaN(year))
-            year = new Date().getFullYear();
 
         const promise = service.fetchMapElements(backEndID, onlyCentroids, bbox, language, year);
         this.alreadyFetchingPromises[+onlyCentroids] = promise;

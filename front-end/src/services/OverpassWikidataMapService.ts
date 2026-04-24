@@ -30,7 +30,7 @@ export class OverpassWikidataMapService implements MapService {
         return this.overpassService.canHandleBackEnd(overpassBackEndID) && this.wikidataService.canHandleBackEnd(wikidataBackEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number) {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number|null) : Promise<OwmfResponse> {
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language, year);
         if (cachedResponse)
             return cachedResponse;
@@ -94,7 +94,7 @@ export class OverpassWikidataMapService implements MapService {
             out.sourcePresetID = this.preset.id;
             out.backEndID = backEndID;
             out.language = language;
-            out.year = year;
+            out.year = year ?? undefined;
 
             if (!onlyCentroids) {
                 out.features = out.features.filter((feature) => {
