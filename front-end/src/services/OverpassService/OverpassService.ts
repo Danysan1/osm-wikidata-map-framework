@@ -103,11 +103,11 @@ export class OverpassService extends BaseOsmMapService {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members() < ${this.maxRelationMembers})` : "",
             notTooBig = this.preset.ignore_big_elements ? `[!"sqkm"][!"boundary"]["type"!="boundary"]["place"!="island"]["place"!="archipelago"]` : "",
-            dateFilters = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ? [
-                // Filter for openstreetmap.org or openhistoricalmap.org in the current year
+            dateFilters = year === null || isNaN(year) ? [
+                // Filter without year filtering (ex. for openstreetmap.org)
                 '[!"end_date"]["route"!="historic"]'
             ] : [
-                // Filter for openhistoricalmap.org in another year
+                // Filter in a specific year (ex. for openhistoricalmap.org)
                 // See https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Overpass#Theatres_in_a_given_year
                 '[!"start_date"][!"end_date"]',
                 `["start_date"](if:t["start_date"] < "${year}" && (!is_tag("end_date") || t["end_date"] >= "${year}"))`
@@ -127,7 +127,7 @@ export class OverpassService extends BaseOsmMapService {
 // Relation membership link role: ${relation_member_role ?? "NONE"}
 // ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
 // Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
-// Year: ${year}
+// Year: ${year === null || isNaN(year) ? "CURRENT" : year}
 `;
 
         dateFilters.forEach((dateFilter) => {

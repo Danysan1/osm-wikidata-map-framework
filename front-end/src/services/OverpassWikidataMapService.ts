@@ -46,12 +46,11 @@ export class OverpassWikidataMapService implements MapService {
             out = await this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language, year);
         } else {
             // Fetch and merge the data from Overpass and Wikidata
-            let actualOverpassBackEndID: string;
-            if (onlyCentroids && overpassBackEndID.endsWith("pass_osm_all_wd"))
-                actualOverpassBackEndID = overpassBackEndID.replace("_wd", "");
-            else
-                actualOverpassBackEndID = overpassBackEndID;
 
+            // Centroid cluster view => Use Overpass/Postpass data sources without Wikidata features to avoid duplicates and incorrect merges
+            const actualOverpassBackEndID = onlyCentroids && overpassBackEndID.endsWith("pass_osm_all_wd")
+                ? overpassBackEndID.replace("_wd", "")
+                : overpassBackEndID;
 
             console.time("overpass_wikidata_fetch");
             const [overpassResult, wikidataResult] = await Promise.allSettled([
@@ -99,7 +98,7 @@ export class OverpassWikidataMapService implements MapService {
 
             if (!onlyCentroids) {
                 out.features = out.features.filter((feature) => {
-                    if(!this.preset.require_wikidata_link)
+                    if (!this.preset.require_wikidata_link)
                         return true; // No wikidata link required, no further checks needed
 
                     if (feature.properties?.linked_entity_count)

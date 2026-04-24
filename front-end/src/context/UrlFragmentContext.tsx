@@ -29,7 +29,7 @@ const LONGITUDE_POSITION = 0,
   DEFAULT_COLOR_SCHEME = process.env.NEXT_PUBLIC_OWMF_default_color_scheme && Object.values(ColorSchemeID).includes(process.env.NEXT_PUBLIC_OWMF_default_color_scheme as ColorSchemeID) ? process.env.NEXT_PUBLIC_OWMF_default_color_scheme as ColorSchemeID : ColorSchemeID.blue,
   DEFAULT_BACKEND_ID = "pmtiles_all",
   DEFAULT_BACKGROUND_STYLE_ID = process.env.NEXT_PUBLIC_OWMF_default_background_style ?? "stadia_alidade",
-  DEFAULT_YEAR = new Date().getFullYear();
+  DEFAULT_YEAR = null;
 
 interface UrlFragmentState {
   lon: number;
@@ -46,8 +46,8 @@ interface UrlFragmentState {
   setBackgroundStyleID: (backgroundStyleID: string) => void;
   sourcePresetID: string;
   setSourcePresetID: (sourcePresetID: string) => void;
-  year: number;
-  setYear: (date: number) => void;
+  year: number|null;
+  setYear: (date: number|null) => void;
 }
 function readLatitudeFromFragment(splitFragment: string[]) {
   const rawLat = splitFragment[LATITUDE_POSITION];
@@ -144,7 +144,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
     presets = getActiveSourcePresetIDs(),
     defaultSourcePreset = presets.includes(DEFAULT_SOURCE_PRESET_ID) ? DEFAULT_SOURCE_PRESET_ID : presets[0],
     [sourcePresetID, setSourcePresetID] = useState<string>(defaultSourcePreset),
-    [year, setYear] = useState<number>(DEFAULT_YEAR),
+    [year, setYear] = useState<number|null>(DEFAULT_YEAR),
     setLat: Dispatch<SetStateAction<number>> = useCallback(
       (lat) => {
         if (typeof lat === "number" && (isNaN(lat) || lat < -90 || lat > 90))
@@ -212,7 +212,8 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
       strLat = lat.toFixed(5),
       strZoom = zoom.toFixed(1);
 
-    const fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID},${year}`;
+    const yearString = year === null || isNaN(year) ? "" : year?.toString(),
+      fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID},${yearString}`;
     if (window.location.hash !== fragment) {
       console.debug("Updating fragment", {
         old: window.location.hash,
@@ -237,6 +238,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         backEndID,
         backgroundStyleID,
         sourcePresetID,
+        year,
       });
     }
   }, [

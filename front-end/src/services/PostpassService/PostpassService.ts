@@ -58,12 +58,12 @@ export class PostpassService extends BaseOsmMapService {
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const notTooBig = this.preset.ignore_big_elements ? "AND NOT tags ? 'sqkm' AND NOT tags ? 'boundary' AND (NOT tags ? 'place' OR tags->>'place' NOT IN ('island','archipelago'))" : "", // Postpass/osm2pgsql data does not include type=* tags, no check necessary
-            dateFilter = process.env.NEXT_PUBLIC_OWMF_enable_open_historical_map !== "true" || year === new Date().getFullYear() ?
-                // Filter for openstreetmap.org or openhistoricalmap.org in the current year
+            dateFilter = year === null || isNaN(year) ?
+                // Filter without year filtering (ex. for openstreetmap.org)
                 "NOT tags ? 'end_date' AND (NOT tags ? 'route' OR tags->>'route'!='historic')"
                 :
-                // Filter for openhistoricalmap.org in another year
-                `(NOT tags ? 'start_date' AND NOT tags ? 'end_date') OR (tags->>'start_date' < ${year} AND (NOT tags ? 'end_date' OR tags->>'end_date' >= ${year}))`
+                // Filter in a specific year (ex. for openhistoricalmap.org)
+                `(NOT tags ? 'start_date' OR tags->>'start_date' <= '${year}') AND (NOT tags ? 'end_date' OR tags->>'end_date' >= '${year}')`
             ,
             filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
             osm_text_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
@@ -121,7 +121,7 @@ export class PostpassService extends BaseOsmMapService {
 -- Text key: ${osm_text_key ?? "NONE"}
 -- ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
 -- Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
--- Year: ${year}
+-- Year: ${year === null || isNaN(year) ? "CURRENT" : year}
 -- Max elements: ${this.maxElements ?? "NONE"}
 SELECT osm_type, osm_id, ${onlyCentroids ? "ST_Centroid(geom)" : "tags, geom"} 
 FROM postpass_pointlinepolygon
