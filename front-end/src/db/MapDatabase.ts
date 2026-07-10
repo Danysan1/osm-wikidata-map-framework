@@ -4,6 +4,13 @@ import type { OwmfResponse } from '../model/OwmfResponse';
 
 type MapRow = OwmfResponse & { id?: number };
 
+/**
+ * Normalizes a year value into a valid IndexedDB key.
+ */
+function normalizeYear(year: number | null | undefined): number {
+    return (year === null || year === undefined || Number.isNaN(year)) ? new Date().getFullYear() : year;
+}
+
 export class MapDatabase extends Dexie {
     public maps!: Table<MapRow, number>;
 
@@ -28,7 +35,7 @@ export class MapDatabase extends Dexie {
         try {
             return await this.transaction('r', this.maps, async () => {
                 const results = await this.maps
-                    .where({ sourcePresetID, backEndID, language, year })
+                    .where({ sourcePresetID, backEndID, language, year: normalizeYear(year) })
                     .and(map => { // Find elements whose bbox includes the given bbox and that are not truncated
                         if (!map.bbox || map.onlyCentroids !== onlyCentroids)
                             return false;
@@ -55,6 +62,7 @@ export class MapDatabase extends Dexie {
     public async addMap(map: OwmfResponse) {
         const row: MapRow = { ...map, id: undefined };
         row.timestamp ??= new Date().toISOString();
+        row.year = normalizeYear(row.year);
 
         try {
             await this.transaction('rw', this.maps, async () => {
