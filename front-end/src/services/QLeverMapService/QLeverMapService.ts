@@ -20,7 +20,7 @@ const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 const keyPredicate = (key: string) => key.includes(":") ? "<" + OSMKEY + key + ">" : "osmkey:" + key;
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
-const fetchSparqlQuery = (type: string) => fetch(`/qlever/${type}.sparql`, { cache: "force-cache" }).then(r => {
+const fetchSparqlQuery = (type: string) => fetch(`${process.env.NEXT_PUBLIC_OWMF_base_path ?? ""}/qlever/${type}.sparql`, { cache: "force-cache" }).then(r => {
     if (r.status !== 200) throw new Error("Failed fetching SPARQL template from " + r.url);
     return r.text();
 });
