@@ -5,20 +5,26 @@ The code in this folder defines the [Apache Airflow](https://airflow.apache.org/
 ## Pipeline structure
 
 Each `db-init-*.py` file in the [dags/](./dags/) folder defines the flow for an area of the world. If you need the pipelines for a new area you can request it in an issue or propose it in a PR.
-The DB initialization flow for each area is split in three Airflow data pipelines (`DAG`s) that automatically run in sequence once enabled.
+The flow for each area is split in several Airflow data pipelines (`DAG`s) that automatically run once enabled. Most DAGs are **chained through Airflow assets** (each is `schedule`d on the asset(s) it consumes and declares the asset it produces via `outlets`), so they trigger each other in order.
 
-1. OSM dump download ([`OsmPbfDownloadDAG`](./plugins/OsmPbfDownloadDAG.py), for example `download-planet-from-rss`)
+The DAGs do NOT form a pure sequence but a diamond: the OSM side (dump download → filtering) and the Wikidata download run independently, then both feed the DB initialization.
+
+1. OSM dump download ([`OsmPbfDownloadDAG`](./plugins/OsmPbfDownloadDAG.py), for example `download-planet-from-rss`) — produces the raw `.osm.pbf` asset
    - This pipeline downloads a .pbf OpenStreetMap dump ([a local extract](https://download.geofabrik.de/) or [a full planet export](https://planet.openstreetmap.org/))
-2. OSM dump filtering ([`OwmfFilterDAG`](./plugins/OwmfFilterDAG.py), for example `filter-planet`)
+2. OSM dump filtering ([`OwmfFilterDAG`](./plugins/OwmfFilterDAG.py), for example `filter-planet`) — consumes the `.osm.pbf` asset, produces the filtered `.pg` asset
    - This pipeline filters the downloaded OSM dump with [`osmium tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html) to keep only potentially useful data
    - The filtered .pbf is also exported to a tab-separated-values file with [`osmium export`](https://docs.osmcode.org/osmium/latest/osmium-export.html)
-3. Data elaboration + Tiles generation ([`OwmfDbInitDAG`](./plugins/OwmfDbInitDAG.py), for example `db-init-planet`)
+3. Wikidata download ([`OwmfDownloadWikidataDAG`](./dags/templates/OwmfDownloadWikidataDAG.py), for example `download-wikidata-planet`) — runs on a **weekly** schedule (not asset-triggered), produces the `wikidata/` directory asset
+   - This pipeline downloads the relevant linked entities from the Wikidata SPARQL endpoint and publishes them as JSON pages in the shared `wikidata` directory
+   - It depends only on the configuration, not on the OSM data, which is why it runs on its own schedule instead of being triggered by the OSM pipeline
+4. Data elaboration + Tiles generation ([`OwmfDbInitDAG`](./plugins/OwmfDbInitDAG.py), for example `db-init-planet`) — consumes BOTH the filtered `.pg` asset and the `wikidata/` asset, produces the tiles asset
    - This pipeline imports the filtered data into the DB (by default by loading the tab-separated-values file, but it can also be configured to load it from the filtered .pbf with [osm2pgsql](https://osm2pgsql.org/))
-   - Then OSM linked entities are extracted from OSM data and downloaded from Wikidata.
+   - Then OSM linked entities are extracted from OSM data and the previously-downloaded Wikidata pages are loaded into the DB.
    - If enabled, propagation is executed.
    - Then the data is exported to PMTiles through [ogr2ogr](https://gdal.org/en/stable/programs/ogr2ogr.html)+[tippecanoe](https://github.com/felt/tippecanoe).
    - If enabled, the data is uploaded to a remote DB with pg_dump+pg_restore
-   - If enabled, the tiles are uploaded to an S3 bucket
+5. Tiles/dataset upload ([`OwmfUploadToAwsDAG`](./dags/templates/OwmfUploadToAwsDAG.py), optional) — consumes the tiles asset
+   - If enabled, the tiles and dataset are uploaded to an S3 bucket
 
 <details>
 <summary>Database initialization steps diagram</summary>
@@ -40,7 +46,7 @@ To run the database initialization:
 2. initialize `.env` from [`.env.example`](../.env.example) (`NEXT_PUBLIC_OWMF_source_presets` is not yet supported, currently tags and properties for the preset must be specified directly)
 3. the first time run `docker compose --profile airflow-init up`, then for each sequent time start Apache Airflow with `docker compose up -d`
 4. If you want to upload the tiles to an S3 bucket, [create an access key on AWS IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html), configure it [in an Airflow AWS connection](http://localhost:8080/variable/list/) called `aws_s3` and configure the URI of the S3 bucket [in an Airflow variable](http://localhost:8080/connection/list/) called `<PREFIX>_base_s3_uri` (for example `planet_base_s3_uri`)
-5. Enable the three DAG pipelines for the area you are interested in (for example `download-planet-from-rss`+`filter-planet`+`db-init-planet`)
+5. Enable all the DAG pipelines for the area you are interested in (for example `download-planet-from-rss`+`filter-planet`+`download-wikidata-planet`+`db-init-planet`). Remember to enable the `download-wikidata-*` DAG too, otherwise `db-init-*` will never trigger (it waits on the Wikidata asset).
 6. The data for OSM-Wikidata Map Framework will be stored in the `owmf` schema of the DB you configured in `.env`
 
 **IMPORTANT NOTE**: If you use the planet file I suggest to use a machine with 16GB of RAM (and a lot of patience, it will require more than 6 hours; use a local extract in development to use less RAM and time, for an example see [db-init-italy-nord-ovest.py](./dags/db-init-italy-nord-ovest.py)).

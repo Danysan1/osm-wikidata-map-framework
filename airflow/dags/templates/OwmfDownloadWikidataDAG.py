@@ -2,7 +2,6 @@ import time
 from datetime import timedelta
 from os import makedirs
 from os.path import isfile, join
-from textwrap import dedent
 
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.empty import EmptyOperator
@@ -27,8 +26,9 @@ def OwmfDownloadWikidataDAG(
 
     Downloads the relevant linked entities from the Wikidata SPARQL endpoint and stores them
     as JSON pages in the shared `wikidata` directory, ready to be loaded into the DB by OwmfDbInitDAG.
-    This download only depends on the configuration (not on the OSM data), so it runs in parallel
-    with the OSM filtering (OwmfFilterDAG): both are triggered by the raw PBF asset.
+    This download only depends on the configuration (not on the OSM data), so instead of being tied
+    to the OSM pipeline it runs on its own weekly schedule and publishes the Wikidata asset that
+    triggers OwmfDbInitDAG.
 
     Keyword arguments:
     ----------
@@ -44,11 +44,6 @@ def OwmfDownloadWikidataDAG(
     # https://pendulum.eustace.io/docs/#instantiation
     start_date = datetime(year=2022, month=9, day=15, tz='local')
 
-    # The download does not use the PBF, but the raw PBF asset is used as the pipeline-start signal
-    # so that the Wikidata download runs in parallel with the OSM filtering.
-    pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
-    pbf_asset = Asset(f'file://{pbf_path}')
-
     # Shared directory (NOT run-specific) where the downloaded Wikidata JSON pages are published.
     # OwmfDbInitDAG consumes this asset and loads the pages from here.
     wikidata_dir = join("/workdir", prefix, "wikidata")
@@ -60,8 +55,8 @@ def OwmfDownloadWikidataDAG(
     @dag(
         start_date=start_date,
         catchup=False,
-        schedule=[pbf_asset],
-        tags=['owmf', prefix, 'owmf-download-wikidata', 'consumes', 'produces'],
+        schedule="@weekly",
+        tags=['owmf', prefix, 'owmf-download-wikidata', 'produces'],
         **kwargs
     )
     def owmf_download_wikidata():

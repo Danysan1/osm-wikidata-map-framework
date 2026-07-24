@@ -9,16 +9,16 @@ The code in this folder defines the Apache Airflow data pipelines that are regul
 Each `db-init-*.py` file in the `dags/` folder defines the flow for an area of the world.
 The flow for each area is split in several Airflow data pipelines (`DAG`s) that automatically run once enabled. DAGs are **chained through Airflow assets** (each DAG is `schedule`d on the asset(s) it consumes and declares the asset it produces via `outlets`), so they trigger each other in order.
 
-The DAGs do NOT form a pure sequence but a diamond: after the OSM dump is downloaded, filtering and Wikidata download run **in parallel**, then both feed the DB initialization.
+The DAGs do NOT form a pure sequence but a diamond: the OSM side (dump download → filtering) and the Wikidata download run **independently**, then both feed the DB initialization. The Wikidata download is not tied to the OSM pipeline — it runs on its own **weekly** schedule — because it depends only on the configuration, not on the OSM data.
 
 1. OSM dump download (`OsmPbfDownloadDAG`) — produces the raw `.osm.pbf` asset
    - This pipeline downloads a .pbf OpenStreetMap dump ([a local extract](https://download.geofabrik.de/) or [a full planet export](https://planet.openstreetmap.org/))
 2. OSM dump filtering (`OwmfFilterDAG`) — consumes the `.osm.pbf` asset, produces the filtered `.pg` asset
    - This pipeline filters the downloaded OSM dump with [`osmium tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html) to keep only potentially useful data
    - The filtered .pbf is also exported to a tab-separated-values file with [`osmium export`](https://docs.osmcode.org/osmium/latest/osmium-export.html)
-3. Wikidata download (`OwmfDownloadWikidataDAG`) — consumes the `.osm.pbf` asset (used only as the pipeline-start signal so it runs in parallel with filtering), produces the `wikidata/` directory asset
+3. Wikidata download (`OwmfDownloadWikidataDAG`) — runs on a **weekly** schedule (`schedule="@weekly"`, not asset-triggered), produces the `wikidata/` directory asset
    - This pipeline downloads the relevant linked entities from the Wikidata SPARQL endpoint and publishes them as JSON pages in the shared `/workdir/<prefix>/wikidata` directory
-   - The download depends only on the configuration (properties + optional `wikidata_country`), NOT on the OSM data, which is why it can run in parallel with filtering. `wikidata_country` is a parameter of this DAG (see `db-init-*.py`)
+   - The download depends only on the configuration (properties + optional `wikidata_country`), NOT on the OSM data, which is why it runs on its own schedule instead of being triggered by the OSM pipeline. `wikidata_country` is a parameter of this DAG (see `db-init-*.py`)
    - Download logic lives in `dags/utils/wikidata.py` (`fetch_direct_entities`)
 4. Data elaboration + Tiles generation (`OwmfDbInitDAG`) — consumes BOTH the filtered `.pg` asset and the `wikidata/` asset, produces the tiles asset
    - This pipeline imports the filtered data into the DB (by default by loading the tab-separated-values file, but it can also be configured to load it from the filtered .pbf with [osm2pgsql](https://osm2pgsql.org/))

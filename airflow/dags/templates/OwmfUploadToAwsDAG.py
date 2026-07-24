@@ -1,12 +1,10 @@
 from os.path import abspath, dirname, join
-from textwrap import dedent
 
 from airflow.exceptions import AirflowNotFoundException
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import \
     LocalFilesystemToS3Operator
-from airflow.providers.standard.operators.python import ShortCircuitOperator
-from airflow.sdk import Asset, Variable, dag
+from airflow.sdk import Asset, Variable, dag, task
 from pendulum import datetime
 
 
@@ -15,48 +13,6 @@ def get_absolute_path(filename: str, folder: str | None = None) -> str:
     if folder != None:
         file_dir_path = join(file_dir_path, folder)
     return join(file_dir_path, filename)
-
-
-def check_s3_conn_id(conn_id: str, base_s3_uri_var_id: str) -> bool:
-    """
-        # Check S3 connection ID
-
-        Check whether the connection ID to an S3 bucket is available: if it is, proceed, otherwise stop here.
-
-        The connection ID is passed through the params object to allow customization when triggering the DAG.
-    """
-
-    if not conn_id:
-        print(f"AWS connection ('{conn_id}') not available, skipping upload")
-        return False
-
-    if not Variable.get(base_s3_uri_var_id, None):
-        print(
-            f"S3 base URI variable ('{base_s3_uri_var_id}') not available, skipping upload")
-        return False
-
-    base_s3_uri = Variable.get(base_s3_uri_var_id)
-    try:
-        s3_hook = S3Hook(conn_id)
-        # See https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.32.0/_api/airflow/providers/amazon/aws/hooks/s3/index.html#airflow.providers.amazon.aws.hooks.s3.S3Hook
-        if s3_hook.check_for_key(f"{base_s3_uri}/"):
-            print(
-                f"Base S3 URI '{base_s3_uri}/' exists and is reachable with connection ID '{conn_id}', uploading")
-            return True
-        else:
-            print(
-                f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload")
-            return False
-    except AirflowNotFoundException as e:
-        print(
-            f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload. Detailed error:")
-        print(e)
-        return False
-    except Exception as e:
-        print(
-            f"Failed connecting to S3 (connection ID '{conn_id}', base S3 URI '{base_s3_uri}/'), skipping upload. Detailed error:")
-        print(e)
-        return False
 
 
 def OwmfUploadToAwsDAG(
@@ -114,16 +70,48 @@ def OwmfUploadToAwsDAG(
         Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
         """
 
-        task_check_pmtiles_upload_conn_id = ShortCircuitOperator(
-            task_id="check_pmtiles_upload_conn_id",
-            python_callable=check_s3_conn_id,
-            op_kwargs={
-                "conn_id": upload_s3_conn_id,
-                "base_s3_uri_var_id": upload_s3_bucket_var_id,
-            },
-            doc_md=dedent(check_s3_conn_id.__doc__ or "")
-        )
-        task_check_pmtiles_upload_conn_id
+        @task.short_circuit
+        def check_s3_conn_id(conn_id: str, base_s3_uri_var_id: str) -> bool:
+            """
+            # Check S3 connection ID
+
+            Check whether the connection ID to an S3 bucket is available: if it is, proceed, otherwise stop here.
+
+            The connection ID is passed through the params object to allow customization when triggering the DAG.
+            """
+
+            if not conn_id:
+                print(f"AWS connection ('{conn_id}') not available, skipping upload")
+                return False
+
+            if not Variable.get(base_s3_uri_var_id, None):
+                print(
+                    f"S3 base URI variable ('{base_s3_uri_var_id}') not available, skipping upload")
+                return False
+
+            base_s3_uri = Variable.get(base_s3_uri_var_id)
+            try:
+                s3_hook = S3Hook(conn_id)
+                # See https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.32.0/_api/airflow/providers/amazon/aws/hooks/s3/index.html#airflow.providers.amazon.aws.hooks.s3.S3Hook
+                if s3_hook.check_for_key(f"{base_s3_uri}/"):
+                    print(
+                        f"Base S3 URI '{base_s3_uri}/' exists and is reachable with connection ID '{conn_id}', uploading")
+                    return True
+                else:
+                    print(
+                        f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload")
+                    return False
+            except AirflowNotFoundException as e:
+                print(
+                    f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload. Detailed error:")
+                print(e)
+                return False
+            except Exception as e:
+                print(
+                    f"Failed connecting to S3 (connection ID '{conn_id}', base S3 URI '{base_s3_uri}/'), skipping upload. Detailed error:")
+                print(e)
+                return False
+        task_check_s3_upload_conn_id = check_s3_conn_id(upload_s3_conn_id,upload_s3_bucket_var_id)
 
         pmtiles_base_name = "{{ 'owmf' if (var.value.source_presets is none or var.value.source_presets.startswith('[')) else var.value.source_presets }}"
         task_upload_pmtiles_s3 = LocalFilesystemToS3Operator(
@@ -141,7 +129,7 @@ Links:
 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.21.0/connections/aws.html)
 """
         )
-        task_check_pmtiles_upload_conn_id >> task_upload_pmtiles_s3
+        task_check_s3_upload_conn_id >> task_upload_pmtiles_s3
 
         task_dataset_s3 = LocalFilesystemToS3Operator(
             task_id="upload_dataset_to_s3",
