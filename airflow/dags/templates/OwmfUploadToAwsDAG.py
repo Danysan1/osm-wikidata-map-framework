@@ -2,12 +2,11 @@ from os.path import abspath, dirname, join
 from textwrap import dedent
 
 from airflow.exceptions import AirflowNotFoundException
-from airflow.models.variable import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import \
     LocalFilesystemToS3Operator
 from airflow.providers.standard.operators.python import ShortCircuitOperator
-from airflow.sdk import Asset, dag
+from airflow.sdk import Asset, Variable, dag
 from pendulum import datetime
 
 
@@ -39,7 +38,7 @@ def check_s3_conn_id(conn_id: str, base_s3_uri_var_id: str) -> bool:
     base_s3_uri = Variable.get(base_s3_uri_var_id)
     try:
         s3_hook = S3Hook(conn_id)
-        # See https://airflow.apache.org/docs/apache-airflow/1.10.10/_api/airflow/hooks/S3_hook/index.html
+        # See https://airflow.apache.org/docs/apache-airflow-providers-amazon/9.32.0/_api/airflow/providers/amazon/aws/hooks/s3/index.html#airflow.providers.amazon.aws.hooks.s3.S3Hook
         if s3_hook.check_for_key(f"{base_s3_uri}/"):
             print(
                 f"Base S3 URI '{base_s3_uri}/' exists and is reachable with connection ID '{conn_id}', uploading")
@@ -74,7 +73,7 @@ def OwmfUploadToAwsDAG(
         prefix to search in the PBF filename
     """
 
-    # https://airflow.apache.org/docs/apache-airflow/3.2.0/authoring-and-scheduling/timezone.html
+    # https://airflow.apache.org/docs/apache-airflow/3.3.0/authoring-and-scheduling/timezone.html
     # https://pendulum.eustace.io/docs/#instantiation
     start_date = datetime(year=2022, month=9, day=15, tz='local')
 

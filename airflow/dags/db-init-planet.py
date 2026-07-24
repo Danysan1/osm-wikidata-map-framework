@@ -2,6 +2,7 @@ from airflow.models import \
     DAG  # ! Don't delete, necessary for Airflow to recognize this file as containing DAGs
 from templates.OsmPbfDownloadDAG import OsmPbfDownloadDAG
 from templates.OwmfDbInitDAG import OwmfDbInitDAG
+from templates.OwmfDownloadWikidataDAG import OwmfDownloadWikidataDAG
 from templates.OwmfFilterDAG import OwmfFilterDAG
 from templates.OwmfUploadToAwsDAG import OwmfUploadToAwsDAG
 
@@ -34,6 +35,12 @@ download_planet_rss = OsmPbfDownloadDAG(
 
 filter_planet = OwmfFilterDAG(
     dag_id="filter-planet",
+    days_before_cleanup=8,
+    prefix="planet"
+)
+
+download_wikidata_planet = OwmfDownloadWikidataDAG(
+    dag_id="download-wikidata-planet",
     days_before_cleanup=8,
     prefix="planet"
 )

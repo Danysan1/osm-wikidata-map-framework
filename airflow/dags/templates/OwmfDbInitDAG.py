@@ -1,5 +1,5 @@
 from datetime import timedelta
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname, isfile, join
 from textwrap import dedent
 
 from airflow.exceptions import AirflowNotFoundException
@@ -17,7 +17,7 @@ from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
 from operators.TileJoinOperator import TileJoinOperator
 from operators.TippecanoeOperator import TippecanoeOperator
 from pendulum import datetime
-from utils.wikidata import fetch_direct_entities, load_direct_entities
+from utils.wikidata import read_json, read_query
 
 LOAD_ON_DB_METHOD = "load_on_db_method"
 DEFAULT_LOAD_ON_DB_METHOD = "osmium"
@@ -39,6 +39,54 @@ def get_absolute_path(filename:str, folder:str|None = None) -> str:
     if folder != None:
         file_dir_path = join(file_dir_path, folder)
     return join(file_dir_path, filename)
+
+def load_page_on_db(cursor, json_str: str, wikidata_sql: str, element_update_sql: str, element_insert_sql: str, entities_sql: str) -> None:
+    """Execute the four SQL statements for a single page of SPARQL results."""
+    # wikidata SQL uses the JSON param twice (main SELECT + UNION)
+    cursor.execute(wikidata_sql, {"json": json_str})
+    print(f"Loaded {cursor.rowcount} wikidata entities")
+
+    # element-update SQL has no JSON parameter
+    cursor.execute(element_update_sql)
+    print(f"Updated {cursor.rowcount} elements")
+
+    # element-insert SQL uses the JSON param once
+    cursor.execute(element_insert_sql, {"json": json_str})
+    print(f"Inserted {cursor.rowcount} elements")
+
+    # entities SQL uses the JSON param once
+    cursor.execute(entities_sql, {"json": json_str})
+    print(f"Loaded {cursor.rowcount} etymology links")
+
+def load_entities(workdir:str, postgres_conn_id: str) -> None:
+    """
+    Callable that loads Wikidata entities into the local PostGIS DB.
+    """
+    from airflow.providers.postgres.hooks.postgres import PostgresHook
+
+    # Read SQL templates
+    wikidata_sql = read_query("load-related-wikidata.sql")
+    element_update_sql = read_query("load-related-element-update.sql")
+    element_insert_sql = read_query("load-related-element-insert.sql")
+    entities_sql = read_query("load-related-direct-entities.sql")
+
+    # Connect to DB and run as a single transaction
+    pg_hook = PostgresHook(postgres_conn_id)
+    with pg_hook.get_conn() as pg_conn:
+        with pg_conn.cursor() as cursor:
+            for page_number in range(10):
+                json_path = join(workdir, f"{page_number}.json")
+                if not isfile(json_path):
+                    raise Exception(f"Missing json file {json_path}")
+
+                print(f"Loading data from {json_path}")
+                json_str = read_json(json_path)
+                load_page_on_db(cursor, json_str, wikidata_sql, element_update_sql, element_insert_sql, entities_sql)
+                print(f"Loaded page {page_number}")
+
+        pg_conn.commit()
+
+    print("Done loading direct related entities")
 
 def postgres_copy_table(conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
     """
@@ -170,25 +218,6 @@ def choose_load_osm_data_task(base_file_path:str, **context) -> str:
     
     return next_task
 
-def choose_load_wikidata_task(**context) -> str:
-    """
-        # Check whether and how to download data from Wikidata into the DB
-
-        Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.providers.standard.operators.python.BranchPythonOperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
-    """
-    from airflow.models import Variable
-    direct_properties = Variable.get("osm_wikidata_properties", deserialize_json=True, default_var=None)
-    indirect_property = Variable.get("wikidata_indirect_property", default_var=None)
-    if direct_properties:
-        next_task = "fetch_wikidata_direct_entities"
-    elif indirect_property:
-        next_task = "fetch_wikidata_reverse_entities"
-    else:
-        next_task = "fetch_wikidata_entities"
-    return next_task
-
 def choose_propagation_method(propagate_data:str) -> str:
     """
         # Check whether and how to propagate
@@ -196,7 +225,6 @@ def choose_propagation_method(propagate_data:str) -> str:
         Links:
         * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.providers.standard.operators.python.BranchPythonOperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/concepts/params.html)
-        * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/core-concepts/variables.html)
     """
 
     if propagate_data == "global" or propagate_data == "true":
@@ -215,7 +243,6 @@ class OwmfDbInitDAG(DAG):
     def __init__(self,
             prefix:str,
             days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
-            wikidata_country:str|None=None,
             **kwargs
         ):
         """
@@ -234,7 +261,7 @@ class OwmfDbInitDAG(DAG):
 
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/3.2.0/authoring-and-scheduling/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/3.3.0/authoring-and-scheduling/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -253,6 +280,11 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
 
         # URI of the input Airflow asset file for the DAG
         pg_asset = Asset(f'file://{base_file_path}.pg')
+
+        # Shared directory with the Wikidata JSON pages downloaded by OwmfDownloadWikidataDAG.
+        # This DAG consumes the corresponding asset and loads the pages from here.
+        wikidata_dir = join("/workdir", prefix, "wikidata")
+        wikidata_asset = Asset(f'file://{wikidata_dir}')
 
         # Airflow connection ID for the Postgres DB the DAG will upload the data to
         upload_db_conn_id = f"{prefix}-postgres"
@@ -278,7 +310,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         super().__init__(
             start_date=start_date,
             catchup=False,
-            schedule = [pg_asset],
+            schedule = [pg_asset, wikidata_asset],
             tags=['owmf', prefix, 'owmf-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
@@ -506,67 +538,22 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
         task_convert_wd_ent >> task_convert_ety
 #endregion
 
-#region download_wikidata
-        wikidata_group = TaskGroup("download_wikidata", tooltip="Download and merge data from Wikidata", prefix_group_id=False, dag=self)
-        
-        task_check_load_wd_entities = BranchPythonOperator(
-            task_id = "check_how_to_load_wikidata_entities",
-            python_callable = choose_load_wikidata_task,
-            dag = self,
-            task_group = wikidata_group,
-            doc_md = dedent(choose_load_wikidata_task.__doc__ or "")
-        )
+#region load_wikidata
+        # The Wikidata data is downloaded by the separate OwmfDownloadWikidataDAG and published in `wikidata_dir`; here it is only loaded into the local DB
+        wikidata_group = TaskGroup("load_wikidata", tooltip="Load the downloaded Wikidata data into the DB", prefix_group_id=False, dag=self)
 
-        task_fetch_direct_entities = PythonOperator(
-            task_id = "fetch_wikidata_direct_entities",
-            python_callable = fetch_direct_entities,
+        task_load_wd = PythonOperator(
+            task_id = "load_wikidata_entities",
+            python_callable = load_entities,
             op_kwargs = {
-                "workdir": workdir,
-                "wikidata_country": wikidata_country,
-            },
-            retries = 3,
-            dag = self,
-            task_group=wikidata_group,
-            doc_md = dedent(fetch_direct_entities.__doc__ or "")
-        )
-        task_check_load_wd_entities >> task_fetch_direct_entities
-
-        task_load_wd_direct = PythonOperator(
-            task_id = "load_wikidata_direct_entities",
-            python_callable = load_direct_entities,
-            op_kwargs = {
-                "workdir": workdir,
+                "workdir": wikidata_dir,
                 "postgres_conn_id": local_db_conn_id,
             },
             dag = self,
             task_group=wikidata_group,
-            doc_md = dedent(load_direct_entities.__doc__ or "")
+            doc_md = dedent(load_entities.__doc__ or "")
         )
-        [task_fetch_direct_entities, task_convert_ety] >> task_load_wd_direct
-
-        task_fetch_wd_reverse = EmptyOperator(
-            task_id = "fetch_wikidata_reverse_entities",
-            dag = self,
-            task_group=wikidata_group,
-            doc_md = """
-# Load Wikidata reverse related entities
-            
-# YET TO BE IMPLEMENTED
-"""
-        )
-        task_check_load_wd_entities >> task_fetch_wd_reverse
-
-        task_load_wd_entities = EmptyOperator(
-            task_id = "fetch_wikidata_entities",
-            dag = self,
-            task_group=wikidata_group,
-            doc_md = """
-# Load Wikidata entities
-            
-# YET TO BE IMPLEMENTED
-"""
-        )
-        task_check_load_wd_entities >> task_load_wd_entities
+        task_convert_ety >> task_load_wd
 #endregion
 
 #region propagate
@@ -584,7 +571,7 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
             task_group=propagate_group,
             doc_md = dedent(choose_propagation_method.__doc__ or "")
         )
-        [task_load_wd_direct, task_fetch_wd_reverse, task_load_wd_entities] >> task_check_propagation
+        task_load_wd >> task_check_propagation
 
         task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",

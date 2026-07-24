@@ -2,6 +2,7 @@ from airflow.models import \
     DAG  # ! Don't delete, necessary for Airflow to recognize this file as containing DAGs
 from templates.OsmPbfDownloadDAG import OsmPbfDownloadDAG
 from templates.OwmfDbInitDAG import OwmfDbInitDAG
+from templates.OwmfDownloadWikidataDAG import OwmfDownloadWikidataDAG
 from templates.OwmfFilterDAG import OwmfFilterDAG
 from templates.OwmfUploadToAwsDAG import OwmfUploadToAwsDAG
 
@@ -24,10 +25,15 @@ filter_italy = OwmfFilterDAG(
     prefix="italy"
 )
 
+download_wikidata_italy = OwmfDownloadWikidataDAG(
+    dag_id="download-wikidata-italy",
+    prefix="italy",
+    wikidata_country="Q38", # Italy
+)
+
 db_init_italy = OwmfDbInitDAG(
     dag_id="db-init-italy",
     prefix="italy",
-    wikidata_country="Q38", # Italy
 )
 
 upload_to_aws_italy = OwmfUploadToAwsDAG(

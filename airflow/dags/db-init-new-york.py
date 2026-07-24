@@ -2,6 +2,7 @@ from airflow.models import \
     DAG  # ! Don't delete, necessary for Airflow to recognize this file as containing DAGs
 from templates.OsmPbfDownloadDAG import OsmPbfDownloadDAG
 from templates.OwmfDbInitDAG import OwmfDbInitDAG
+from templates.OwmfDownloadWikidataDAG import OwmfDownloadWikidataDAG
 from templates.OwmfFilterDAG import OwmfFilterDAG
 
 download_new_york_pbf = OsmPbfDownloadDAG(
@@ -23,8 +24,13 @@ filter_new_york = OwmfFilterDAG(
     prefix="new-york"
 )
 
+download_wikidata_new_york = OwmfDownloadWikidataDAG(
+    dag_id="download-wikidata-new-york",
+    prefix="new-york",
+    wikidata_country="Q30", # USA
+)
+
 db_init_new_york = OwmfDbInitDAG(
     dag_id="db-init-new-york",
     prefix="new-york",
-    wikidata_country="Q30", # USA
 )
