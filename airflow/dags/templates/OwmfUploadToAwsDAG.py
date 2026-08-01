@@ -1,6 +1,5 @@
 from os.path import abspath, dirname, join
 
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import \
     LocalFilesystemToS3Operator
 from airflow.sdk import Asset, Variable, dag, task
@@ -79,6 +78,7 @@ def OwmfUploadToAwsDAG(
 
             The connection ID is passed through the params object to allow customization when triggering the DAG.
             """
+            from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
             if not conn_id:
                 print(f"AWS connection ('{conn_id}') not available, skipping upload")

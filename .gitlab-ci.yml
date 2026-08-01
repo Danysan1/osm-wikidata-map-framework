@@ -1,7 +1,7 @@
 include:
-  - component: $CI_SERVER_FQDN/components/sast/sast@3.4.0
-  - component: $CI_SERVER_FQDN/components/dependency-scanning/main@2.1.0
-  - component: $CI_SERVER_FQDN/components/secret-detection/secret-detection@2.3.0
+  - component: $CI_SERVER_FQDN/components/sast/sast@main
+  - component: $CI_SERVER_FQDN/components/dependency-scanning/main@main
+  - component: $CI_SERVER_FQDN/components/secret-detection/secret-detection@main
 
 stages:
   - release
