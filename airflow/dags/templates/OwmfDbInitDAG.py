@@ -205,13 +205,18 @@ def choose_load_osm_data_task(base_file_path:str, **context) -> str:
     
     load_on_db_method = context["params"].get(LOAD_ON_DB_METHOD, DEFAULT_LOAD_ON_DB_METHOD)
     if load_on_db_method == "osmium":
+        osm_date_path = f"{base_file_path}.pg.date.txt"
         next_task = "load_elements_from_pg_file"
     elif load_on_db_method == "osm2pgsql":
+        osm_date_path = f"{base_file_path}.pbf.date.txt"
         next_task = "load_elements_with_osm2pgsql"
     elif load_on_db_method == "imposm":
+        osm_date_path = f"{base_file_path}.pbf.date.txt"
         next_task = "load_elements_with_imposm"
     else:
         raise Exception(f"Unknown load_on_db_method: '{load_on_db_method}'")
+    
+    context["ti"].xcom_push(key="osm_date_file_path", value=osm_date_path)
     
     return next_task
 
@@ -283,7 +288,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
 
         tiles_dir = join("/workdir", prefix, "tiles")
         pmtiles_path = join(tiles_dir, "tiles.pmtiles")
-        date_path = join(tiles_dir, "date.txt")
+        tiles_date_path = join(tiles_dir, "date.txt")
         dataset_path = join(tiles_dir, "dataset.csv")
         tiles_asset = Asset(f'file://{tiles_dir}')
 
@@ -451,7 +456,7 @@ Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*
         task_remove_ele_too_big = SQLExecuteQueryOperator(
             task_id = "remove_elements_too_big",
             conn_id = local_db_conn_id,
-            sql = "sql/05-remove-elements-too-big.sql",
+            sql = ["sql/05-remove-elements-too-big.sql", "sql/05-reset-osmdata-sequence.sql"],
             parameters = {
                 "osm_key": "{{ var.json.osm_wikidata_keys[0] or '' }}"
             },
@@ -530,8 +535,6 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
 
 #region load_wikidata
         # The Wikidata data is downloaded by the separate OwmfDownloadWikidataDAG and published in `wikidata_dir`; here it is only loaded into the local DB
-        wikidata_group = TaskGroup("load_wikidata", tooltip="Load the downloaded Wikidata data into the DB", prefix_group_id=False, dag=self)
-
         task_load_wd = PythonOperator(
             task_id = "load_wikidata_entities",
             python_callable = load_entities,
@@ -540,7 +543,6 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
                 "postgres_conn_id": local_db_conn_id,
             },
             dag = self,
-            task_group=wikidata_group,
             doc_md = dedent(load_entities.__doc__ or "")
         )
         task_convert_ety >> task_load_wd
@@ -548,7 +550,6 @@ Fill the `etymology` table of the local PostGIS DB with the linked entities deri
 
 #region propagate
         propagate_group = TaskGroup("propagate", tooltip="Propagate linked entities", prefix_group_id=False, dag=self)
-        [wikidata_group, elaborate_group] >> propagate_group
 
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
@@ -717,7 +718,7 @@ Create in the local PostGIS DB the materialized view used for the dataset downlo
             dag = self,
             task_group=post_elaborate_group
         )
-        [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, join_post_load_ele, task_create_work_dir] >> task_join_post_elaboration
+        [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, task_create_work_dir] >> task_join_post_elaboration
 #endregion
 
 #region vector_tiles
@@ -848,10 +849,10 @@ Dump all the elements from the local DB with their respective linked entities in
 
         task_copy_tiles_date = BashOperator(
             task_id = "copy_tiles_date",
-            bash_command='echo $last_update > "$date_path"',
+            bash_command='cp "$osm_date_path" "$tiles_date_path"',
             env = {
-                "date_path": date_path,
-                "last_update": "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='last_data_update') }}"
+                "tiles_date_path": tiles_date_path,
+                "osm_date_path": "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='osm_date_file_path') }}"
             },
             outlets = tiles_asset,
             dag = self,
