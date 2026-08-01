@@ -1,5 +1,5 @@
 from datetime import timedelta
-from os.path import abspath, dirname, isfile, join
+from os.path import abspath, dirname, join
 from textwrap import dedent
 
 from airflow.exceptions import AirflowNotFoundException
@@ -17,7 +17,7 @@ from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
 from operators.TileJoinOperator import TileJoinOperator
 from operators.TippecanoeOperator import TippecanoeOperator
 from pendulum import datetime
-from utils.wikidata import read_json, read_query
+from utils.wikidata import ENTITY_LINK_CSV_COLUMNS, read_query
 
 LOAD_ON_DB_METHOD = "load_on_db_method"
 DEFAULT_LOAD_ON_DB_METHOD = "osmium"
@@ -40,29 +40,24 @@ def get_absolute_path(filename:str, folder:str|None = None) -> str:
         file_dir_path = join(file_dir_path, folder)
     return join(file_dir_path, filename)
 
-def load_page_on_db(cursor, json_str: str, wikidata_sql: str, element_update_sql: str, element_insert_sql: str, entities_sql: str) -> None:
-    """Execute the four SQL statements for a single page of SPARQL results."""
-    # wikidata SQL uses the JSON param twice (main SELECT + UNION)
-    cursor.execute(wikidata_sql, {"json": json_str})
-    print(f"Loaded {cursor.rowcount} wikidata entities")
-
-    # element-update SQL has no JSON parameter
-    cursor.execute(element_update_sql)
-    print(f"Updated {cursor.rowcount} elements")
-
-    # element-insert SQL uses the JSON param once
-    cursor.execute(element_insert_sql, {"json": json_str})
-    print(f"Inserted {cursor.rowcount} elements")
-
-    # entities SQL uses the JSON param once
-    cursor.execute(entities_sql, {"json": json_str})
-    print(f"Loaded {cursor.rowcount} etymology links")
-
 def load_entities(workdir:str, postgres_conn_id: str) -> None:
     """
     Callable that loads Wikidata entities into the local PostGIS DB.
+
+    Loads every entity-link CSV page published by OwmfDownloadWikidataDAG (see
+    utils.wikidata.ENTITY_LINK_CSV_COLUMNS) into the owmf.wikidata_staging table with a plain
+    COPY, regardless of whether the pages were produced through DuckDB or through the legacy
+    SPARQL method, then converts the staged rows into the final wikidata/osmdata/etymology tables.
     """
+    from glob import glob
+
     from airflow.providers.postgres.hooks.postgres import PostgresHook
+
+    csv_paths = sorted(glob(join(workdir, "*.csv")))
+    if not csv_paths:
+        raise Exception(f"No Wikidata entity-link CSV page found in {workdir}")
+
+    staging_columns = [f"ws_{column}" for column in ENTITY_LINK_CSV_COLUMNS]
 
     # Read SQL templates
     wikidata_sql = read_query("load-related-wikidata.sql")
@@ -74,15 +69,26 @@ def load_entities(workdir:str, postgres_conn_id: str) -> None:
     pg_hook = PostgresHook(postgres_conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
-            for page_number in range(10):
-                json_path = join(workdir, f"{page_number}.json")
-                if not isfile(json_path):
-                    raise Exception(f"Missing json file {json_path}")
+            for csv_path in csv_paths:
+                print(f"Staging data from {csv_path}")
+                with open(csv_path, "r", encoding="utf-8") as csv_file:
+                    cursor.copy_expert(
+                        f"COPY owmf.wikidata_staging ({','.join(staging_columns)}) FROM STDIN WITH (FORMAT CSV)",
+                        csv_file,
+                    )
+                print(f"Staged {cursor.rowcount} rows from {csv_path}")
 
-                print(f"Loading data from {json_path}")
-                json_str = read_json(json_path)
-                load_page_on_db(cursor, json_str, wikidata_sql, element_update_sql, element_insert_sql, entities_sql)
-                print(f"Loaded page {page_number}")
+            cursor.execute(wikidata_sql)
+            print(f"Loaded {cursor.rowcount} wikidata entities")
+
+            cursor.execute(element_update_sql)
+            print(f"Updated {cursor.rowcount} elements")
+
+            cursor.execute(element_insert_sql)
+            print(f"Inserted {cursor.rowcount} elements")
+
+            cursor.execute(entities_sql)
+            print(f"Loaded {cursor.rowcount} etymology links")
 
         pg_conn.commit()
 
@@ -281,7 +287,7 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         # URI of the input Airflow asset file for the DAG
         pg_asset = Asset(f'file://{base_file_path}.pg')
 
-        # Shared directory with the Wikidata JSON pages downloaded by OwmfDownloadWikidataDAG.
+        # Shared directory with the Wikidata entity-link CSV pages downloaded by OwmfDownloadWikidataDAG.
         # This DAG consumes the corresponding asset and loads the pages from here.
         wikidata_dir = join("/workdir", prefix, "wikidata")
         wikidata_asset = Asset(f'file://{wikidata_dir}')

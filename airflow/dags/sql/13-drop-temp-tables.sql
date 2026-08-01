@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS owmf.element_wikidata_cods;
 
+DROP TABLE IF EXISTS owmf.wikidata_staging;
+
 DROP TABLE IF EXISTS owmf.osmdata;
 
 DROP TABLE IF EXISTS owmf.planet_osm_line;

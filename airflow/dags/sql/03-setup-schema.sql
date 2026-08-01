@@ -39,6 +39,21 @@ CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='8
 CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fillfactor='80');
 CREATE UNIQUE INDEX wikidata_alias_idx ON owmf.wikidata (wd_alias_cod) WITH (fillfactor='80');
 
+-- Staging table for the entity-link CSV pages downloaded by OwmfDownloadWikidataDAG (see
+-- utils.wikidata.ENTITY_LINK_CSV_COLUMNS for the column semantics), loaded through a plain COPY
+-- regardless of whether the pages were produced through DuckDB or through the legacy SPARQL
+-- method. One row per (item, from_prop, etymology) triple.
+CREATE TABLE owmf.wikidata_staging (
+    ws_item_qid VARCHAR(15) NOT NULL CHECK (ws_item_qid ~* '^Q\d+$'),
+    ws_label VARCHAR,
+    ws_label_en VARCHAR,
+    ws_commons VARCHAR,
+    ws_location VARCHAR NOT NULL,
+    ws_linked_entity_qid VARCHAR(15) NOT NULL CHECK (ws_linked_entity_qid ~* '^Q\d+$'),
+    ws_from_prop_pid VARCHAR(10) NOT NULL CHECK (ws_from_prop_pid ~* '^P\d+$'),
+    ws_alias_qid VARCHAR(15) CHECK (ws_alias_qid ~* '^Q\d+$')
+);
+
 CREATE TABLE owmf.osmdata (
     osm_id BIGSERIAL NOT NULL PRIMARY KEY,
     osm_geometry GEOMETRY(Geometry,4326) NOT NULL,

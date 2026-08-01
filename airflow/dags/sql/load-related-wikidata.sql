@@ -1,19 +1,14 @@
-INSERT INTO owmf.wikidata (
-    wd_wikidata_cod, wd_alias_cod, wd_pseudo_tags
-)
+INSERT INTO owmf.wikidata (wd_wikidata_cod, wd_alias_cod, wd_pseudo_tags)
 SELECT
-    REPLACE(value->'item'->>'value', 'http://www.wikidata.org/entity/', ''),
-    REPLACE(value->'alias'->>'value', 'http://www.wikidata.org/entity/', ''),
+    ws_item_qid,
+    ws_alias_qid,
     JSONB_BUILD_OBJECT(
-            'name', value->'label_mul'->>'value',
-            'name:en', value->'label_en'->>'value',
-            'wikimedia_commons', 'Category:' || (value->'commons'->>'value')
+            'name', ws_label,
+            'name:en', ws_label_en,
+            'wikimedia_commons', 'Category:' || ws_commons
         )
-FROM json_array_elements((%(json)s::JSON)->'results'->'bindings')
-WHERE value->'item'->>'value' ^@ 'http://www.wikidata.org/entity/'
+FROM owmf.wikidata_staging
 UNION
-SELECT DISTINCT
-    REPLACE(value->'etymology'->>'value', 'http://www.wikidata.org/entity/', ''), NULL, NULL::JSONB
-FROM json_array_elements((%(json)s::JSON)->'results'->'bindings')
-WHERE value->'etymology'->>'value' ^@ 'http://www.wikidata.org/entity/'
+SELECT DISTINCT ws_linked_entity_qid, NULL, NULL::JSONB
+FROM owmf.wikidata_staging
 ON CONFLICT (wd_wikidata_cod) DO NOTHING

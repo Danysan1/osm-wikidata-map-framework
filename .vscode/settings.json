@@ -57,5 +57,7 @@
     "url": "./front-end/src/generated/preset.schema.json"
   }],
   "jest.runMode": "on-demand",
-  "jest.rootPath": "front-end"
+  "jest.rootPath": "front-end",
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda"
 }
