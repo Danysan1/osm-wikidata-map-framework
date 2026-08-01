@@ -40,9 +40,8 @@ CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fi
 CREATE UNIQUE INDEX wikidata_alias_idx ON owmf.wikidata (wd_alias_cod) WITH (fillfactor='80');
 
 -- Staging table for the entity-link CSV pages downloaded by OwmfDownloadWikidataDAG (see
--- utils.wikidata.ENTITY_LINK_CSV_COLUMNS for the column semantics), loaded through a plain COPY
--- regardless of whether the pages were produced through DuckDB or through the legacy SPARQL
--- method. One row per (item, from_prop, etymology) triple.
+-- utils.wikidata.ENTITY_LINK_CSV_COLUMNS for the column semantics), loaded through a plain COPY.
+-- One row per (item, from_prop, etymology) triple.
 CREATE TABLE owmf.wikidata_staging (
     ws_item_qid VARCHAR(15) NOT NULL CHECK (ws_item_qid ~* '^Q\d+$'),
     ws_label VARCHAR,

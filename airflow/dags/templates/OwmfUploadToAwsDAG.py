@@ -1,10 +1,10 @@
 from os.path import abspath, dirname, join
 
-from airflow.exceptions import AirflowNotFoundException
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.transfers.local_to_s3 import \
     LocalFilesystemToS3Operator
 from airflow.sdk import Asset, Variable, dag, task
+from airflow.sdk.exceptions import AirflowNotFoundException
 from pendulum import datetime
 
 

@@ -7,6 +7,7 @@ from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
 from airflow.sdk import Asset, dag, get_current_context, task
+from airflow.sdk.definitions.param import ParamsDict
 from operators.TransmissionRemoveTorrentOperator import \
     TransmissionRemoveTorrentOperator
 from operators.TransmissionStartTorrentOperator import \
@@ -57,14 +58,14 @@ def OsmPbfDownloadDAG(
     # Path to the temporary folder where the DAG will store the intermediate files
     workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
 
-    default_params = {
+    default_params = ParamsDict({
         "pbf_url": pbf_url,
         "rss_url": rss_url,
         "html_url": html_url,
         "prefix": prefix,
         SKIP_IF_ALREADY_DOWNLOADED: DEFAULT_SKIP_IF_ALREADY_DOWNLOADED,
         "verify_md5": verify_md5,
-    }
+    })
 
     @dag(
         # https://airflow.apache.org/docs/apache-airflow/3.3.0/authoring-and-scheduling/timezone.html

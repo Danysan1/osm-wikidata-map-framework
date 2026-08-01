@@ -17,7 +17,7 @@ The DAGs do NOT form a pure sequence but a diamond: the OSM side (dump download 
 3. Wikidata download ([`OwmfDownloadWikidataDAG`](./dags/templates/OwmfDownloadWikidataDAG.py), for example `download-wikidata-planet`) — runs on a **weekly** schedule (not asset-triggered), produces the `wikidata/` directory asset
    - This pipeline downloads the relevant linked entities from Wikidata and publishes them as CSV pages, in a common entity-link format, in the shared `wikidata` directory
    - It depends only on the configuration, not on the OSM data, which is why it runs on its own schedule instead of being triggered by the OSM pipeline
-   - By default it downloads through DuckDB, querying the periodic GeoParquet dump from https://wikidata-geo-dumps.toolforge.org/ (much faster and more reliable than the legacy Wikidata SPARQL query service); set the `download_method` DAG parameter to `sparql` to use the legacy method instead (for example if a configured property isn't available in the dump)
+   - It downloads through DuckDB, querying the periodic GeoParquet dump from https://wikidata-geo-dumps.toolforge.org/ (only the subset of Wikidata properties available as columns in the dump is supported)
 4. Data elaboration + Tiles generation ([`OwmfDbInitDAG`](./plugins/OwmfDbInitDAG.py), for example `db-init-planet`) — consumes BOTH the filtered `.pg` asset and the `wikidata/` asset, produces the tiles asset
    - This pipeline imports the filtered data into the DB (by default by loading the tab-separated-values file, but it can also be configured to load it from the filtered .pbf with [osm2pgsql](https://osm2pgsql.org/))
    - Then OSM linked entities are extracted from OSM data and the previously-downloaded Wikidata pages are loaded into the DB.

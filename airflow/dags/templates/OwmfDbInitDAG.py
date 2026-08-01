@@ -2,7 +2,6 @@ from datetime import timedelta
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
-from airflow.exceptions import AirflowNotFoundException
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.standard.operators.bash import BashOperator
@@ -12,6 +11,8 @@ from airflow.providers.standard.operators.python import (BranchPythonOperator,
                                                          ShortCircuitOperator)
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
 from airflow.sdk import DAG, Asset, Param, TaskGroup
+from airflow.sdk.definitions.param import ParamsDict
+from airflow.sdk.exceptions import AirflowNotFoundException
 from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 from operators.Osm2pgsqlOperator import Osm2pgsqlOperator
 from operators.TileJoinOperator import TileJoinOperator
@@ -21,6 +22,7 @@ from utils.wikidata import ENTITY_LINK_CSV_COLUMNS, read_query
 
 LOAD_ON_DB_METHOD = "load_on_db_method"
 DEFAULT_LOAD_ON_DB_METHOD = "osmium"
+COPY_BLOCK_SIZE = 8192
 
 DROP_TEMPORARY_TABLES = "drop_temporary_tables"
 DEFAULT_DROP_TEMPORARY_TABLES = True
@@ -46,8 +48,7 @@ def load_entities(workdir:str, postgres_conn_id: str) -> None:
 
     Loads every entity-link CSV page published by OwmfDownloadWikidataDAG (see
     utils.wikidata.ENTITY_LINK_CSV_COLUMNS) into the owmf.wikidata_staging table with a plain
-    COPY, regardless of whether the pages were produced through DuckDB or through the legacy
-    SPARQL method, then converts the staged rows into the final wikidata/osmdata/etymology tables.
+    COPY, then converts the staged rows into the final wikidata/osmdata/etymology tables.
     """
     from glob import glob
 
@@ -65,6 +66,9 @@ def load_entities(workdir:str, postgres_conn_id: str) -> None:
     element_insert_sql = read_query("load-related-element-insert.sql")
     entities_sql = read_query("load-related-direct-entities.sql")
 
+    staging_copy_sql = f"COPY owmf.wikidata_staging ({','.join(staging_columns)}) FROM STDIN WITH (FORMAT CSV)"
+    print(f"Loading wikidata staging CSV data with query:\n{staging_copy_sql}")
+
     # Connect to DB and run as a single transaction
     pg_hook = PostgresHook(postgres_conn_id)
     with pg_hook.get_conn() as pg_conn:
@@ -72,10 +76,9 @@ def load_entities(workdir:str, postgres_conn_id: str) -> None:
             for csv_path in csv_paths:
                 print(f"Staging data from {csv_path}")
                 with open(csv_path, "r", encoding="utf-8") as csv_file:
-                    cursor.copy_expert(
-                        f"COPY owmf.wikidata_staging ({','.join(staging_columns)}) FROM STDIN WITH (FORMAT CSV)",
-                        csv_file,
-                    )
+                    with cursor.copy(staging_copy_sql) as copy:
+                        while data := csv_file.read(COPY_BLOCK_SIZE):
+                            copy.write(data)
                 print(f"Staged {cursor.rowcount} rows from {csv_path}")
 
             cursor.execute(wikidata_sql)
@@ -98,18 +101,22 @@ def postgres_copy_table(conn_id:str, filepath:str, separator:str, schema:str, ta
     """
     Copy data from a CSV/TSV/... file to a PostgreSQL table
 
-    See https://www.psycopg.org/docs/usage.html#copy
-    See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
-    See https://github.com/psycopg/psycopg2/issues/1294
+    Uses psycopg (v3)'s cursor.copy(), not psycopg2's cursor.copy_from() (removed in psycopg3).
+
+    See https://www.psycopg.org/psycopg3/docs/basic/copy.html
     """
     from airflow.providers.postgres.hooks.postgres import PostgresHook
-    
+
+    copy_sql = f"COPY {schema}.{table} ({','.join(columns)}) FROM STDIN WITH (DELIMITER '{separator}')"
+    print(f"Loading data on DB with query:\n{copy_sql}")
+
     pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
             with open(filepath, "r", encoding="utf-8") as file:
-                cursor.execute(f'SET search_path TO {schema}')
-                cursor.copy_from(file, table, separator, columns = columns)
+                with cursor.copy(copy_sql) as copy:
+                    while data := file.read(COPY_BLOCK_SIZE):
+                        copy.write(data)
             print("Inserted row count:", cursor.rowcount)
 
 def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, table:str) -> None:
@@ -218,7 +225,7 @@ def choose_load_osm_data_task(base_file_path:str, **context) -> str:
         raise Exception(f"Unknown load_on_db_method: '{load_on_db_method}'")
     
     with open(date_path, "r") as f:
-        date = f.read()
+        date = f.read().strip()
         context["ti"].xcom_push(key="date_file_path", value=date_path)
         context["ti"].xcom_push(key="last_data_update", value=date)
     
@@ -306,12 +313,12 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
 
         local_db_conn_id=f"{prefix}_local_postgis_db"
 
-        default_params={
+        default_params = ParamsDict({
             LOAD_ON_DB_METHOD: Param(type="string", enum=["osmium","osm2pgsql","imposm"], default=DEFAULT_LOAD_ON_DB_METHOD),
             DROP_TEMPORARY_TABLES: DEFAULT_DROP_TEMPORARY_TABLES,
             UPLOAD_TO_DB: DEFAULT_UPLOAD_TO_DB,
             GENERATE_PMTILES: DEFAULT_GENERATE_PMTILES,
-        }
+        })
 
         super().__init__(
             start_date=start_date,

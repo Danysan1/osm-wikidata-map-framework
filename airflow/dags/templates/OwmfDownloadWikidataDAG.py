@@ -1,23 +1,16 @@
 import re
-import time
 from datetime import timedelta
 from os import makedirs
-from os.path import isfile, join
+from os.path import join
 
 from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import Asset, Param, Variable, dag, get_current_context, task
+from airflow.sdk import Asset, Variable, dag, task
 from pendulum import datetime
-from utils.wikidata import (fetch_sparql, get_latest_wikidata_geo_parquet_url,
-                            read_query, sparql_bindings_to_entity_link_rows,
-                            write_entity_link_csv)
+from utils.wikidata import get_latest_wikidata_geo_parquet_url
 
 DEFAULT_DAYS_BEFORE_CLEANUP = 1
-SLEEP_TIME_S = 10
-
-DOWNLOAD_METHOD = "download_method"
-DEFAULT_DOWNLOAD_METHOD = "duckdb"
 
 Q_ID_RE = re.compile(r'^Q\d+$')
 P_ID_RE = re.compile(r'^P\d+$')
@@ -66,26 +59,19 @@ def OwmfDownloadWikidataDAG(
     # Path to the temporary folder where the DAG will store the intermediate files
     workdir = join("/workdir", prefix, "{{ ti.dag_id }}", "{{ ti.run_id }}")
 
-    default_params = {
-        DOWNLOAD_METHOD: Param(type="string", enum=["duckdb", "sparql"], default=DEFAULT_DOWNLOAD_METHOD),
-    }
-
     @dag(
         start_date=start_date,
         catchup=False,
         schedule="@weekly",
         tags=['owmf', prefix, 'owmf-download-wikidata', 'produces'],
-        params=default_params,
         **kwargs
     )
     def owmf_download_wikidata():
         """
         # OSM-Wikidata Map Framework Wikidata download
 
-        * downloads the relevant linked entities from Wikidata, either through DuckDB (default,
-          querying the periodic GeoParquet dump from https://wikidata-geo-dumps.toolforge.org/) or,
-          if the `download_method` DAG parameter is set to `sparql`, through the legacy Wikidata
-          SPARQL query service
+        * downloads the relevant linked entities from Wikidata through DuckDB, querying the
+          periodic GeoParquet dump from https://wikidata-geo-dumps.toolforge.org/
         * publishes them as CSV pages, in the common entity-link format, for OwmfDbInitDAG to load
           into the DB
 
@@ -107,26 +93,17 @@ def OwmfDownloadWikidataDAG(
             # Check whether and how to download data from Wikidata
 
             Depending on the configured Wikidata properties, choose which download task to run by returning the task_id/function name of the next task to run:
-            * `osm_wikidata_properties` set => download direct related entities, either through DuckDB or through the legacy SPARQL query service depending on the `download_method` DAG parameter
+            * `osm_wikidata_properties` set => download direct related entities through DuckDB
             * `wikidata_indirect_property` set => download reverse related entities
             * neither => download generic entities
 
             Links:
             * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-standard/1.16.0/_api/airflow/providers/standard/operators/python/index.html#airflow.providers.standard.operators.python.BranchPythonOperator)
             """
-            context = get_current_context()
-            params = context["params"] if "params" in context else {}
-
             direct_properties = Variable.get("osm_wikidata_properties", default=None, deserialize_json=True)
             indirect_property = Variable.get("wikidata_indirect_property", default=None)
             if direct_properties:
-                download_method = params.get(DOWNLOAD_METHOD, DEFAULT_DOWNLOAD_METHOD)
-                if download_method == "duckdb":
-                    next_task = "fetch_direct_entities_duckdb"
-                elif download_method == "sparql":
-                    next_task = "fetch_direct_entities_sparql"
-                else:
-                    raise ValueError(f"Unknown {DOWNLOAD_METHOD}: '{download_method}'")
+                next_task = "fetch_direct_entities_duckdb"
             elif indirect_property:
                 next_task = "fetch_reverse_entities"
             else:
@@ -144,10 +121,9 @@ def OwmfDownloadWikidataDAG(
             Query the periodic Wikidata GeoParquet dump published at
             https://wikidata-geo-dumps.toolforge.org/ for the configured direct properties and
             write the result as a single CSV page, in the common entity-link format, ready to be
-            loaded into PostGIS by OwmfDbInitDAG. Much faster and more reliable than the legacy
-            SPARQL method, but only supports the (curated) subset of Wikidata properties available
-            as columns in the dump: if a configured property isn't available, either remove it or
-            switch the `download_method` DAG parameter to `sparql`.
+            loaded into PostGIS by OwmfDbInitDAG. Only supports the (curated) subset of Wikidata
+            properties available as columns in the dump: if a configured property isn't available,
+            remove it from `osm_wikidata_properties`.
 
             Query `parquet_url` for all entities that have a location and at least one of the configured
             direct `properties`, and write the results as a single CSV page (see
@@ -186,8 +162,7 @@ def OwmfDownloadWikidataDAG(
                         f"Properties {unavailable_properties} are not available as list columns in the "
                         f"Wikidata geo dump ({parquet_url}); available list columns are "
                         f"{sorted(col for col, t in available_columns.items() if t == LIST_COLUMN_TYPE)}. "
-                        "Either remove the unavailable properties from 'osm_wikidata_properties' or set "
-                        "the 'download_method' DAG parameter to 'sparql' to use the legacy method instead."
+                        "Remove the unavailable properties from 'osm_wikidata_properties'."
                     )
         
                 country_filter = f"list_contains(P17, '{wikidata_country}')" if wikidata_country else "TRUE"
@@ -208,7 +183,7 @@ def OwmfDownloadWikidataDAG(
                     )
                 """
         
-                print(f"Querying {parquet_url} for properties {properties} (country filter: {country_filter})")
+                print(f"Querying {parquet_url} , query={query}")
                 conn.execute(f"COPY ({query}) TO '{output_path}' (FORMAT CSV, HEADER FALSE)")
             finally:
                 conn.close()
@@ -220,66 +195,6 @@ def OwmfDownloadWikidataDAG(
             print("Done downloading direct related entities through DuckDB")
         task_fetch_direct_duckdb = fetch_direct_entities_duckdb(workdir, wikidata_country)
         task_check_fetch >> task_fetch_direct_duckdb
-
-        @task
-        def fetch_direct_entities_sparql(workdir_eval: str, wikidata_country_eval: str | None = None) -> None:
-            """
-            # Download Wikidata direct related entities through the SPARQL query service (legacy)
-
-            Callable that downloads Wikidata direct related entities from the Wikidata SPARQL
-            query service, normalizing each downloaded page into the common entity-link CSV format
-            (see utils.wikidata.ENTITY_LINK_CSV_COLUMNS) so that OwmfDbInitDAG can load it into the
-            DB the same way regardless of the download method used.
-            """
-
-            # Read configuration
-            properties = Variable.get("osm_wikidata_properties", deserialize_json=True)
-            if not properties or not isinstance(properties, list):
-                raise ValueError(f"Invalid osm_wikidata_properties variable: {properties}")
-
-            # Read SPARQL template
-            sparql_template = read_query("load-related-direct-map.sparql")
-
-            # Build the SPARQL property values substitution
-            direct_property_values = " ".join(f"(p:{p} ps:{p})" for p in properties)
-
-            # Build country filter
-            wikidata_country_query = f"?item wdt:P17 wd:{wikidata_country_eval}." if wikidata_country_eval else ""
-
-            base_sparql = (
-                sparql_template
-                .replace("${directPropertyValues}", direct_property_values)
-                .replace("${wikidataCountryQuery}", wikidata_country_query)
-            )
-            print(f"Using SPARQL query template:\n{base_sparql}")
-
-            for page_number in range(10):
-                csv_path = join(workdir_eval, f"{page_number}.csv")
-                if isfile(csv_path):
-                    print(f"Skipping page {page_number} (already downloaded)")
-                    continue
-
-                sparql_query = base_sparql.replace("${lastDigit}", str(page_number))
-                print(f"Fetching page {page_number}...")
-
-                try:
-                    result = fetch_sparql(sparql_query)
-                except Exception as e:
-                    print(f"First attempt for page {page_number} failed, retrying...\n{e}")
-                    time.sleep(SLEEP_TIME_S)
-                    result = fetch_sparql(sparql_query)
-
-                bindings = result.get("results", {}).get("bindings", [])
-                print(f"Fetched {len(bindings)} rows for page {page_number}")
-
-                rows = sparql_bindings_to_entity_link_rows(bindings)
-                write_entity_link_csv(csv_path, rows)
-                print(f"Loaded page {page_number} ({len(rows)} entity-link rows)")
-                time.sleep(SLEEP_TIME_S)
-
-            print("Done downloading direct related entities through SPARQL")
-        task_fetch_direct_sparql = fetch_direct_entities_sparql(workdir, wikidata_country)
-        task_check_fetch >> task_fetch_direct_sparql
 
         task_fetch_reverse = EmptyOperator(
             task_id="fetch_reverse_entities",
@@ -320,7 +235,7 @@ def OwmfDownloadWikidataDAG(
                 print(f"Copying {csv_path} to {dest_path}")
                 copyfile(csv_path, dest_path)
         task_publish = publish_wikidata_asset(workdir)
-        [task_fetch_direct_duckdb, task_fetch_direct_sparql, task_fetch_reverse, task_fetch_generic] >> task_publish
+        [task_fetch_direct_duckdb, task_fetch_reverse, task_fetch_generic] >> task_publish
 
         task_wait_cleanup = TimeDeltaSensor(
             task_id='wait_for_cleanup_time',
