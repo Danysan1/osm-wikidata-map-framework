@@ -27,9 +27,6 @@ COPY_BLOCK_SIZE = 8192
 DROP_TEMPORARY_TABLES = "drop_temporary_tables"
 DEFAULT_DROP_TEMPORARY_TABLES = True
 
-UPLOAD_TO_DB = "upload_to_db"
-DEFAULT_UPLOAD_TO_DB = False
-
 GENERATE_PMTILES = "generate_pmtiles"
 DEFAULT_GENERATE_PMTILES = True
 PMTILES_LAYER_NAME = "detail" # If you need to change this, remember to change also the corresponding front-end constant (in OwmfMap.tsx)
@@ -151,11 +148,11 @@ def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, ta
                     writer.writerow(row)
             print("Dumped row count:", cursor.rowcount)
 
-def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> bool:
+def check_postgres_conn_id(conn_id:str, **context) -> bool:
     """
         # Check DB connection ID
 
-        Check whether the connection ID to the DB is available: if it is, proceed to restore the data, otherwise stop here.
+        Check whether the connection ID to the DB is available: if it is, proceed, otherwise stop here.
 
         The connection ID is passed through the params object to allow customization when triggering the DAG.
 
@@ -165,16 +162,11 @@ def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> boo
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     from airflow.providers.postgres.hooks.postgres import PostgresHook
-    
-    enable_upload_from_params = context["params"].get(UPLOAD_TO_DB, DEFAULT_UPLOAD_TO_DB)
-    if require_upload and not enable_upload_from_params:
-        print("Upload to remote DB disabled in the DAG parameters, skipping upload")
-        return False
 
     if not conn_id:
-        print("Remote DB connection ID not specified, skipping upload")
+        print("DB connection ID not specified, skipping")
         return False
-    
+
     try:
         pg_hook = PostgresHook(conn_id)
         with pg_hook.get_conn() as pg_conn:
@@ -183,15 +175,15 @@ def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> boo
                 postgis_version = cursor.fetchone()
                 print(f"conn_id available, PostGIS version {postgis_version}")
     except AirflowNotFoundException as e:
-        print(f"Remote DB connection ID ('{conn_id}') is NOT available, skipping upload. Detailed error:")
+        print(f"DB connection ID ('{conn_id}') is NOT available, skipping. Detailed error:")
         print(e)
         return False
     except Exception as e:
-        print(f"Failed connecting to remote DB connection ID ('{conn_id}'), skipping upload. Detailed error:")
+        print(f"Failed connecting to DB connection ID ('{conn_id}'), skipping. Detailed error:")
         print(e)
         return False
-    
-    print(f"Remote DB connection ID ('{conn_id}') is available, uploading")
+
+    print(f"DB connection ID ('{conn_id}') is available")
     return True
 
 def choose_load_osm_data_task(base_file_path:str, **context) -> str:
@@ -213,21 +205,13 @@ def choose_load_osm_data_task(base_file_path:str, **context) -> str:
     
     load_on_db_method = context["params"].get(LOAD_ON_DB_METHOD, DEFAULT_LOAD_ON_DB_METHOD)
     if load_on_db_method == "osmium":
-        date_path = f"{base_file_path}.pg.date.txt"
         next_task = "load_elements_from_pg_file"
     elif load_on_db_method == "osm2pgsql":
-        date_path = f"{base_file_path}.pbf.date.txt"
         next_task = "load_elements_with_osm2pgsql"
     elif load_on_db_method == "imposm":
-        date_path = f"{base_file_path}.pbf.date.txt"
         next_task = "load_elements_with_imposm"
     else:
         raise Exception(f"Unknown load_on_db_method: '{load_on_db_method}'")
-    
-    with open(date_path, "r") as f:
-        date = f.read().strip()
-        context["ti"].xcom_push(key="date_file_path", value=date_path)
-        context["ti"].xcom_push(key="last_data_update", value=date)
     
     return next_task
 
@@ -263,8 +247,6 @@ class OwmfDbInitDAG(DAG):
 
         Keyword arguments:
         ----------
-        upload_db_conn_id: str
-            Airflow connection ID for the Postgres DB the DAG will upload the data to
         prefix: str
             prefix to search in the PBF filename 
         load_on_db_method: string
@@ -284,7 +266,7 @@ class OwmfDbInitDAG(DAG):
 * ingests filtered OSM PBF data
 * downloads relevant Wikidata data
 * combines OSM and Wikidata data
-* uploads the output to the production DB.
+* exports the output to PMTiles.
 
 Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
 """
@@ -298,9 +280,6 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         # This DAG consumes the corresponding asset and loads the pages from here.
         wikidata_dir = join("/workdir", prefix, "wikidata")
         wikidata_asset = Asset(f'file://{wikidata_dir}')
-
-        # Airflow connection ID for the Postgres DB the DAG will upload the data to
-        upload_db_conn_id = f"{prefix}-postgres"
 
         tiles_dir = join("/workdir", prefix, "tiles")
         pmtiles_path = join(tiles_dir, "tiles.pmtiles")
@@ -316,7 +295,6 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         default_params = ParamsDict({
             LOAD_ON_DB_METHOD: Param(type="string", enum=["osmium","osm2pgsql","imposm"], default=DEFAULT_LOAD_ON_DB_METHOD),
             DROP_TEMPORARY_TABLES: DEFAULT_DROP_TEMPORARY_TABLES,
-            UPLOAD_TO_DB: DEFAULT_UPLOAD_TO_DB,
             GENERATE_PMTILES: DEFAULT_GENERATE_PMTILES,
         })
 
@@ -338,7 +316,6 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
             python_callable=check_postgres_conn_id,
             op_kwargs = {
                 "conn_id": local_db_conn_id,
-                "require_upload": False,
             },
             dag = self,
             task_group = db_prepare_group,
@@ -734,37 +711,13 @@ Create in the local PostGIS DB the materialized view used for the dataset downlo
         )
         task_setup_ety_fk >> task_dataset_view
 
-        task_save_last_update = SQLExecuteQueryOperator(
-            task_id = "save_last_data_update",
-            conn_id = local_db_conn_id,
-            task_group = group_db_load,
-            sql = """
-                CREATE OR REPLACE FUNCTION owmf.last_data_update()
-                    RETURNS character varying
-                    LANGUAGE 'sql'
-                AS $BODY$
-                SELECT %(last_update)s;
-                $BODY$;
-            """,
-            parameters = {
-                "last_update": "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='last_data_update') }}"
-            },
-            dag = self,
-            doc_md="""
-# Save into the DB the date of the last update
-
-Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
-"""
-        )
-        [task_setup_schema,join_post_load_ele] >> task_save_last_update
-
         task_join_post_elaboration = EmptyOperator(
             task_id = "join_post_elaboration",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
             task_group=post_elaborate_group
         )
-        [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
+        [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, join_post_load_ele, task_create_work_dir] >> task_join_post_elaboration
 #endregion
 
 #region vector_tiles
@@ -906,111 +859,6 @@ Dump all the elements from the local DB with their respective linked entities in
             doc_md = "Dump the content of the dataset view into a CSV file"
         )
         [task_join_pmtiles, task_dump_dataset] >> task_copy_tiles_date
-#endregion
-        
-#region upload_to_remote_db
-        group_upload_db = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
-        post_elaborate_group >> group_upload_db
-
-        task_check_pg_restore = ShortCircuitOperator(
-            task_id = "check_upload_conn_id",
-            python_callable=check_postgres_conn_id,
-            op_kwargs = {
-                "conn_id": upload_db_conn_id,
-                "require_upload": True,
-            },
-            dag = self,
-            task_group = group_upload_db,
-            doc_md = dedent(check_postgres_conn_id.__doc__ or "")
-        )
-        task_join_post_elaboration >> task_check_pg_restore
-        
-        task_pg_dump = BashOperator(
-            task_id = "pg_dump",
-            trigger_rule = TriggerRule.NONE_FAILED,
-            bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="owmf" --verbose --no-owner --no-privileges --no-tablespaces',
-            env= {
-                "backupFilePath": join(workdir,"db.backup"),
-                "host": f'{{{{ conn.get("{local_db_conn_id}").host }}}}',
-                "port": f'{{{{ (conn.get("{local_db_conn_id}").port)|string }}}}',
-                "user": f'{{{{ conn.get("{local_db_conn_id}").login }}}}',
-                "dbname": f'{{{{ conn.get("{local_db_conn_id}").schema }}}}',
-                "PGPASSWORD": f'{{{{ conn.get("{local_db_conn_id}").password }}}}',
-            },
-            dag = self,
-            task_group=group_upload_db,
-            doc_md="""
-# Backup the data from the local DB
-
-Backup the data from the local DB with pg_dump into the backup file.
-
-Links:
-* [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.providers.standard.operators.bash.BashOperator)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
-* [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
-"""
-        )
-        task_check_pg_restore >> task_pg_dump
-
-        task_setup_db_ext = SQLExecuteQueryOperator(
-            task_id = "setup_upload_db_extensions",
-            conn_id = upload_db_conn_id,
-            sql = "sql/01-setup-db-extensions.sql",
-            dag = self,
-            task_group = group_upload_db,
-            doc_md = """
-# Setup the necessary extensions on the remote DB
-
-Setup PostGIS and HSTORE on the remote DB configured in upload_db_conn_id if they are not already set up.
-"""
-        )
-        task_pg_dump >> task_setup_db_ext
-
-        task_prepare_upload = SQLExecuteQueryOperator(
-            task_id = "prepare_db_for_upload",
-            conn_id = upload_db_conn_id,
-            sql = "sql/15-prepare-db-for-upload.sql",
-            dag = self,
-            task_group = group_upload_db,
-            doc_md="""
-# Prepare the remote DB for uploading
-
-Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the owmf schema 
-
-Links:
-* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.providers.standard.operators.python.PythonOperator)
-* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
-"""
-        )
-        task_setup_db_ext >> task_prepare_upload
-
-        task_pg_restore = BashOperator(
-            task_id = "pg_restore",
-            bash_command='pg_restore --host "$host" --port "$port" --dbname "$dbname" --username "$user" --no-password --role "$user" --schema "owmf" --verbose --no-owner --no-privileges --no-tablespaces "$backupFilePath"',
-            env= {
-                "backupFilePath": join(workdir,"db.backup"),
-                "host": f'{{{{ conn.get("{upload_db_conn_id}").host }}}}',
-                "port": f'{{{{ (conn.get("{upload_db_conn_id}").port)|string }}}}',
-                "user": f'{{{{ conn.get("{upload_db_conn_id}").login }}}}',
-                "dbname": f'{{{{ conn.get("{upload_db_conn_id}").schema }}}}',
-                "PGPASSWORD": f'{{{{ conn.get("{upload_db_conn_id}").password }}}}',
-            },
-            dag = self,
-            task_group = group_upload_db,
-            doc_md="""
-# Upload the data on the remote DB
-
-Upload the data from the backup file on the remote DB configured in upload_db_conn_id with pg_restore.
-
-Links:
-* [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.providers.standard.operators.bash.BashOperator)
-* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
-* [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
-"""
-        )
-        task_prepare_upload >> task_pg_restore
 #endregion
 
 #region cleanup

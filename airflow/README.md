@@ -23,7 +23,6 @@ The DAGs do NOT form a pure sequence but a diamond: the OSM side (dump download 
    - Then OSM linked entities are extracted from OSM data and the previously-downloaded Wikidata pages are loaded into the DB.
    - If enabled, propagation is executed.
    - Then the data is exported to PMTiles through [ogr2ogr](https://gdal.org/en/stable/programs/ogr2ogr.html)+[tippecanoe](https://github.com/felt/tippecanoe).
-   - If enabled, the data is uploaded to a remote DB with pg_dump+pg_restore
 5. Tiles/dataset upload ([`OwmfUploadToAwsDAG`](./dags/templates/OwmfUploadToAwsDAG.py), optional) — consumes the tiles asset
    - If enabled, the tiles and dataset are uploaded to an S3 bucket
 
