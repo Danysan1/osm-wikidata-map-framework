@@ -3,10 +3,9 @@ from datetime import timedelta
 from os import makedirs
 from os.path import join
 
-from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import Asset, Variable, dag, task
+from airflow.sdk import Asset, TriggerRule, Variable, dag, task
 from pendulum import datetime
 from utils.wikidata import get_latest_wikidata_geo_parquet_url
 
@@ -16,9 +15,6 @@ Q_ID_RE = re.compile(r'^Q\d+$')
 P_ID_RE = re.compile(r'^P\d+$')
 
 LIST_COLUMN_TYPE = "VARCHAR[]"
-
-# In-memory DuckDB connection (see AIRFLOW_CONN_DUCKDB_DEFAULT in docker-compose.yml)
-DUCKDB_CONN_ID = "duckdb_default"
 
 
 def OwmfDownloadWikidataDAG(
@@ -130,7 +126,7 @@ def OwmfDownloadWikidataDAG(
             `utils.wikidata.ENTITY_LINK_CSV_COLUMNS`) to `output_path`, ready to be loaded into PostGIS by
             `OwmfDbInitDAG`.
             """
-            from duckdb_provider.hooks.duckdb_hook import DuckDBHook
+            import duckdb
 
             properties = Variable.get("osm_wikidata_properties", deserialize_json=True)
             if not properties or not isinstance(properties, list):
@@ -145,7 +141,7 @@ def OwmfDownloadWikidataDAG(
             if wikidata_country is not None and not Q_ID_RE.match(wikidata_country):
                 raise ValueError(f"Invalid Wikidata country Q-ID: '{wikidata_country}'")
         
-            conn = DuckDBHook(duckdb_conn_id=DUCKDB_CONN_ID).get_conn()
+            conn = duckdb.default_connection()
             try:
                 conn.execute("INSTALL httpfs; LOAD httpfs;")
                 conn.execute("INSTALL spatial; LOAD spatial;")

@@ -2,12 +2,12 @@ from datetime import timedelta
 from os.path import abspath, dirname, join
 
 from airflow.models.taskinstance import TaskInstance
-from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import Asset, Param, TaskGroup, dag, get_current_context, task
+from airflow.sdk import (Asset, Param, TaskGroup, TriggerRule, dag,
+                         get_current_context, task)
 from airflow.sdk.definitions.param import ParamsDict
 from airflow.sdk.exceptions import AirflowNotFoundException
 from operators.Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
@@ -123,7 +123,8 @@ def OwmfDbInitDAG(
                 * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
                 * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
                 """
-                from airflow.providers.postgres.hooks.postgres import PostgresHook
+                from airflow.providers.postgres.hooks.postgres import \
+                    PostgresHook
 
                 if not conn_id:
                     print("DB connection ID not specified, skipping")
@@ -137,13 +138,9 @@ def OwmfDbInitDAG(
                             postgis_version = cursor.fetchone()
                             print(f"conn_id available, PostGIS version {postgis_version}")
                 except AirflowNotFoundException as e:
-                    print(f"DB connection ID ('{conn_id}') is NOT available, skipping. Detailed error:")
-                    print(e)
-                    return False
+                    raise KeyError(f"Airflow DB connection ID is NOT available: '{conn_id}'") from e
                 except Exception as e:
-                    print(f"Failed connecting to DB connection ID ('{conn_id}'), skipping. Detailed error:")
-                    print(e)
-                    return False
+                    raise Exception(f"Failed connecting to DB connection ID: '{conn_id}'") from e
 
                 print(f"DB connection ID ('{conn_id}') is available")
                 return True
@@ -223,7 +220,8 @@ Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
 
                 Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
                 """
-                from airflow.providers.postgres.hooks.postgres import PostgresHook
+                from airflow.providers.postgres.hooks.postgres import \
+                    PostgresHook
 
                 copy_sql = f"COPY {schema}.{table} ({','.join(columns)}) FROM STDIN WITH (DELIMITER '{separator}')"
                 print(f"Loading data on DB with query:\n{copy_sql}")
@@ -686,7 +684,8 @@ Dump all the elements from the local DB with their respective linked entities in
                 """Dump the content of the dataset view into a CSV file"""
                 import csv
 
-                from airflow.providers.postgres.hooks.postgres import PostgresHook
+                from airflow.providers.postgres.hooks.postgres import \
+                    PostgresHook
 
                 pg_hook = PostgresHook(conn_id)
                 with pg_hook.get_conn() as pg_conn:

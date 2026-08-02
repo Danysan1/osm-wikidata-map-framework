@@ -2,6 +2,11 @@ config/
 logs/
 db-data/
 pgadmin-data/
+airflow.*
+standalone_*
+webserver_*
+*.generated
+*.pid
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode

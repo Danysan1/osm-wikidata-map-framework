@@ -3,10 +3,9 @@ from os import listdir
 from os.path import exists, join
 
 from airflow.models.taskinstance import TaskInstance
-from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import Asset, dag, get_current_context, task
+from airflow.sdk import Asset, TriggerRule, dag, get_current_context, task
 from airflow.sdk.definitions.param import ParamsDict
 from operators.TransmissionRemoveTorrentOperator import \
     TransmissionRemoveTorrentOperator

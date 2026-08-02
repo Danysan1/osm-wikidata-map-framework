@@ -3,9 +3,8 @@ from os import makedirs
 from os.path import abspath, dirname, join
 from textwrap import dedent
 
-from airflow.providers.common.compat.sdk import TriggerRule
 from airflow.providers.standard.sensors.time_delta import TimeDeltaSensor
-from airflow.sdk import Asset, dag, task
+from airflow.sdk import Asset, TriggerRule, dag, task
 from operators.OsmiumExportOperator import OsmiumExportOperator
 from operators.OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from pendulum import datetime
