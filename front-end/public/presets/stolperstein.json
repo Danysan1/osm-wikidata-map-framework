@@ -1,20 +1,10 @@
 {
     "background_color": "hsl(0, 0%, 96%)",
-    "fetch_parts_of_linked_entities": true,
     "mapcomplete_theme": "memorials",
     "osm_filter_tags": [
         "memorial=stolperstein"
     ],
-    "osm_text_key": "subject",
-    "osm_description_key": "subject:description",
-    "osm_wikidata_keys": [
-        "subject:wikidata"
-    ],
     "feature_filter_classes": [
         "Q26703203"
-    ],
-    "osm_wikidata_properties": [
-        "P825",
-        "P547"
     ]
 }

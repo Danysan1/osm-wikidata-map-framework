@@ -130,7 +130,7 @@ export const OwmfMap = () => {
     setMapLon(e.viewState.longitude);
     setMapLat(e.viewState.latitude);
     setMapZoom(e.viewState.zoom);
-  }, []);
+  }, [setMapLon, setMapLat, setMapZoom]);
 
   useEffect(() => {
     setMapLat(lat);
