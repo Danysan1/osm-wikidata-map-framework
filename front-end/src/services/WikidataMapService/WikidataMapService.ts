@@ -7,7 +7,7 @@ import type { LinkedEntity, OsmType } from "../../model/LinkedEntity";
 import type { OwmfFeatureProperties } from "../../model/OwmfFeatureProperties";
 import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import type { SourcePreset } from "../../model/SourcePreset";
-import type { MapService } from "../MapService";
+import { type MapService, AreaTooBigException } from "../MapService";
 import { WikidataService } from "../WikidataService";
 
 const NEARBY_FEATURE_THRESHOLD = process.env.NEXT_PUBLIC_OWMF_nearby_feature_threshold ? parseInt(process.env.NEXT_PUBLIC_OWMF_nearby_feature_threshold) : undefined;
@@ -45,7 +45,7 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
         if (area < 0.000001 || area > 10) {
-            throw new Error(`Invalid bbox area: ${area} - ${bbox.join(",")}`);
+            throw new AreaTooBigException(bbox, area);
         }
 
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language, year);

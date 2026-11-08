@@ -2,7 +2,7 @@ import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { OwmfResponse } from "@/src/model/OwmfResponse";
-import { MapService } from "@/src/services/MapService";
+import { AreaTooBigException, MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -50,10 +50,10 @@ interface ClusteredSourceAndLayersProps {
 export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (props) => {
   /** Maplibre GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
   const clusterProperties = props.useLinkedEntityCount
-      ? {
-          linked_entity_count: ["+", ["get", "linked_entity_count"]],
-        }
-      : undefined,
+    ? {
+      linked_entity_count: ["+", ["get", "linked_entity_count"]],
+    }
+    : undefined,
     /** The name of the field to be used as count */
     countFieldName = props.useLinkedEntityCount ? "linked_entity_count" : "point_count",
     /** The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version) */
@@ -75,7 +75,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
 
   useEffect(() => {
     if (zoom < props.minZoom || (!!props.maxZoom && zoom >= props.maxZoom)) {
-      console.debug("Zoom level too low/high, NOT fetching map clusters", {
+      console.debug("Zoom level too low, NOT fetching map clusters", {
         zoom,
         minZoom: props.minZoom,
         maxZoom: props.maxZoom,
@@ -111,8 +111,12 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
       .fetchMapElements(backEndID, true, bbox, i18n.language, year)
       .then(setElementsData)
       .catch((e) => {
-        console.error("Failed fetching map clusters", e);
-        showSnackbar(t("snackbar.map_error"));
+        if (e instanceof AreaTooBigException) {
+          console.warn("BBox area too big for this backend", backEndID, e);
+        } else {
+          console.error("Failed fetching map clusters", backEndID, e);
+          showSnackbar(t("snackbar.map_error"));
+        }
       })
       .finally(() => showLoadingSpinner(false));
   }, [
@@ -155,8 +159,8 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
     [map]
   );
   const onMouseEnter = useCallback(() => {
-      if (map) map.getCanvas().style.cursor = "pointer";
-    }, [map]),
+    if (map) map.getCanvas().style.cursor = "pointer";
+  }, [map]),
     onMouseLeave = useCallback(() => {
       if (map) map.getCanvas().style.cursor = "";
     }, [map]),
@@ -201,9 +205,8 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
         "Cluster data was partial or truncated, zoom in to view all data",
         elementsData
       );
-      // showSnackbar(t("snackbar.partial_result"), "wheat");
     }
-  }, [elementsData, showSnackbar, t]);
+  }, [elementsData, t]);
 
   const countLayerLayout: SymbolLayerSpecification["layout"] = {
     "text-field": "{" + countShowFieldName + "}",

@@ -130,6 +130,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature, preset }) => {
         </p>
       )}
       {description && <p className={styles.element_description}>{description}</p>}
+      {featureI18n?.inscription && <p className={styles.element_inscription}>{featureI18n?.inscription}</p>}
       <div className={styles.feature_buttons_container}>
         <FeatureButtonRow feature={feature} preset={preset} />
       </div>

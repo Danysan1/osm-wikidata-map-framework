@@ -4,7 +4,7 @@ import type { MapDatabase } from "../db/MapDatabase";
 import { DatePrecision, LinkedEntity, OsmType, parseOsmType } from "../model/LinkedEntity";
 import { createFeatureTags, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import type { SourcePreset } from "../model/SourcePreset";
-import type { MapService } from "./MapService";
+import { AreaTooBigException, type MapService } from "./MapService";
 import { COMMONS_CATEGORY_REGEX, COMMONS_FILE_REGEX } from "./WikimediaCommonsService";
 
 const WIKIDATA_QID_REGEX = /^Q[0-9]+/;
@@ -56,7 +56,7 @@ export abstract class BaseOsmMapService implements MapService {
         console.debug("BaseOsm: No cached response found, fetching", { bbox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
         if (area < 0.000001 || (!onlyCentroids && area > 5)) {
-            throw new Error(`Invalid bbox area: ${area} - ${bbox.join(",")}`);
+            throw new AreaTooBigException(bbox, area);
         }
 
         const out = await this.fetchMapData(backEndID, onlyCentroids, bbox, year);
@@ -305,10 +305,10 @@ export abstract class BaseOsmMapService implements MapService {
                             name: rel.reltags?.name,
                             description: rel.reltags?.description,
                             birth_date: rel.reltags?.born,
-                            birth_date_precision: DatePrecision.day,
+                            birth_date_precision: getDatePrecision(rel.reltags?.born),
                             birth_place: rel.reltags?.birthplace,
                             death_date: rel.reltags?.died,
-                            death_date_precision: DatePrecision.day,
+                            death_date_precision: getDatePrecision(rel.reltags?.died),
                             death_place: rel.reltags?.deathplace,
                             wikidata: relWikidataQID,
                             osm_type: "relation",
@@ -323,15 +323,19 @@ export abstract class BaseOsmMapService implements MapService {
                 });
         }
 
-        if (tags["person:date_of_birth"] || tags["person:date_of_death"]) {
+        if (!linkedEntities.length && tags["person:date_of_birth"] || tags["person:date_of_death"]) {
             // https://wiki.openstreetmap.org/wiki/Key:person:date%20of%20birth
             linkedEntities.push({
                 name: tags.name,
                 description: tags.description,
                 birth_date: tags["person:date_of_birth"],
-                birth_date_precision: DatePrecision.day,
+                birth_date_precision: getDatePrecision(tags["person:date_of_birth"]),
                 death_date: tags["person:date_of_death"],
-                death_date_precision: DatePrecision.day
+                death_date_precision: getDatePrecision(tags["person:date_of_death"]),
+                from_osm_instance: OSM_INSTANCE,
+                from_osm_type: feature.properties.osm_type,
+                from_osm_id: feature.properties.osm_id,
+                from_wikidata: false
             });
         }
 
@@ -361,3 +365,15 @@ export abstract class BaseOsmMapService implements MapService {
         year: number | null
     ): Promise<OwmfResponse>;
 }
+
+const getDatePrecision = (dateString?: string): DatePrecision | undefined => {
+    if (!dateString) return undefined;
+    const parts = dateString.split("-");
+    switch (parts.length) {
+        case 1: return DatePrecision.year;
+        case 2: return DatePrecision.month;
+        case 3: return DatePrecision.day;
+        default: return undefined;
+    }
+}
+

@@ -10,7 +10,12 @@ div.detail_container>* {
 div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,
+div.detail_container .element_inscription,
 div.detail_container .wikipedia_extract,
 div.detail_container .feature_images {
   max-width: var(--owmf-popup-width, 75em);
+}
+
+.element_inscription {
+  font-style: italic;
 }

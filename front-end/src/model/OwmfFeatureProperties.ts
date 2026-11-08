@@ -41,6 +41,13 @@ export interface OsmFeatureTags {
     height?: string
 
     /**
+     * Inscription on the feature
+     * 
+     * @link https://wiki.openstreetmap.org/wiki/Key:inscription
+     */
+    inscription?: string;
+
+    /**
      * Default name of the feature
      * 
      * @link https://wiki.openstreetmap.org/wiki/Key:name

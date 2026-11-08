@@ -1,6 +1,12 @@
 import type { BBox } from "geojson";
 import type { OwmfResponse } from "../model/OwmfResponse";
 
+export class AreaTooBigException extends Error {
+    constructor(bbox: BBox, area: number) {
+        super(`Invalid bbox area: ${area} - ${bbox.join(",")}`);
+    }
+}
+
 /**
  * Service to fetch map elements from a back-end.
  * Implements the strategy pattern to allow different back-ends to be used interchangeably.
@@ -16,5 +22,5 @@ export interface MapService {
      * 
      * @param onlyCentroids Whether to fetch only centroids or full elements with details
      */
-    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string, year: number|null): Promise<OwmfResponse>;
+    fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string, year: number | null): Promise<OwmfResponse>;
 }
