@@ -294,6 +294,7 @@ export abstract class BaseOsmMapService implements MapService {
         });
 
         if (this.preset.relation_member_role) {
+            // https://wiki.openstreetmap.org/wiki/Relation:person
             feature.properties.relations
                 ?.filter(rel => rel.role === this.preset.relation_member_role)
                 ?.forEach(rel => {
@@ -320,6 +321,18 @@ export abstract class BaseOsmMapService implements MapService {
                         });
                     }
                 });
+        }
+
+        if (tags["person:date_of_birth"] || tags["person:date_of_death"]) {
+            // https://wiki.openstreetmap.org/wiki/Key:person:date%20of%20birth
+            linkedEntities.push({
+                name: tags.name,
+                description: tags.description,
+                birth_date: tags["person:date_of_birth"],
+                birth_date_precision: DatePrecision.day,
+                death_date: tags["person:date_of_death"],
+                death_date_precision: DatePrecision.day
+            });
         }
 
         feature.properties.linked_entities = linkedEntities.length ? linkedEntities : undefined;
