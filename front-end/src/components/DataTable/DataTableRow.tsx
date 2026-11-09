@@ -50,7 +50,6 @@ export const DataTableRow: FC<DataTableRowProps> = ({
         const normalizedName = normalizeForComparison(mainName),
           includedInAnyAltName = nameArray.some((alt_name) => {
             const out = normalizeForComparison(alt_name).includes(normalizedName);
-            console.debug("DataTableRow", { normalizedName, alt_name, out });
             return out;
           });
         if (!includedInAnyAltName) nameArray.push(mainName);
