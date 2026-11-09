@@ -39,9 +39,9 @@
   },
   "dependencies": {
     "@iiif/presentation-3": "^2.2.3",
-    "@maptiler/geocoding-control": "^3.1.0",
     "@next/third-parties": "16.1.1",
     "@sentry/nextjs": "^10.32.1",
+    "@stadiamaps/maplibre-search-box": "^3.2.0",
     "axios": "^1.7.9",
     "chart.js": "^4.4.3",
     "dexie": "^4.0.7",

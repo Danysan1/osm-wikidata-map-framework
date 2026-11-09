@@ -41,6 +41,7 @@ import { ClusteredSourceAndLayers } from "./ClusteredSourceAndLayers";
 import { DetailsLayers } from "./DetailsLayers";
 import { DetailsSourceAndLayers } from "./DetailsSourceAndLayers";
 import { PMTilesSource } from "./PMTilesSource";
+import { OwmfGeocodingControl } from "../controls/OwmfGeocodingControl";
 
 const PMTILES_PREFIX = "pmtiles",
   MAX_ZOOM = 19,
@@ -299,7 +300,7 @@ export const OwmfMap = () => {
         position="top-right"
       />
 
-      {/*process.env.NEXT_PUBLIC_OWMF_maptiler_key && <OwmfGeocodingControl position="bottom-left" /> Maptiler geocoder currently broken */}
+      <OwmfGeocodingControl position="bottom-left" />      
 
       <ScaleControl position="bottom-right" />
       {process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />}
