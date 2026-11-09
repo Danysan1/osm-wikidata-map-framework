@@ -32,9 +32,9 @@ export class WikidataDetailsService extends WikidataService {
 
         let out = await this.db?.getDetails(wikidataIDs, this.language);
         if (out) {
-            console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: this.language, wikidataIDs });
+            console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: this.language, qids: [...wikidataIDs] });
         } else {
-            console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: this.language, wikidataIDs });
+            console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: this.language, qids: [...wikidataIDs] });
             const sparqlQueryTemplate = await this.resolveQuery(),
                 res = await this.etymologyIDsQuery(this.language, Array.from(wikidataIDs), sparqlQueryTemplate);
 

@@ -67,9 +67,9 @@ export class WikidataEntityLinkNotesService extends WikidataService {
 
         let out = await this.db?.getEntityLinkNotes(featureQID, propertyPID, linkedEntityQIDs, this.language);
         if (out) {
-            console.debug("fetchEntityLinkNotes: Cache hit, using cached response", { lang: this.language, featureQID, linkedEntityQIDs, out });
+            console.debug("fetchEntityLinkNotes: Cache hit, using cached response", { lang: this.language, featureQID, qids: [...linkedEntityQIDs], out });
         } else {
-            console.debug("fetchEntityLinkNotes: Cache miss, fetching data", { lang: this.language, featureQID, linkedEntityQIDs });
+            console.debug("fetchEntityLinkNotes: Cache miss, fetching data", { lang: this.language, featureQID, qids: [...linkedEntityQIDs] });
             const sparqlQueryTemplate = await this.resolveQuery(),
                 linkedEntityValues = Array.from(linkedEntityQIDs).map(linkedEntityQID => `wd:${linkedEntityQID}`).join(" "),
                 sparqlQuery = sparqlQueryTemplate
@@ -98,10 +98,10 @@ export class WikidataEntityLinkNotesService extends WikidataService {
                 }, {});
             }
             try {
-                console.debug("fetchEntityLinkNotes: Finished fetching, saving cache", { lang: this.language, featureQID, linkedEntityQIDs, out });
+                console.debug("fetchEntityLinkNotes: Finished fetching, saving cache", { lang: this.language, featureQID, qids: [...linkedEntityQIDs], out });
                 void this.db?.addEntityLinkNotes(featureQID, propertyPID, linkedEntityQIDs, this.language, out);
             } catch (e) {
-                console.warn("Failed to store details data in cache", { lang: this.language, featureQID, linkedEntityQIDs, out, e });
+                console.warn("Failed to store details data in cache", { lang: this.language, featureQID, qids: [...linkedEntityQIDs], out, e });
             }
         }
         return out;

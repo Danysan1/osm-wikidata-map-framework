@@ -33,7 +33,13 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
 
     detailsService
       .fetchEtymologyDetails(uniqueWikidataIds)
-      .then(setEntityDetails)
+      .then((details) => {
+        console.debug("DataTable: fetched details", {
+          requested: uniqueWikidataIds.size,
+          received: Object.keys(details).length,
+        });
+        setEntityDetails(details);
+      })
       .catch((e) => console.error("Error fetching linked entity details", e));
   }, [features, i18n.language]);
 

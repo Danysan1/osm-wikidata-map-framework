@@ -26,7 +26,7 @@ export const DataTableRow: FC<DataTableRowProps> = ({
   const { i18n } = useTranslation(),
     entitiesCellContent = useMemo(() => {
       const entities = getFeatureLinkedEntities(feature),
-        mergedEntities = entities.map<LinkedEntityDetails>(e => (e.wikidata && details?.[e.wikidata]) ? { ...details[e.wikidata], ...e } : e),
+        mergedEntities = entities.map<LinkedEntityDetails>(e => (e.wikidata && details?.[e.wikidata]) ? { ...e, ...details[e.wikidata] } : e),
         uniqueEntities = mergedEntities.filter(deduplicateByName);
 
       return (
