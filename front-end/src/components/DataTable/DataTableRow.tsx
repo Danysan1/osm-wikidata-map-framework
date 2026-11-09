@@ -24,22 +24,12 @@ export const DataTableRow: FC<DataTableRowProps> = ({
   openFeatureDetails,
 }) => {
   const { i18n } = useTranslation(),
-    entitiesCellContent = useMemo(() => {
+    uniqueEntities = useMemo(() => {
       const entities = getFeatureLinkedEntities(feature),
-        mergedEntities = entities.map<LinkedEntityDetails>(e => (e.wikidata && details?.[e.wikidata]) ? { ...e, ...details[e.wikidata] } : e),
-        uniqueEntities = mergedEntities.filter(deduplicateByName);
-
-      return (
-        <ul>
-          {uniqueEntities.map((entity, i) => (
-            <li key={entity.wikidata ?? entity.name ?? i}>
-              <LinkedEntityLink linkedEntity={entity} />
-            </li>
-          ))}
-        </ul>
-      );
+        mergedEntities = entities.map<LinkedEntityDetails>(e => (e.wikidata && details?.[e.wikidata]) ? { ...e, ...details[e.wikidata] } : e);
+      return mergedEntities.filter(deduplicateByName);
     }, [details, feature]),
-    nameCellContent = useMemo(() => {
+    nameArray = useMemo(() => {
       const localNameKey = "name:" + i18n.language,
         tags = getFeatureTags(feature),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -55,16 +45,26 @@ export const DataTableRow: FC<DataTableRowProps> = ({
         if (!includedInAnyAltName) nameArray.push(mainName);
       }
 
-      return <span onClick={openFeatureDetails}>{nameArray.join(" / ")}</span>;
-    }, [feature, i18n.language, openFeatureDetails]);
+      return nameArray;
+    }, [feature, i18n.language]);
 
   return (
     <tr className={styles.data_table_row}>
-      <td>{nameCellContent}</td>
+      <td>
+        <span onClick={openFeatureDetails}>{nameArray.join(" / ")}</span>
+      </td>
       <td>
         <ButtonRow onOpenInfo={openFeatureDetails} />
       </td>
-      <td>{entitiesCellContent}</td>
+      <td>
+        <ul>
+          {uniqueEntities.map((entity, i) => (
+            <li key={entity.wikidata ?? entity.name ?? i}>
+              <LinkedEntityLink linkedEntity={entity} />
+            </li>
+          ))}
+        </ul>
+      </td>
     </tr>
   );
 };
