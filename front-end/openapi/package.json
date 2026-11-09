@@ -5,6 +5,6 @@
         "list-versions": "openapi-generator-cli version-manager list"
     },
     "dependencies": {
-        "@openapitools/openapi-generator-cli": "^2.13.4"
+        "@openapitools/openapi-generator-cli": "^2.42.0"
     }
 }

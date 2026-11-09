@@ -9,7 +9,6 @@ import { InspectControl } from "@/src/components/controls/InspectControl";
 import { LanguageControl } from "@/src/components/controls/LanguageControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OsmWikidataMatcherControl } from "@/src/components/controls/OsmWikidataMatcherControl";
-import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
 import { ProjectionControl } from "@/src/components/controls/ProjectionControl";
 import { QueryLinkControls } from "@/src/components/controls/QueryLinkControls/QueryLinkControls";
 import { SourcePresetControl } from "@/src/components/controls/SourcePresetControl";
@@ -22,9 +21,7 @@ import { useSourcePresetContext } from "@/src/context/SourcePresetContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { OwmfFeature } from "@/src/model/OwmfResponse";
 import {
-  DataDrivenPropertyValueSpecification,
-  LngLatBoundsLike,
-  addProtocol,
+  DataDrivenPropertyValueSpecification, LngLatBoundsLike, addProtocol, setWorkerUrl
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
@@ -107,7 +104,7 @@ export const OwmfMap = () => {
         "--owmf-cell-width": "min(25em,75vw)",
       };
     },
-      [sourcePreset?.background_color]
+      [sourcePreset]
     ),
     pmtilesActive =
       pmtilesReady &&
@@ -150,6 +147,8 @@ export const OwmfMap = () => {
   );
 
   useEffect(() => {
+    setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString());
+
     if (process.env.NEXT_PUBLIC_OWMF_pmtiles_base_url) {
       const pmtilesProtocol = new Protocol();
       addProtocol("pmtiles", pmtilesProtocol.tile);
@@ -229,7 +228,7 @@ export const OwmfMap = () => {
           "lightgreen",
           10000
         );
-      // showLoadingSpinner(false); // Better handled by its own useEffect
+        // showLoadingSpinner(false); // Better handled by its own useEffect
       }
     },
     [showSnackbar, t]
@@ -300,7 +299,7 @@ export const OwmfMap = () => {
         position="top-right"
       />
 
-      {process.env.NEXT_PUBLIC_OWMF_maptiler_key && <OwmfGeocodingControl position="bottom-left" />}
+      {/*process.env.NEXT_PUBLIC_OWMF_maptiler_key && <OwmfGeocodingControl position="bottom-left" /> Maptiler geocoder currently broken */}
 
       <ScaleControl position="bottom-right" />
       {process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />}

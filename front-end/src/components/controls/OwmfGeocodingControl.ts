@@ -1,5 +1,4 @@
 import { GeocodingControl } from '@maptiler/geocoding-control/maplibregl';
-import "@maptiler/geocoding-control/style.css";
 import { FC, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ControlPosition, useControl } from 'react-map-gl/maplibre';
@@ -9,7 +8,7 @@ interface OwmfGeocodingControlProps {
 }
 
 /**
- * Geocoding control (from Maptiler if possible, Stadia Maps otherwise).
+ * Wrapper for Maptiler Geocoding control.
  * Listens for Ctrl/Cmd + F to focus the geocoder.
  * 
  * @see https://www.npmjs.com/package/@maptiler/geocoding-control
