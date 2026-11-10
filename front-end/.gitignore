@@ -1,6 +1,9 @@
 i18n.json
 src/**/*.js
 
+# Sentry Config File
+.env.sentry-build-plugin
+
 # Created by https://www.toptal.com/developers/gitignore/api/node,visualstudiocode,nextjs
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,visualstudiocode,nextjs
 

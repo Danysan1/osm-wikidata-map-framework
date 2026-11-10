@@ -1,5 +1,5 @@
 {
-  "version": "5.3.0",
+  "version": "5.3.1",
   "name": "osm-wikidata-map-framework-front-end",
   "homepage": "https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework",
   "description": "OSM-Wikidata Map Framework - Create interactive maps to show details about map elements based on OpenStreetMap and Wikidata",
@@ -40,7 +40,7 @@
   "dependencies": {
     "@iiif/presentation-3": "^2.2.3",
     "@next/third-parties": "16.1.1",
-    "@sentry/nextjs": "^10.32.1",
+    "@sentry/nextjs": "^11.11.0",
     "@stadiamaps/maplibre-search-box": "^3.2.0",
     "axios": "^1.7.9",
     "chart.js": "^4.4.3",
