@@ -34,7 +34,7 @@ function someArrayItemStartWithName(expression: unknown): boolean {
     Array.isArray(expression) &&
     expression.some(
       (x) =>
-        (typeof x === "string" && x.startsWith("name")) || someArrayItemStartWithName(x)
+        (typeof x === "string" && x.startsWith("name")) || someArrayItemStartWithName(x),
     )
   );
 }
@@ -61,10 +61,13 @@ export const useBackgroundStyleContext = () => useContext(BackgroundStyleContext
 
 export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children }) => {
   if (process.env.NEXT_PUBLIC_OWMF_default_background_style?.startsWith("stamen_")) {
-    preload(`https://tiles.stadiamaps.com/styles/${process.env.NEXT_PUBLIC_OWMF_default_background_style}.json`, {
-      as: "fetch",
-      crossOrigin: "anonymous",
-    });
+    preload(
+      `https://tiles.stadiamaps.com/styles/${process.env.NEXT_PUBLIC_OWMF_default_background_style}.json`,
+      {
+        as: "fetch",
+        crossOrigin: "anonymous",
+      },
+    );
     preconnect("https://tiles.stadiamaps.com");
   }
 
@@ -76,10 +79,13 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       () =>
         BACKGROUND_STYLES.find((style) => style.id === backgroundStyleID) ??
         BACKGROUND_STYLES[0],
-      [backgroundStyleID]
+      [backgroundStyleID],
     ),
     [projectionID, setProjectionID] = useState<string>(DEFAULT_PROJECTION),
-    [fetchedJsonStyleSpec, setFetchedJsonStyleSpec] = useState<{ id: string; spec: string }>();
+    [fetchedJsonStyleSpec, setFetchedJsonStyleSpec] = useState<{
+      id: string;
+      spec: string;
+    }>();
 
   /**
    * Fetch the Maplibre style specification JSON whenever the selected style is changed
@@ -113,8 +119,8 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
           styleSpec.glyphs = styleSpec.glyphs.replace(style.keyPlaceholder, style.key);
 
         if (Array.isArray(styleSpec.sprite))
-          styleSpec.sprite.forEach((s) =>
-            s.url = s.url.replace(style.keyPlaceholder!, style.key!)
+          styleSpec.sprite.forEach(
+            (s) => (s.url = s.url.replace(style.keyPlaceholder!, style.key!)),
           );
 
         Object.values(styleSpec.sources)
@@ -171,52 +177,15 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
         console.debug("styleSpec", styleSpec);
       }
 
-      /**
-       * Set the application culture for i18n
-       *
-       * Mainly, sets the map's query to get labels.
-       * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
-       * Mapbox vector tiles use the fields name_*.
-       *
-       * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
-       * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
-       * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
-       * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
-       */
-      const newTextField: DataDrivenPropertyValueSpecification<string> = [
-        "coalesce",
-        ["get", "name:" + i18n.language], // Main language name in OpenMapTiles vector tiles
-        ["get", "name_" + i18n.language], // Main language name in Mapbox vector tiles
-      ];
-      if (i18n.language.includes("_")) {
-        newTextField.push(
-          ["get", "name:" + i18n.language.split("_")[0]],
-          ["get", "name_" + i18n.language.split("_")[0]],
-        );
-      }
-      newTextField.push(
-        ["get", "name"],
-        ["get", "name:" + DEFAULT_LANGUAGE], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
-        ["get", "name_" + DEFAULT_LANGUAGE], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
-      );
-      styleSpec.layers?.forEach((layer) => {
-        if (layer.type === "symbol" && layer.layout) {
-          const labelExpression = layer.layout["text-field"],
-            isSimpleName =
-              typeof labelExpression === "string" && labelExpression.startsWith("{name"); // "{name}" / "{name:en}" / "{name:latin}\n{name:nonlatin}" / ...
-          if (isSimpleName || someArrayItemStartWithName(labelExpression)) {
-            layer.layout["text-field"] = newTextField;
-          }
-        }
-      });
+      setTextFieldLanguage(i18n.language, styleSpec);
 
       if (!styleSpec.projection?.type) styleSpec.projection = undefined; // Prevent errors with Mapbox styles
 
       // https://github.com/mapbox/mapbox-gl-js/issues/4808
       // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
-      console.debug("updateStyleSpec", { locale: i18n.language, year, styleSpec, newTextField });
+      console.debug("updateStyleSpec", { locale: i18n.language, year, styleSpec });
     },
-    [i18n.language, style, year]
+    [i18n.language, style, year],
   );
 
   /**
@@ -251,7 +220,14 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
       });
       showSnackbar(t("snackbar.map_error"));
     }
-  }, [backgroundStyleID, fetchedJsonStyleSpec, setMapStyle, showSnackbar, t, updateStyleSpec]);
+  }, [
+    backgroundStyleID,
+    fetchedJsonStyleSpec,
+    setMapStyle,
+    showSnackbar,
+    t,
+    updateStyleSpec,
+  ]);
 
   useEffect(() => {
     setMapStyle((old) => {
@@ -266,7 +242,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
         return transformMapboxUrl(
           url,
           resourceType as string,
-          process.env.NEXT_PUBLIC_OWMF_mapbox_token
+          process.env.NEXT_PUBLIC_OWMF_mapbox_token,
         );
       }
 
@@ -274,7 +250,7 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
 
       return { url };
     },
-    []
+    [],
   );
 
   return (
@@ -285,3 +261,49 @@ export const BackgroundStyleContextProvider: FC<PropsWithChildren> = ({ children
     </BackgroundStyleContext.Provider>
   );
 };
+
+/**
+ * Set the application culture for i18n
+ *
+ * Mainly, sets the map's query to get labels.
+ * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
+ * Mapbox vector tiles use the fields name_*.
+ *
+ * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
+ * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+ */
+function setTextFieldLanguage(language: string, styleSpec: StyleSpecification) {
+  if (!language || !styleSpec) {
+    console.warn("Empty language or styleSpec", { language, styleSpec });
+    return;
+  }
+
+  const newTextField: DataDrivenPropertyValueSpecification<string> = [
+    "coalesce",
+    ["get", "name:" + language], // Main language name in OpenMapTiles vector tiles
+    ["get", "name_" + language], // Main language name in Mapbox vector tiles
+  ];
+  if (language.includes("_")) {
+    newTextField.push(
+      ["get", "name:" + language.split("_")[0]],
+      ["get", "name_" + language.split("_")[0]],
+    );
+  }
+  newTextField.push(
+    ["get", "name"],
+    ["get", "name:" + DEFAULT_LANGUAGE], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+    ["get", "name_" + DEFAULT_LANGUAGE], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
+  );
+  styleSpec.layers?.forEach((layer) => {
+    if (layer.type === "symbol" && layer.layout) {
+      const labelExpression = layer.layout["text-field"],
+        isSimpleName =
+          typeof labelExpression === "string" && labelExpression.startsWith("{name"); // "{name}" / "{name:en}" / "{name:latin}\n{name:nonlatin}" / ...
+      if (isSimpleName || someArrayItemStartWithName(labelExpression)) {
+        layer.layout["text-field"] = newTextField;
+      }
+    }
+  });
+}

@@ -24,7 +24,7 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1 : 0.5,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: process.env.NODE_ENV === 'development',
+  debug: false, // Too verbose even for development
 
   dataCollection: {
     // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
